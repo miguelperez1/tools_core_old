@@ -50,7 +50,6 @@ class PreviewLabel(QtWidgets.QLabel):
         self.setAlignment(QtCore.Qt.AlignCenter)
         self.setMinimumSize(1, 1)
         self.setContentsMargins(5, 5, 5, 5)
-        self.setText('Test')
 
     def set_image(self, path, scale=160 * 1.3):
         self.pixmap = QtGui.QPixmap(path).scaledToWidth(scale, QtCore.Qt.SmoothTransformation)
@@ -78,7 +77,7 @@ class AssetBrowser(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(AssetBrowser, self).__init__(parent)
 
-        self.setWindowTitle("Asset Browser")
+        self.setWindowTitle("Asset Browser 2.0")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
