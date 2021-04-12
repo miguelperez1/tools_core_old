@@ -381,5 +381,5 @@ def main():
     asset_browser.show()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" or __name__ == "maya_core.asset_manager.asset_browser.asset_browser_ui":
     main()

@@ -5,14 +5,23 @@ from shiboken2 import wrapInstance
 
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
+import vray
 
 from pyqt_commons import MWidgets
+from maya_core.asset_builder import asset_builder_ui
+from maya_core.asset_manager.asset_browser import asset_browser_ui
+from maya_core.common_tools.logger import Logger
+
+import inspect
 
 reload(MWidgets)
 
 import os
 import sys
 import subprocess
+
+log = Logger()
+log.status = True
 
 
 def maya_main_window():
@@ -54,10 +63,10 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.rl_duplicate_action = QtWidgets.QAction("Duplicate")
         self.rl_add_to_layer_action = QtWidgets.QAction("Add selected to layer")
         self.rl_remove_from_layer_action = QtWidgets.QAction("Remove from layer")
+        self.rl_add_layer_action = QtWidgets.QAction("Add Layer")
+        self.rl_refresh_action = QtWidgets.QAction("Refresh Layers")
 
     def create_widgets(self):
-        # Menu Bar
-
         # Render Layers
         self.render_layers_header_lbl = MWidgets.HeaderLabel("Render Layers")
 
@@ -169,6 +178,10 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.focus_light_img_btn.set_image("F:\\share\\tools\\shelf_icons\\move_toi.png")
         self.focus_light_img_btn.setToolTip("Move to Camera")
 
+        self.create_shotcam_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
+        self.create_shotcam_img_btn.set_image("F:\\share\\tools\\shelf_icons\\shotcam.png")
+        self.create_shotcam_img_btn.setToolTip("Create Shot Cam")
+
         # Light Buttons
         self.rect_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
         self.rect_light_img_btn.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png")
@@ -191,6 +204,15 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.gobo_img_btn.set_image("F:\\share\\tools\\shelf_icons\\gobo.png")
         self.gobo_img_btn.setToolTip("Create Gobo")
 
+        self.vray_cloud_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
+        self.vray_cloud_img_btn.set_image(
+            "C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_cloud_rendering_200.png")
+        self.vray_cloud_img_btn.setToolTip("Submit to Chaos Cloud")
+
+        self.light_rig_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
+        self.light_rig_img_btn.set_image("F:\\share\\tools\\shelf_icons\\light_rig.png")
+        self.light_rig_img_btn.setToolTip("Create Light Rig")
+
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(central_widget)
@@ -201,7 +223,10 @@ class LightingConsole(QtWidgets.QMainWindow):
         header_btns_layout.addWidget(self.render_img_btn)
         header_btns_layout.addWidget(self.render_ipr_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
+        header_btns_layout.addWidget(self.create_shotcam_img_btn)
         header_btns_layout.addWidget(self.focus_light_img_btn)
+        header_btns_layout.addWidget(MWidgets.QVLine())
+        header_btns_layout.addWidget(self.light_rig_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.asset_browser_img_btn)
         header_btns_layout.addWidget(self.asset_builder_img_btn)
@@ -211,6 +236,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         header_btns_layout.addWidget(self.dome_light_img_btn)
         header_btns_layout.addWidget(self.dist_light_img_btn)
         header_btns_layout.addWidget(self.gobo_img_btn)
+        header_btns_layout.addWidget(MWidgets.QVLine())
+        header_btns_layout.addWidget(self.vray_cloud_img_btn)
         header_btns_layout.addStretch()
 
         col_layout = QtWidgets.QHBoxLayout()
@@ -241,7 +268,31 @@ class LightingConsole(QtWidgets.QMainWindow):
         main_layout.addLayout(col_layout)
 
     def create_connections(self):
-        pass
+        # BTNs
+        self.render_img_btn.clicked.connect(self.render_img_btn_callback)
+        self.render_ipr_img_btn.clicked.connect(self.render_ipr_img_btn_callback)
+        self.create_shotcam_img_btn.clicked.connect(self.create_shotcam_img_btn_callback)
+        self.focus_light_img_btn.clicked.connect(self.focus_light_img_btn_callback)
+        self.light_rig_img_btn.clicked.connect(self.light_rig_img_btn_callback)
+        self.asset_browser_img_btn.clicked.connect(self.asset_browser_img_btn_callback)
+        self.asset_builder_img_btn.clicked.connect(self.asset_builder_img_btn_callback)
+        self.rect_light_img_btn.clicked.connect(self.rect_light_img_btn_callback)
+        self.sphere_light_img_btn.clicked.connect(self.sphere_light_img_btn_callback)
+        self.dome_light_img_btn.clicked.connect(self.dome_light_img_btn_callback)
+        self.dist_light_img_btn.clicked.connect(self.dist_light_img_btn_callback)
+        self.gobo_img_btn.clicked.connect(self.gobo_img_btn_callback)
+        self.vray_cloud_img_btn.clicked.connect(self.vray_cloud_img_btn_callback)
+
+        # Render Layers
+        self.rl_remove_action.triggered.connect(self.rl_remove_action_callback)
+        self.rl_duplicate_action.triggered.connect(self.rl_duplicate_action_callback)
+        self.rl_add_to_layer_action.triggered.connect(self.rl_add_to_layer_action_callback)
+        self.rl_remove_from_layer_action.triggered.connect(self.rl_remove_from_layer_action_callback)
+        self.rl_add_layer_action.triggered.connect(self.rl_add_layer_action_callback)
+        self.rl_refresh_action.triggered.connect(self.rl_refresh_action_callback)
+        self.render_layer_add_btn.clicked.connect(self.render_layer_add_btn_callback)
+        self.render_layer_remove_btn.clicked.connect(self.render_layer_remove_btn_callback)
+        self.render_layer_refresh_btn.clicked.connect(self.render_layer_refresh_btn_callback)
 
     def create_menu(self):
         self.menu_bar = QtWidgets.QMenuBar(self)
@@ -262,17 +313,96 @@ class LightingConsole(QtWidgets.QMainWindow):
         item = self.render_layers_tw.itemAt(eventPosition)
 
         contextMenu = QtWidgets.QMenu(self)
-        about_action = QtWidgets.QAction(item.text(0))
 
-        contextMenu.addAction(about_action)
+        if item is None:
+            contextMenu.addAction(self.rl_add_layer_action)
+        else:
+            about_action = QtWidgets.QAction(item.text(0))
+
+            contextMenu.addAction(about_action)
+            contextMenu.addSeparator()
+            contextMenu.addAction(self.rl_remove_action)
+            contextMenu.addAction(self.rl_duplicate_action)
+            contextMenu.addSeparator()
+            contextMenu.addAction(self.rl_add_to_layer_action)
+            contextMenu.addAction(self.rl_remove_from_layer_action)
+
         contextMenu.addSeparator()
-        contextMenu.addAction(self.rl_remove_action)
-        contextMenu.addAction(self.rl_duplicate_action)
-        contextMenu.addSeparator()
-        contextMenu.addAction(self.rl_add_to_layer_action)
-        contextMenu.addAction(self.rl_remove_from_layer_action)
+        contextMenu.addAction(self.rl_refresh_action)
 
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+
+    def render_img_btn_callback(self):
+        log.info("TODO: render_img_btn_callback")
+
+    def render_ipr_img_btn_callback(self):
+        log.info("TODO: render_ipr_img_btn_callback")
+
+    def create_shotcam_img_btn_callback(self):
+        cameraName = cmds.camera()
+        camera = cmds.rename(cameraName[0], 'shotCAM')
+        cmds.setAttr('{}.displayGateMaskOpacity'.format(camera), 1)
+        cmds.setAttr('{}.displayGateMaskColor'.format(camera), 0, 0, 0, type='double3')
+        cmds.setAttr('{}.focalLength'.format(camera), 50)
+        cmds.setAttr("{}.displayFilmGate".format(camera), 1)
+        cmds.setAttr("{}.displayResolution".format(camera), 1)
+
+    def focus_light_img_btn_callback(self):
+        log.info("TODO: focus_light_img_btn_callback")
+
+    def light_rig_img_btn_callback(self):
+        log.info("TODO: light_rig_img_btn_callback")
+
+    def asset_browser_img_btn_callback(self):
+        reload(asset_browser_ui)
+
+    def asset_builder_img_btn_callback(self):
+        reload(asset_builder_ui)
+
+    def rect_light_img_btn_callback(self):
+        log.info("TODO: rect_light_img_btn_callback")
+
+    def sphere_light_img_btn_callback(self):
+        log.info("TODO: sphere_light_img_btn_callback")
+
+    def dome_light_img_btn_callback(self):
+        log.info("TODO: dome_light_img_btn_callback")
+
+    def dist_light_img_btn_callback(self):
+        log.info("TODO: dist_light_img_btn_callback")
+
+    def gobo_img_btn_callback(self):
+        log.info("TODO: gobo_img_btn_callback")
+
+    def vray_cloud_img_btn_callback(self):
+        vray.vray_cloud_rendering.vrayCreateCloudSettingsWindow()
+
+    def rl_remove_action_callback(self):
+        log.info("TODO: rl_remove_action_callback")
+
+    def rl_duplicate_action_callback(self):
+        log.info("TODO: rl_duplicate_action_callback")
+
+    def rl_add_to_layer_action_callback(self):
+        log.info("TODO: rl_add_to_layer_action_callback")
+
+    def rl_remove_from_layer_action_callback(self):
+        log.info("TODO: rl_remove_from_layer_action_callback")
+
+    def rl_add_layer_action_callback(self):
+        log.info("TODO: rl_add_layer_action_callback")
+
+    def rl_refresh_action_callback(self):
+        log.info("TODO: rl_refresh_layer_action_callback")
+
+    def render_layer_add_btn_callback(self):
+        log.info("TODO: render_layer_add_btn_callback")
+
+    def render_layer_remove_btn_callback(self):
+        log.info("TODO: render_layer_remove_btn_callback")
+
+    def render_layer_refresh_btn_callback(self):
+        self.update_render_layers()
 
     def update_render_layers(self):
         self.render_layers_tw.clear()
@@ -286,6 +416,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         for render_layer in renderlayers:
             render_layer_item = QtWidgets.QTreeWidgetItem()
             render_layer_item.setText(0, render_layer)
+            render_layer_item.setFlags(render_layer_item.flags() | QtCore.Qt.ItemIsEditable)
 
             self.render_layers_tw.addTopLevelItem(render_layer_item)
 
@@ -299,7 +430,6 @@ class LightingConsole(QtWidgets.QMainWindow):
 if __name__ == "__main__" or __name__ == "maya_core.render_manager.render_manager_ui":
 
     try:
-        0
         dialog.close()
         dialog.deleteLater()
     except:
