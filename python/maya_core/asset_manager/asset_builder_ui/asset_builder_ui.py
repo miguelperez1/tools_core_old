@@ -22,10 +22,6 @@ def maya_main_window():
 
 
 class AssetBuilder(QtWidgets.QDialog):
-    """
-    Dialog used to demonstrates many of the standard dialogs available in Qt
-    """
-
     def __init__(self, parent=maya_main_window()):
         super(AssetBuilder, self).__init__(parent)
 

@@ -34,10 +34,6 @@ def maya_main_window():
 
 
 class LightingConsole(QtWidgets.QMainWindow):
-    """
-    Dialog used to demonstrates many of the standard dialogs available in Qt
-    """
-
     def __init__(self, parent=maya_main_window()):
         super(LightingConsole, self).__init__(parent)
 

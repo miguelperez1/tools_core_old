@@ -143,10 +143,6 @@ def maya_main_window():
 
 
 class PublishAssetWindow(QtWidgets.QDialog):
-    """
-    Dialog used to demonstrates many of the standard dialogs available in Qt
-    """
-
     def __init__(self, parent=maya_main_window()):
         super(PublishAssetWindow, self).__init__(parent)
 
