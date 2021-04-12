@@ -15,6 +15,12 @@ class QHLine(QtWidgets.QFrame):
         self.setFrameShape(QtWidgets.QFrame.HLine)
         self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
+class QVLine(QtWidgets.QFrame):
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.VLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
+
 
 class ScrollAreaWidget(QtWidgets.QWidget):
     def __init__(self, height):
@@ -37,17 +43,19 @@ class ScrollAreaWidget(QtWidgets.QWidget):
 
 
 class ImagePushButton(QtWidgets.QPushButton):
-    def __init__(self, size):
+    def __init__(self, size_x, size_y):
         super(ImagePushButton, self).__init__()
         self.set_default()
-        self.size = size
-        self.setFixedSize(self.size, self.size)
+        self.size_x = size_x
+        self.size_y = size_y
+        self.setFixedSize(self.size_x, self.size_y)
         self.setContentsMargins(5, 5, 5, 5)
+        # self.setStyleSheet("background-color: rgba(0, 0, 0, 0); border-width:0px;")
 
-    def set_image(self, path):
+    def set_image(self, path, scale=1):
         icon = QtGui.QIcon(path)
         self.setIcon(icon)
-        self.setIconSize(QtCore.QSize(self.size, self.size))
+        self.setIconSize(QtCore.QSize(self.size_x * scale, self.size_y * scale))
 
     def set_default(self):
         default_path = r'F:\share\tools\core\maya_core\asset_browser\icons\default.png'

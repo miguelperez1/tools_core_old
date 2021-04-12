@@ -13,6 +13,8 @@ import subprocess
 
 from maya_core.asset_builder import asset
 
+from pyqt_commons import MWidgets
+
 
 # TO DO
 # ACES Convert
@@ -150,6 +152,8 @@ class BuilderWindow(QtWidgets.QDialog):
             self.disp_mat_le
         ]
 
+        self.header_lbl = MWidgets.HeaderLabel("Asset Builder")
+
     def create_layout(self):
         # asset name
         asset_name_layout = QtWidgets.QHBoxLayout()
@@ -237,6 +241,8 @@ class BuilderWindow(QtWidgets.QDialog):
 
         # Main Layout
         main_layout = QtWidgets.QVBoxLayout(self)
+        main_layout.addWidget(self.header_lbl)
+        main_layout.addWidget(QHLine())
         main_layout.addLayout(asset_name_layout)
         main_layout.addLayout(asset_layout)
         main_layout.addWidget(QHLine())

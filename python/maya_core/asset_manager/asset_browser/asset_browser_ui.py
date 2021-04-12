@@ -69,7 +69,7 @@ def maya_main_window():
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 
 
-class AssetBrowser(QtWidgets.QDialog):
+class AssetBrowser(QtWidgets.QMainWindow):
     """
     Dialog used to demonstrates many of the standard dialogs available in Qt
     """
@@ -142,6 +142,13 @@ class AssetBrowser(QtWidgets.QDialog):
         self.asset_count_lbl = QtWidgets.QLabel("Asset Count: ")
 
     def create_layout(self):
+        main_layout = QtWidgets.QVBoxLayout(self)
+
+        central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        main_layout = QtWidgets.QVBoxLayout(central_widget)
+
         self.tab_widget = QtWidgets.QTabWidget()
 
         for library, library_widgets in self.asset_widgets.items():
@@ -169,8 +176,6 @@ class AssetBrowser(QtWidgets.QDialog):
             library_scroll_area.setWidget(library_widget)
 
             self.tab_widget.addTab(library_scroll_area, library.capitalize())
-
-        main_layout = QtWidgets.QVBoxLayout(self)
 
         main_layout.addWidget(self.tab_widget)
         main_layout.addWidget(self.asset_count_lbl)
