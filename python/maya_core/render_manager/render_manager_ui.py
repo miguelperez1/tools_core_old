@@ -5,6 +5,7 @@ from shiboken2 import wrapInstance
 
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
+import pymel.core as pm
 import vray
 
 from pyqt_commons import MWidgets
@@ -114,7 +115,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.create_tw.setFixedWidth(self.res_x / 6)
         self.create_tw.setHeaderHidden(True)
 
-        self.create_types = ["Lights", "Modifiers", "AOVs", "Volumes"]
+        self.create_types = ["Lights", "Modifiers", "Volumes", "Other"]
 
         self.create_search_lbl = QtWidgets.QLabel("Search: ")
         self.create_search_le = QtWidgets.QLineEdit()
@@ -182,7 +183,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.create_shotcam_img_btn.set_image("F:\\share\\tools\\shelf_icons\\shotcam.png")
         self.create_shotcam_img_btn.setToolTip("Create Shot Cam")
 
-        # Light Buttons
         self.rect_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
         self.rect_light_img_btn.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png")
         self.rect_light_img_btn.setToolTip("Create VRay Rect Light")
@@ -221,7 +221,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         header_btns_layout = QtWidgets.QHBoxLayout()
         header_btns_layout.addWidget(self.render_img_btn)
-        header_btns_layout.addWidget(self.render_ipr_img_btn)
+        # header_btns_layout.addWidget(self.render_ipr_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.create_shotcam_img_btn)
         header_btns_layout.addWidget(self.focus_light_img_btn)
@@ -229,7 +229,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         header_btns_layout.addWidget(self.light_rig_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.asset_browser_img_btn)
-        header_btns_layout.addWidget(self.asset_builder_img_btn)
+        # header_btns_layout.addWidget(self.asset_builder_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.rect_light_img_btn)
         header_btns_layout.addWidget(self.sphere_light_img_btn)
@@ -334,6 +334,8 @@ class LightingConsole(QtWidgets.QMainWindow):
 
     def render_img_btn_callback(self):
         log.info("TODO: render_img_btn_callback")
+
+        pm.vrend()
 
     def render_ipr_img_btn_callback(self):
         log.info("TODO: render_ipr_img_btn_callback")
