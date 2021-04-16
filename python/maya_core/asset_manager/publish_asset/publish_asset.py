@@ -19,6 +19,23 @@ from maya_core.common_tools import logger
 
 log = logger.Logger()
 
+LIBRARIES_ROOT = "F:\\share\\assets\\libraries\\"
+
+LIBRARIES = OrderedDict()
+
+LIBRARIES["model"] = "F:\\share\\assets\\libraries\\model"
+LIBRARIES["material"] = "F:\\share\\assets\\libraries\\material"
+LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
+LIBRARIES["studio_lights"] = "F:\\share\\assets\\libraries\\studiolights"
+LIBRARIES["clouds"] = "F:\\share\\assets\\libraries\\clouds"
+LIBRARIES["rigs"] = "F:\\share\\assets\\libraries\\rigs"
+LIBRARIES["plants"] = "F:\\share\\assets\\libraries\\plants"
+
+NORMAL_LIBRARIES = ['model',
+                    'material',
+                    'rigs',
+                    'plants']
+
 
 class RecursiveNodeSearch(object):
     def _traverse(self, node, children):
@@ -46,11 +63,12 @@ class RecursiveNodeSearch(object):
 
 
 class AssetPublisher(object):
-    def __init__(self, asset_name, asset_type, selection=False, preview_image=None):
+    def __init__(self, asset_name, asset_type, selection=False, preview_image=None, create_proxy=False):
         self.name = asset_name
         self.type = asset_type
         self.selection = selection
         self.preview_image = preview_image
+        self.proxy = create_proxy
 
         self.asset_root_path = 'F:\\share\\assets\\libraries\\{0}\\{1}_root'.format(self.type, self.name)
 
@@ -64,6 +82,9 @@ class AssetPublisher(object):
         os.mkdir(self.asset_root_path)
         os.mkdir(self.asset_root_path + "\\textures")
         os.mkdir(self.asset_root_path + "\\maya")
+
+        if self.proxy:
+            os.mkdir(self.asset_root_path + "\\vrayproxy")
 
     def publish_textures(self):
 
@@ -117,6 +138,7 @@ class AssetPublisher(object):
     def publish_file(self):
         if self.selection:
             selection = cmds.ls(sl=True)
+            self.obj_selection = selection
 
         self.publish_textures()
 
@@ -128,10 +150,56 @@ class AssetPublisher(object):
 
         if self.selection:
             pm.select(selection, r=1)
+
             pm.exportSelected(self.maya_path, type="mayaAscii", channels=True, force=True)
+
         else:
             cmds.file(rename=self.maya_path)
             cmds.file(save=True, type='mayaAscii')
+
+        if self.proxy:
+            self.create_vrayproxy()
+
+    def create_vrayproxy(self):
+        proxy_path = self.asset_root_path + "\\vrayproxy"
+        proxy_maya_path = proxy_path + "\\{0}_VRP.ma".format(self.name)
+
+        pm.select(self.obj_selection)
+
+        # store shader
+        cmds.hyperShade(shaderNetworksSelectMaterialNodes=1)
+        material_selection = cmds.ls(sl=1)
+
+        cmds.select(clear=True)
+        pm.select(self.obj_selection)
+
+        # export proxy
+        cmds.vrayCreateProxy(exportType=1, previewFaces=17500, dir=proxy_path, fname=self.name + ".vrmesh",
+                             overwrite=True,
+                             previewType="clustering", makeBackup=True, ignoreHiddenObjects=False, vertexColorsOn=True,
+                             exportHierarchy=True, includeTransformation=True)
+
+        # deslect everything
+        cmds.select(clear=True)
+
+        # create vray_proxy nodes
+        vrmesh = self.name + "_vrmesh"
+        vraymeshmtl = vrmesh + "_vraymeshmtl"
+        vrproxy_path = proxy_path + "\\{}.vrmesh".format(self.name)
+
+        cmds.vrayCreateProxy(createProxyNode=True, node=vrmesh, existing=True,
+                             dir=vrproxy_path, geomToLoad=3, newProxyNode=False)
+
+        # assign shader
+
+        cmds.connectAttr("{}.outColor".format(material_selection[0]), "{}.shaders[0]".format(vraymeshmtl))
+
+        # select vray_proxy
+        cmds.select(clear=True)
+
+        # save selection as new maya file
+        pm.select(vrmesh, r=1)
+        pm.exportSelected(proxy_maya_path, type="mayaAscii", channels=True, force=True)
 
 
 def maya_main_window():
@@ -178,6 +246,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
         self.asset_type_dd.addItems(['model', 'material', 'rigs', 'plants'])
 
         self.publish_selection_cb = QtWidgets.QCheckBox('Publish Selection')
+        self.create_proxy_cb = QtWidgets.QCheckBox('Create Proxy')
 
         self.build_btn = QtWidgets.QPushButton("Publish")
 
@@ -201,6 +270,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
 
         btn_layout = QtWidgets.QHBoxLayout()
         btn_layout.addWidget(self.publish_selection_cb)
+        btn_layout.addWidget(self.create_proxy_cb)
         btn_layout.addWidget(self.debug_mode_cb)
         btn_layout.addStretch()
         btn_layout.addWidget(self.build_btn)
@@ -226,9 +296,10 @@ class PublishAssetWindow(QtWidgets.QDialog):
             return
 
         selection = self.publish_selection_cb.isChecked()
+        proxy = self.create_proxy_cb.isChecked()
 
         asset_publisher = AssetPublisher(self.asset_name_le.text(), self.asset_type_dd.currentText(), selection,
-                                         self.asset_preview_le.text())
+                                         self.asset_preview_le.text(), proxy)
 
         self.maya_path = asset_publisher.maya_path
 

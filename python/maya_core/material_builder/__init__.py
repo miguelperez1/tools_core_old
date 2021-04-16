@@ -35,7 +35,7 @@ def build_vraymtl(asset_data, debug=False):
 
     file_nodes = []
     for key, value in asset_data.items():
-        if key.endswith('_tex') and value is not '':
+        if key.endswith('_tex') and value != "":
             tex = cmds.shadingNode('file', name='{0}_{1}'.format(asset_data['name'], key), asTexture=True,
                                    isColorManaged=True)
 
@@ -85,7 +85,7 @@ def build_vraymtl(asset_data, debug=False):
             if key.startswith('opacity'):
                 cmds.setAttr('{}.ignoreColorSpaceFileRules'.format(tex), 1)
                 cmds.setAttr('{}.colorSpace'.format(tex), 'Raw', type='string')
-                cmds.connectAttr('{}.outColor.outColorR'.format(cc_node), '{}.opacityMap'.format(shader))
+                cmds.connectAttr('{}.outColor'.format(cc_node), '{}.opacityMap'.format(shader))
 
             # Displacement
             if key.startswith('displacement'):

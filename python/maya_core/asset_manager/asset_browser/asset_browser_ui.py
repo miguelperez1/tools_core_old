@@ -101,6 +101,7 @@ class AssetBrowser(QtWidgets.QMainWindow):
         # Common Actions
         self.import_action = QtWidgets.QAction("Import", self)
         self.reference_action = QtWidgets.QAction("Reference", self)
+        self.import_proxy_action = QtWidgets.QAction("Import VRay Proxy", self)
 
         # Material Actions
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
@@ -186,6 +187,7 @@ class AssetBrowser(QtWidgets.QMainWindow):
         # Common Actions
         self.import_action.triggered.connect(self.import_action_callback)
         self.reference_action.triggered.connect(self.reference_action_callback)
+        self.import_proxy_action.triggered.connect(self.import_proxy_action_callback)
 
         # Material Actions
         self.material_import_assign_action.triggered.connect(self.material_import_assign_action_callback)
@@ -204,6 +206,7 @@ class AssetBrowser(QtWidgets.QMainWindow):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
 
         self.current_asset = child.accessibleName()
+        self.current_asset_root_path = LIBRARIES[self.library] + "\\{0}_root".format(self.current_asset)
         self.current_preview_path = child.objectName()
 
         contextMenu = QtWidgets.QMenu(self)
@@ -224,6 +227,13 @@ class AssetBrowser(QtWidgets.QMainWindow):
 
         if self.library in NORMAL_LIBRARIES:
             contextMenu.addAction(self.reference_action)
+
+            asset_path = LIBRARIES[self.library] + "\\{}_root".format(self.current_asset)
+
+            print os.listdir(asset_path)
+
+            if "vrayproxy" in os.listdir(asset_path):
+                contextMenu.addAction(self.import_proxy_action)
 
         contextMenu.addSeparator()
 
@@ -357,6 +367,10 @@ class AssetBrowser(QtWidgets.QMainWindow):
         aspect_ratio = self.get_preview_size()
 
         cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
+
+    def import_proxy_action_callback(self):
+        proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_VRP.ma".format(self.current_asset)
+        cmds.file(proxy_path, i=True)
 
     def get_preview_size(self):
         asset_image_path = self.current_preview_path

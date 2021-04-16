@@ -301,6 +301,7 @@ class BuilderWindow(QtWidgets.QDialog):
             "specular_tex": self.spec_mat_le.text(),
             "gloss_tex": self.rough_mat_le.text(),
             "normal_tex": self.normal_mat_le.text(),
+            "opacity_tex": self.opacity_mat_le.text(),
             "displacement_tex": self.disp_mat_le.text(),
             "use_rough": self.rough_gloss_cb.isChecked(),
             "assign": self.assign_cb.isChecked()
