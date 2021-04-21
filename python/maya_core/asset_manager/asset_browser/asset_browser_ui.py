@@ -369,7 +369,7 @@ class AssetBrowser(QtWidgets.QMainWindow):
         cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
 
     def import_proxy_action_callback(self):
-        proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_VRP.ma".format(self.current_asset)
+        proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_vrayproxy.ma".format(self.current_asset)
         cmds.file(proxy_path, i=True)
 
     def get_preview_size(self):

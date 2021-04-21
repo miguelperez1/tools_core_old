@@ -15,6 +15,7 @@ class QHLine(QtWidgets.QFrame):
         self.setFrameShape(QtWidgets.QFrame.HLine)
         self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
+
 class QVLine(QtWidgets.QFrame):
     def __init__(self):
         super(QVLine, self).__init__()
@@ -72,11 +73,10 @@ class HeaderLabel(QtWidgets.QLabel):
 class PreviewLabel(QtWidgets.QLabel):
     def __init__(self, *args, **kwargs):
         super(PreviewLabel, self).__init__(*args, **kwargs)
-        self.set_default()
         self.setAlignment(QtCore.Qt.AlignCenter)
         self.setMinimumSize(1, 1)
         self.setContentsMargins(5, 5, 5, 5)
-        self.setText('Test')
+        self.set_default()
 
     def set_image(self, path, scale=160):
         self.pixmap = QtGui.QPixmap(path).scaledToWidth(scale, QtCore.Qt.SmoothTransformation)

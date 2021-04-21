@@ -162,7 +162,7 @@ class AssetPublisher(object):
 
     def create_vrayproxy(self):
         proxy_path = self.asset_root_path + "\\vrayproxy"
-        proxy_maya_path = proxy_path + "\\{0}_VRP.ma".format(self.name)
+        proxy_maya_path = proxy_path + "\\{0}_vrayproxy.ma".format(self.name)
 
         pm.select(self.obj_selection)
 

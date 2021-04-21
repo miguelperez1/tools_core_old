@@ -33,6 +33,27 @@ def maya_main_window():
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 
 
+class LightConsoleItem(QtWidgets.QTreeWidgetItem):
+    def __init__(self, light_type, *args, **kwargs):
+        super(LightConsoleItem, self).__init__(*args, **kwargs)
+
+        self.light_type = light_type
+
+        self.setSizeHint(0, QtCore.QSize(50, 50))
+
+        self.create_light()
+
+    def create_light(self):
+        self.light = cmds.shadingNode(self.light_type, asLight=True)
+        self.setData(0, QtCore.Qt.UserRole, self.light)
+
+        self.setText(2, self.light)
+
+        if self.light.startswith("VRay"):
+            intensity = cmds.getAttr("{}.intensity".format(self.light))
+            self.setText(3, str(intensity))
+
+
 class LightingConsole(QtWidgets.QMainWindow):
     def __init__(self, parent=maya_main_window()):
         super(LightingConsole, self).__init__(parent)
@@ -129,7 +150,18 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.console_tw = QtWidgets.QTreeWidget()
         self.console_tw.setFixedSize(self.res_x / 2, self.res_y * .675)
-        self.console_tw.setHeaderHidden(True)
+        self.console_tw.setAlternatingRowColors(True)
+        self.console_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+        console_tw_header_item = QtWidgets.QTreeWidgetItem(
+            ["Enabled", "", "Name", "Exposure", "Color", "Tex", "Directional"])
+
+        self.console_tw.setHeaderItem(console_tw_header_item)
+
+        self.console_tw.setColumnWidth(0, 100)
+        self.console_tw.setColumnWidth(2, 250)
+        self.console_tw.setColumnWidth(3, 100)
+        self.console_tw.resizeColumnToContents(1)
 
         self.console_wdgt = QtWidgets.QWidget()
 
@@ -224,9 +256,9 @@ class LightingConsole(QtWidgets.QMainWindow):
         header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.light_rig_img_btn)
         header_btns_layout.addWidget(MWidgets.QVLine())
-        header_btns_layout.addWidget(self.asset_browser_img_btn)
+        # header_btns_layout.addWidget(self.asset_browser_img_btn)
         # header_btns_layout.addWidget(self.asset_builder_img_btn)
-        header_btns_layout.addWidget(MWidgets.QVLine())
+        # header_btns_layout.addWidget(MWidgets.QVLine())
         header_btns_layout.addWidget(self.rect_light_img_btn)
         header_btns_layout.addWidget(self.sphere_light_img_btn)
         header_btns_layout.addWidget(self.dome_light_img_btn)
@@ -290,6 +322,9 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.render_layer_remove_btn.clicked.connect(self.render_layer_remove_btn_callback)
         self.render_layer_refresh_btn.clicked.connect(self.render_layer_refresh_btn_callback)
 
+        # Console
+        self.console_tw.currentItemChanged.connect(self.console_tw_item_changed_callback)
+
     def create_menu(self):
         self.menu_bar = QtWidgets.QMenuBar(self)
         self.setMenuBar(self.menu_bar)
@@ -352,22 +387,81 @@ class LightingConsole(QtWidgets.QMainWindow):
         log.info("TODO: light_rig_img_btn_callback")
 
     def asset_browser_img_btn_callback(self):
-        reload(asset_browser_ui)
+        # reload(asset_browser_ui)
+        pass
 
     def asset_builder_img_btn_callback(self):
-        reload(asset_builder_ui)
+        # reload(asset_builder_ui)
+        pass
 
     def rect_light_img_btn_callback(self):
-        log.info("TODO: rect_light_img_btn_callback")
+        new_light_item = LightConsoleItem("VRayLightRectShape")
+
+        self.console_tw.addTopLevelItem(new_light_item)
+
+        icon = MWidgets.PreviewLabel()
+        icon.setFixedSize(45, 45)
+        icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png", 45)
+
+        cb = QtWidgets.QCheckBox()
+        cb.setChecked(True)
+
+        self.console_tw.setItemWidget(new_light_item, 0, cb)
+        self.console_tw.setItemWidget(new_light_item, 1, icon)
+
+        # new_light_item.setSelected(True)
 
     def sphere_light_img_btn_callback(self):
-        log.info("TODO: sphere_light_img_btn_callback")
+        new_light_item = LightConsoleItem("VRayLightSphereShape")
+
+        self.console_tw.addTopLevelItem(new_light_item)
+
+        icon = MWidgets.PreviewLabel()
+        icon.setFixedSize(45, 45)
+        icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightSphere_200.png", 45)
+
+        cb = QtWidgets.QCheckBox()
+        cb.setChecked(True)
+
+        self.console_tw.setItemWidget(new_light_item, 0, cb)
+        self.console_tw.setItemWidget(new_light_item, 1, icon)
+
+        # new_light_item.setSelected(True)
 
     def dome_light_img_btn_callback(self):
-        log.info("TODO: dome_light_img_btn_callback")
+        new_light_item = LightConsoleItem("VRayLightDomeShape")
+
+        self.console_tw.addTopLevelItem(new_light_item)
+
+        icon = MWidgets.PreviewLabel()
+        icon.setFixedSize(45, 45)
+        icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightDome_200.png", 45)
+
+        cb = QtWidgets.QCheckBox()
+        cb.setChecked(True)
+
+        self.console_tw.setItemWidget(new_light_item, 0, cb)
+        self.console_tw.setItemWidget(new_light_item, 1, icon)
+
+        # new_light_item.setSelected(True)
 
     def dist_light_img_btn_callback(self):
-        log.info("TODO: dist_light_img_btn_callback")
+        new_light_item = LightConsoleItem("directionalLight")
+
+        self.console_tw.addTopLevelItem(new_light_item)
+
+        icon = MWidgets.PreviewLabel()
+        icon.setFixedSize(45, 45)
+        icon.set_image(":/directionallight.png", 45)
+
+        cb = QtWidgets.QCheckBox()
+        cb.setChecked(True)
+
+        self.console_tw.setItemWidget(new_light_item, 0, cb)
+        self.console_tw.setItemWidget(new_light_item, 1, icon)
+
+        # new_light_item.setSelected(True)
+
 
     def gobo_img_btn_callback(self):
         log.info("TODO: gobo_img_btn_callback")
@@ -423,6 +517,14 @@ class LightingConsole(QtWidgets.QMainWindow):
             if render_layer == current_render_layer or (
                     render_layer == "masterLayer" and current_render_layer == "defaultRenderLayer"):
                 render_layer_item.setSelected(True)
+
+    def console_tw_item_changed_callback(self):
+        selected_light_item = self.console_tw.currentItem()
+        light = selected_light_item.text(2)
+
+        print light
+
+        cmds.select(light)
 
 
 if __name__ == "__main__" or __name__ == "maya_core.render_manager.render_manager_ui":
