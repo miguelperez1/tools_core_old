@@ -9,6 +9,14 @@ import maya.OpenMayaUI as omui
 from functools import partial
 
 
+def maya_main_window():
+    """
+    Return the Maya main window widget as a Python object
+    """
+    main_window_ptr = omui.MQtUtil.mainWindow()
+    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
+
+
 class QHLine(QtWidgets.QFrame):
     def __init__(self):
         super(QHLine, self).__init__()

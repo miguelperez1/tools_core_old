@@ -10,14 +10,16 @@ import maya.cmds as cmds
 import maya.mel as mel
 
 from maya_core.common_tools import yaml_reader
-from maya_core import asset_manager
+from maya_core.common_tools import logger
 
 import os
-import sys
+import re
 import subprocess
 import operator
 from collections import OrderedDict, defaultdict
 import imagesize
+
+log = logger.Logger()
 
 LIBRARIES_ROOT = "F:\\share\\assets\\libraries\\"
 
@@ -300,14 +302,21 @@ class AssetBrowser(QtWidgets.QMainWindow):
         library_path = LIBRARIES_ROOT + "\\" + self.library
         maya_path = library_path + "\\{0}_root\\maya\\{0}.ma".format(self.current_asset)
 
-        shading_group = self.current_asset + "_mat_shading_group"
+        shading_group = None
 
         selected = cmds.ls(sl=True)
 
         cmds.file(maya_path, i=True)
 
+        for sg in cmds.ls(type="shadingEngine"):
+            if re.search("^" + self.current_asset + ".*_sg$|^" + self.current_asset + ".*_shading_group", sg):
+                shading_group = sg
+                break
+
         for node in selected:
-            cmds.sets(node, e=True, forceElement=shading_group)
+            if shading_group is not None:
+                log.result("Assigned {0} to {1}".format(shading_group, node))
+                cmds.sets(node, e=True, forceElement=shading_group)
 
     def import_cloud(self):
         cloud_path = LIBRARIES['clouds'] + "\\{}.vdb".format(self.current_asset)
@@ -391,5 +400,5 @@ def main():
     asset_browser.show()
 
 
-if __name__ == "__main__" or __name__ == "maya_core.asset_manager.asset_browser.asset_browser_ui":
+if __name__ == "__main__":
     main()

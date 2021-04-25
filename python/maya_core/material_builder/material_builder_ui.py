@@ -104,7 +104,7 @@ class BuilderWindow(QtWidgets.QDialog):
         # Material Drop Down
         self.mat_dd_lbl = QtWidgets.QLabel('Material Type: ')
         self.mat_drop_down = QtWidgets.QComboBox()
-        self.mat_drop_down.addItems(['VRayMtl', 'PxrSurface', 'PxrDisney', 'Arnold'])
+        self.mat_drop_down.addItems(['VRayMtl', 'VRayMtl2Sided'])
 
         # asset name
         self.asset_name_lbl = QtWidgets.QLabel('Material Name: ')
@@ -311,12 +311,15 @@ class BuilderWindow(QtWidgets.QDialog):
             "create_empty": self.create_empty.isChecked()
         }
 
-        material_builder.build_vraymtl(asset_data, self.debug_cb.isChecked())
+        new_mat = material_builder.build_vraymtl(asset_data, self.debug_cb.isChecked())
+
+        if self.mat_drop_down.currentText() == "VRayMtl2Sided":
+            material_builder.build_vray2sidedmtl(self.asset_name_le.text(), new_mat, new_mat, self.assign_cb.isChecked())
 
         self.close()
 
 
-if __name__ == "maya_core.material_builder.material_builder_ui" or __name__ == "__main__":
+def main():
     root = cmds.workspace(q=True, rd=True)
     os.chdir(root)
 
@@ -328,3 +331,7 @@ if __name__ == "maya_core.material_builder.material_builder_ui" or __name__ == "
 
     asset_builder_dialog = BuilderWindow()
     asset_builder_dialog.show()
+
+
+if __name__ == "__main__":
+    main()

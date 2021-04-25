@@ -6,21 +6,11 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 
-import os
-import sys
-import subprocess
-
-
-def maya_main_window():
-    """
-    Return the Maya main window widget as a Python object
-    """
-    main_window_ptr = omui.MQtUtil.mainWindow()
-    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
+from pyqt_commons import MWidgets
 
 
 class ExampleDialog(QtWidgets.QMainWindow):
-    def __init__(self, parent=maya_main_window()):
+    def __init__(self, parent=MWidgets.maya_main_window()):
         super(ExampleDialog, self).__init__(parent)
 
         self.setWindowTitle("Window")
@@ -63,8 +53,7 @@ class ExampleDialog(QtWidgets.QMainWindow):
         pass
 
 
-if __name__ == "__main__":
-
+def main():
     try:
         dialog.close()
         dialog.deleteLater()
@@ -73,3 +62,7 @@ if __name__ == "__main__":
 
     dialog = ExampleDialog()
     dialog.show()
+
+
+if __name__ == "__main__":
+    main()

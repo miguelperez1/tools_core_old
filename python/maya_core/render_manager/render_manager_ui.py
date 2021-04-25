@@ -9,17 +9,12 @@ import pymel.core as pm
 import vray
 
 from pyqt_commons import MWidgets
-from maya_core.asset_builder import asset_builder_ui
+from maya_core.asset_manager.asset_builder import asset_builder_ui
 from maya_core.asset_manager.asset_browser import asset_browser_ui
 from maya_core.common_tools.logger import Logger
 
-import inspect
 
 reload(MWidgets)
-
-import os
-import sys
-import subprocess
 
 log = Logger()
 log.status = True
