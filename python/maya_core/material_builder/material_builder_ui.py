@@ -128,6 +128,8 @@ class BuilderWindow(QtWidgets.QDialog):
 
         self.debug_cb = QtWidgets.QCheckBox("Debug Mode")
 
+        self.create_empty = QtWidgets.QCheckBox("Create blank nodes")
+
     def create_layout(self):
         # asset name
         asset_name_layout = QtWidgets.QHBoxLayout()
@@ -194,6 +196,7 @@ class BuilderWindow(QtWidgets.QDialog):
         mat_selection_layout = QtWidgets.QHBoxLayout()
         mat_selection_layout.addWidget(self.mat_dd_lbl)
         mat_selection_layout.addWidget(self.mat_drop_down)
+        mat_selection_layout.addWidget(self.create_empty)
         mat_selection_layout.addStretch()
 
         # Main Layout
@@ -304,7 +307,8 @@ class BuilderWindow(QtWidgets.QDialog):
             "opacity_tex": self.opacity_mat_le.text(),
             "displacement_tex": self.disp_mat_le.text(),
             "use_rough": self.rough_gloss_cb.isChecked(),
-            "assign": self.assign_cb.isChecked()
+            "assign": self.assign_cb.isChecked(),
+            "create_empty": self.create_empty.isChecked()
         }
 
         material_builder.build_vraymtl(asset_data, self.debug_cb.isChecked())

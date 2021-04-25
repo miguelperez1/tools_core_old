@@ -19,7 +19,7 @@ def maya_main_window():
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 
 
-class ExampleDialog(QtWidgets.QDialog):
+class ExampleDialog(QtWidgets.QMainWindow):
     def __init__(self, parent=maya_main_window()):
         super(ExampleDialog, self).__init__(parent)
 
@@ -40,7 +40,24 @@ class ExampleDialog(QtWidgets.QDialog):
         pass
 
     def create_layout(self):
-        main_layout = QtWidgets.QVBoxLayout(self)
+        central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        main_layout = QtWidgets.QVBoxLayout(central_widget)
+
+    def create_menu(self):
+        self.menu_bar = QtWidgets.QMenuBar(self)
+        self.setMenuBar(self.menu_bar)
+
+        file_menu = QtWidgets.QMenu("File", self)
+        edit_menu = QtWidgets.QMenu("Edit", self)
+        tools_menu = QtWidgets.QMenu("Tools", self)
+        help_menu = QtWidgets.QMenu("Help", self)
+
+        self.menu_bar.addMenu(file_menu)
+        self.menu_bar.addMenu(edit_menu)
+        self.menu_bar.addMenu(tools_menu)
+        self.menu_bar.addMenu(help_menu)
 
     def create_connections(self):
         pass

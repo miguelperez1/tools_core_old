@@ -35,7 +35,7 @@ def build_vraymtl(asset_data, debug=False):
 
     file_nodes = []
     for key, value in asset_data.items():
-        if key.endswith('_tex') and value != "":
+        if (key.endswith('_tex') and value != "") or (key.endswith('_tex') and asset_data['create_empty']):
             tex = cmds.shadingNode('file', name='{0}_{1}'.format(asset_data['name'], key), asTexture=True,
                                    isColorManaged=True)
 
