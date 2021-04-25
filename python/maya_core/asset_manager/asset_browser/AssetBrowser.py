@@ -55,7 +55,7 @@ class PreviewLabel(QtWidgets.QLabel):
         self.setContentsMargins(5, 5, 5, 5)
 
     def set_image(self, path, scale=1.3):
-        image_scale = 160 * scale
+        image_scale = 100 * scale
         self.pixmap = QtGui.QPixmap(path).scaledToWidth(image_scale, QtCore.Qt.SmoothTransformation)
         self.setPixmap(self.pixmap)
 
@@ -65,54 +65,8 @@ class PreviewLabel(QtWidgets.QLabel):
                                                                                                           QtCore.Qt.SmoothTransformation))
 
 
-def maya_main_window():
-    """
-    Return the Maya main window widget as a Python object
-    """
-    main_window_ptr = omui.MQtUtil.mainWindow()
-    return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
-
-
-class AssetBrowserWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=maya_main_window()):
-        super(AssetBrowserWindow, self).__init__(parent)
-
-        self.setWindowTitle("Asset Browser")
-        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
-
-        self.prefs_directory = cmds.internalVar(userPrefDir=True)
-
-        self.setFixedSize(950 * 1.25, 890 * 1.25)
-
-        self.setWindowFlags(
-            self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint | QtCore.Qt.WindowMinimizeButtonHint | QtCore.Qt.WindowMaximizeButtonHint)
-
-        self.create_actions()
-        self.create_widgets()
-        self.create_layout()
-        self.create_connections()
-
-    def create_actions(self):
-        pass
-
-    def create_widgets(self):
-        self.asset_browser_wdg = AssetBrowser(self)
-
-    def create_layout(self):
-        main_layout = QtWidgets.QVBoxLayout(self)
-
-        central_widget = QtWidgets.QWidget(self)
-        self.setCentralWidget(central_widget)
-
-        main_layout = QtWidgets.QVBoxLayout(central_widget)
-        main_layout.addWidget(self.asset_browser_wdg)
-
-    def create_connections(self):
-        pass
-
-
 class AssetBrowser(QtWidgets.QWidget):
-    def __init__(self, parent, image_scale=1.3, columns=5):
+    def __init__(self, image_scale=1.3, columns=5, parent=None):
         super(AssetBrowser, self).__init__(parent)
         self.image_scale = image_scale
         self.columns = columns
@@ -148,7 +102,6 @@ class AssetBrowser(QtWidgets.QWidget):
             library_yml = library_path + "\\library.yml"
 
             data = yaml_reader.read_yaml(library_yml)
-            print data.keys()[0]
 
             if data is None:
                 self.asset_widgets[library] = None
@@ -213,7 +166,7 @@ class AssetBrowser(QtWidgets.QWidget):
             self.tab_widget.addTab(library_scroll_area, library.capitalize())
 
         main_layout.addWidget(self.tab_widget)
-        main_layout.addWidget(self.asset_count_lbl)
+        # main_layout.addWidget(self.asset_count_lbl)
 
     def create_connections(self):
         # Default Actions
@@ -267,8 +220,6 @@ class AssetBrowser(QtWidgets.QWidget):
             contextMenu.addAction(self.reference_action)
 
             asset_path = LIBRARIES[self.library] + "\\{}_root".format(self.current_asset)
-
-            print os.listdir(asset_path)
 
             if "vrayproxy" in os.listdir(asset_path):
                 contextMenu.addAction(self.import_proxy_action)
@@ -366,7 +317,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.setAttr('{}.gpuViewEnbl'.format(cloud_node), 1)
         cmds.setAttr('{}.viewAutoReduction'.format(cloud_node), 0)
         cmds.setAttr('{}.volZDepth'.format(cloud_node_vray), 1)
-        cmds.setAttr('{}.detailReduction'.format(cloud_node), 2)
+        cmds.setAttr('{}.detailReduction'.format(cloud_node), 20)
 
     def import_hdr(self):
         path = LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
@@ -418,7 +369,6 @@ class AssetBrowser(QtWidgets.QWidget):
     def import_gobo_light(self):
         path = LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
 
-        print path
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
         gobo_lgt = cmds.createNode('VRayLightRectShape', n='l_{}_goboShape'.format(self.current_asset[:-4]),
                                    p=area_trans)
@@ -447,18 +397,3 @@ class AssetBrowser(QtWidgets.QWidget):
         aspect_ratio = float(float(image_size[0]) / float(image_size[1]))
 
         return aspect_ratio
-
-
-def main():
-    try:
-        asset_browser.close()
-        asset_browser.deleteLater()
-    except:
-        pass
-
-    asset_browser = AssetBrowserWindow()
-    asset_browser.show()
-
-
-if __name__ == "__main__":
-    main()

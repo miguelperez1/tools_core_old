@@ -298,6 +298,7 @@ class BuilderWindow(QtWidgets.QDialog):
         self.disp_mat_le.setText(file_name)
 
     def build_material(self):
+        selected = cmds.ls(sl=True)
         asset_data = {
             "name": self.asset_name_le.text(),
             "diffuse_tex": self.diff_mat_le.text(),
@@ -311,10 +312,16 @@ class BuilderWindow(QtWidgets.QDialog):
             "create_empty": self.create_empty.isChecked()
         }
 
-        new_mat = material_builder.build_vraymtl(asset_data, self.debug_cb.isChecked())
+        vray_mtl = material_builder.build_vraymtl(asset_data, self.debug_cb.isChecked())
 
         if self.mat_drop_down.currentText() == "VRayMtl2Sided":
-            material_builder.build_vray2sidedmtl(self.asset_name_le.text(), new_mat, new_mat, self.assign_cb.isChecked())
+            vray_2sidedmtl = material_builder.build_vray2sidedmtl(self.asset_name_le.text(), vray_mtl[0], vray_mtl[0])
+
+        if self.assign_cb.isChecked():
+            if self.mat_drop_down.currentText() == "VRayMtl2Sided":
+                cmds.sets(selected, e=True, forceElement=vray_2sidedmtl[-1])
+            else:
+                cmds.sets(selected, e=True, forceElement=vray_mtl[-1])
 
         self.close()
 

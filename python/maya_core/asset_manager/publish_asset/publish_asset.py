@@ -341,8 +341,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
                 self.valid_asset_name = True
 
 
-if __name__ == "__main__" or __name__ == "maya_core.asset_manager.publish_asset.publish_asset":
-
+def main():
     try:
         publish_dialog.close()  # pylint: disable=E0601
         publish_dialog.deleteLater()
@@ -351,3 +350,7 @@ if __name__ == "__main__" or __name__ == "maya_core.asset_manager.publish_asset.
 
     publish_dialog = PublishAssetWindow()
     publish_dialog.show()
+
+
+if __name__ == "__main__":
+    main()

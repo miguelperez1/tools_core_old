@@ -11,7 +11,7 @@ import re
 import sys
 import subprocess
 
-from maya_core.asset_builder import asset
+from maya_core.asset_manager.asset_builder import asset
 
 from pyqt_commons import MWidgets
 

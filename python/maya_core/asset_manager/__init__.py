@@ -4,21 +4,30 @@ import operator
 from maya_core.common_tools import logger
 from maya_core.common_tools import yaml_reader
 
-reload(logger)
+from collections import OrderedDict, defaultdict
 
-LIBRARIES = {
-    "model": "F:\\share\\assets\\libraries\\model",
-    "material": "F:\\share\\assets\\libraries\\material",
-    "hdri": "F:\\share\\assets\\libraries\\hdri",
-    "studio_lights": "F:\\share\\assets\\libraries\\studiolights",
-    "plants": "F:\\share\\assets\\libraries\\plants",
-    "clouds": "F:\\share\\assets\\libraries\\clouds",
-    "rigs": "F:\\share\\assets\\libraries\\rigs"
-}
+LIBRARIES_ROOT = "F:\\share\\assets\\libraries\\"
+
+LIBRARIES = OrderedDict()
+
+LIBRARIES["model"] = "F:\\share\\assets\\libraries\\model"
+LIBRARIES["material"] = "F:\\share\\assets\\libraries\\material"
+LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
+LIBRARIES["studio_lights"] = "F:\\share\\assets\\libraries\\studiolights"
+LIBRARIES["gobo_lights"] = "F:\\share\\assets\\libraries\\gobolights"
+LIBRARIES["clouds"] = "F:\\share\\assets\\libraries\\clouds"
+LIBRARIES["rigs"] = "F:\\share\\assets\\libraries\\rigs"
+LIBRARIES["plants"] = "F:\\share\\assets\\libraries\\plants"
+
+NORMAL_LIBRARIES = ['model',
+                    'material',
+                    'rigs',
+                    'plants']
+
+log = logger.Logger()
 
 
 def build_asset_library(debug=False):
-    log = logger.Logger()
     log.status = debug
 
     written = False
@@ -50,7 +59,7 @@ def build_asset_library(debug=False):
                     written = True
         else:
             for path in os.listdir(library_path):
-                if path.endswith(".exr") or path.endswith(".hdr") or path.endswith(".vdb"):
+                if path.endswith(".exr") or path.endswith(".hdr") or path.endswith(".vdb") or path.endswith(".tif") or path.endswith(".tiff"):
                     asset = path[:-4]
 
                     preview_path = library_path + "\\thumbnails\\{0}_preview.png".format(asset)

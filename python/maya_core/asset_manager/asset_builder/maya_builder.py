@@ -88,7 +88,7 @@ def build_maya():
     if asset_data['type'] == 'model':
         for node in selected:
             if material is not None:
-                cmds.sets(node, e=True, forceElement=material)
+                cmds.sets(node, e=True, forceElement=material[-1])
             normalize_scale(float(asset_data['scale']), node)
 
     for obj in cmds.ls(sl=True, type="transform"):

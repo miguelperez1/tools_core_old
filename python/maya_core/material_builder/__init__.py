@@ -108,18 +108,13 @@ def build_vraymtl(asset_data, debug=False):
     for texture in file_nodes:
         cmds.connectAttr('{}.outUV'.format(uv_node), '{}.uvCoord'.format(texture))
 
-    if asset_data["assign"]:
-        cmds.sets(selected, e=True, forceElement=shading_group)
-
-        message += ", assigned to {} ".format(" ".join(selected))
-
     log.result(message + "successfully")
 
-    return shader
+    return (shader, shading_group)
 
 
-def build_vray2sidedmtl(name, back_material=None, front_material=None, assign=False):
-    selected = cmds.ls(sl=True)
+def build_vray2sidedmtl(name, back_material=None, front_material=None):
+    cmds.select(clear=True)
 
     shader = cmds.shadingNode('VRayMtl2Sided', name="%s_2sidedmtl_mat" % name, asShader=True)
     log.info("Created " + shader)
@@ -130,12 +125,9 @@ def build_vray2sidedmtl(name, back_material=None, front_material=None, assign=Fa
     cmds.connectAttr('{}.outColor'.format(shader), '{}.surfaceShader'.format(shading_group))
 
     if back_material is not None:
-        cmds.connectAttr("{}.outColor".format(back_material), "{}.backMaterial".format(shader))
+        cmds.connectAttr("{}.outColor".format(back_material), "{}.backMaterial".format(shader), f=True)
 
     if front_material is not None:
-        cmds.connectAttr("{}.outColor".format(back_material), "{}.backMaterial".format(shader))
+        cmds.connectAttr("{}.outColor".format(front_material), "{}.frontMaterial".format(shader), f=True)
 
-    if assign:
-        cmds.sets(selected, e=True, forceElement=shading_group)
-
-        log.result("Assigned to {} ".format(" ".join(selected)))
+    return (shader, shading_group)

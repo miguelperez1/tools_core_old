@@ -10,9 +10,8 @@ import vray
 
 from pyqt_commons import MWidgets
 from maya_core.asset_manager.asset_builder import asset_builder_ui
-from maya_core.asset_manager.asset_browser import asset_browser_ui
+from maya_core.asset_manager.asset_browser.AssetBrowser import AssetBrowser
 from maya_core.common_tools.logger import Logger
-
 
 reload(MWidgets)
 
@@ -58,9 +57,9 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
-        scale = 1.1
-        self.res_x = 1920 * scale
-        self.res_y = 1080 * scale
+        self.scale = 1
+        self.res_x = 2225 * self.scale
+        self.res_y = 1320 * self.scale
 
         self.setFixedSize(self.res_x, self.res_y)
 
@@ -80,115 +79,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.rl_refresh_action = QtWidgets.QAction("Refresh Layers")
 
     def create_widgets(self):
-        # Render Layers
-        self.render_layers_header_lbl = MWidgets.HeaderLabel("Render Layers")
-
-        self.render_layers_tw = QtWidgets.QTreeWidget()
-        self.render_layers_tw.setHeaderHidden(True)
-        self.render_layers_tw.setFixedHeight(self.res_y * .215)
-        self.render_layers_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.render_layers_tw.customContextMenuRequested.connect(self.show_rl_context_menu)
-
-        self.update_render_layers()
-
-        self.render_layer_add_btn = QtWidgets.QPushButton("+")
-        self.render_layer_add_btn.setFixedSize(30, 30)
-
-        self.render_layer_remove_btn = QtWidgets.QPushButton("-")
-        self.render_layer_remove_btn.setFixedSize(30, 30)
-
-        self.render_layer_refresh_btn = MWidgets.ImagePushButton(30, 30)
-        self.render_layer_refresh_btn.set_image("F:\\share\\tools\\shelf_icons\\refresh.png")
-        self.render_layer_refresh_btn.setFixedSize(30, 30)
-
-        self.render_layers_btn_wdgt = QtWidgets.QWidget()
-
-        render_layers_btn_layout = QtWidgets.QHBoxLayout(self.render_layers_btn_wdgt)
-        render_layers_btn_layout.addStretch()
-        render_layers_btn_layout.addWidget(self.render_layer_refresh_btn)
-        render_layers_btn_layout.addWidget(self.render_layer_add_btn)
-        render_layers_btn_layout.addWidget(self.render_layer_remove_btn)
-
-        self.render_layers_wdgt = QtWidgets.QWidget()
-        self.render_layers_wdgt.setFixedHeight(self.res_y * .3)
-
-        render_layers_layout = QtWidgets.QVBoxLayout(self.render_layers_wdgt)
-
-        render_layers_layout.addWidget(self.render_layers_header_lbl)
-        render_layers_layout.addWidget(self.render_layers_tw)
-        render_layers_layout.addStretch()
-        render_layers_layout.addWidget(self.render_layers_btn_wdgt)
-        render_layers_layout.addStretch()
-
-        # Create
-        self.create_header_lbl = MWidgets.HeaderLabel("Create")
-
-        self.create_tw = QtWidgets.QTreeWidget()
-        self.create_tw.setFixedWidth(self.res_x / 6)
-        self.create_tw.setHeaderHidden(True)
-
-        self.create_types = ["Lights", "Modifiers", "Volumes", "Other"]
-
-        self.create_search_lbl = QtWidgets.QLabel("Search: ")
-        self.create_search_le = QtWidgets.QLineEdit()
-
-        for create_type in self.create_types:
-            create_item = QtWidgets.QTreeWidgetItem()
-            create_item.setSizeHint(0, QtCore.QSize(100, 30))
-            create_item.setText(0, create_type)
-            create_item.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.ShowIndicator)
-
-            self.create_tw.addTopLevelItem(create_item)
-
-        # Console
-        self.console_header_lbl = MWidgets.HeaderLabel("Console")
-
-        self.console_tw = QtWidgets.QTreeWidget()
-        self.console_tw.setFixedSize(self.res_x / 2, self.res_y * .675)
-        self.console_tw.setAlternatingRowColors(True)
-        self.console_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
-
-        console_tw_header_item = QtWidgets.QTreeWidgetItem(
-            ["Enabled", "", "Name", "Exposure", "Color", "Tex", "Directional"])
-
-        self.console_tw.setHeaderItem(console_tw_header_item)
-
-        self.console_tw.setColumnWidth(0, 100)
-        self.console_tw.setColumnWidth(2, 250)
-        self.console_tw.setColumnWidth(3, 100)
-        self.console_tw.resizeColumnToContents(1)
-
-        self.console_wdgt = QtWidgets.QWidget()
-
-        console_layout = QtWidgets.QVBoxLayout(self.console_wdgt)
-        console_layout.addWidget(self.console_header_lbl)
-        console_layout.addWidget(self.console_tw)
-
-        # AOVs
-        self.aovs_tw = QtWidgets.QTreeWidget()
-        self.aovs_tw.setFixedSize(self.res_x / 2, self.res_y * .2)
-
-        aovs_tw_header = QtWidgets.QTreeWidgetItem()
-        aovs_tw_header.setText(0, "AOVs")
-        self.aovs_tw.setHeaderItem(aovs_tw_header)
-
-        # Properties
-        self.properties_header_lbl = MWidgets.HeaderLabel("Properties")
-
-        self.tmp_info_lbl = QtWidgets.QLabel()
-        self.tmp_info_lbl.setText("Lights: color, intensity/exp, temp, tex, directional"
-                                  "Render Layer")
-
         # Tool Buttons
-        icon_scale = .55
-
-        self.asset_browser_img_btn = MWidgets.ImagePushButton(192 * icon_scale, 108 * icon_scale)
-        self.asset_browser_img_btn.set_image("F:\\share\\tools\\shelf_icons\\asset_browser.png")
-        self.asset_browser_img_btn.setToolTip("Asset Browser")
-
-        self.asset_builder_img_btn = MWidgets.ImagePushButton(192 * icon_scale, 108 * icon_scale)
-        self.asset_builder_img_btn.set_image("F:\\share\\tools\\shelf_icons\\asset_builder.png")
-        self.asset_builder_img_btn.setToolTip("Asset Builder")
+        icon_scale = .50
 
         self.render_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
         self.render_img_btn.set_image("F:\\share\\tools\\shelf_icons\\render.png")
@@ -236,59 +128,223 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.light_rig_img_btn.set_image("F:\\share\\tools\\shelf_icons\\light_rig.png")
         self.light_rig_img_btn.setToolTip("Create Light Rig")
 
+        # Render Layers
+        self.render_layers_header_lbl = MWidgets.HeaderLabel("Render Layers")
+
+        self.render_layers_tw = QtWidgets.QTreeWidget()
+        self.render_layers_tw.setHeaderHidden(True)
+        self.render_layers_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.render_layers_tw.customContextMenuRequested.connect(self.show_rl_context_menu)
+
+        self.update_render_layers()
+
+        self.render_layer_add_btn = QtWidgets.QPushButton("+")
+        self.render_layer_add_btn.setMinimumSize(30, 30)
+
+        self.render_layer_remove_btn = QtWidgets.QPushButton("-")
+        self.render_layer_remove_btn.setMinimumSize(30, 30)
+
+        self.render_layer_refresh_btn = MWidgets.ImagePushButton(30, 30)
+        self.render_layer_refresh_btn.set_image("F:\\share\\tools\\shelf_icons\\refresh.png")
+        self.render_layer_refresh_btn.setMinimumSize(30, 30)
+
+        # Create Nodes
+        self.create_header_lbl = MWidgets.HeaderLabel("Create")
+
+        self.create_tw = QtWidgets.QTreeWidget()
+        self.create_tw.setHeaderHidden(True)
+
+        self.create_types = ["Lights", "Modifiers", "Volumes", "Other"]
+
+        self.create_search_lbl = QtWidgets.QLabel("Search: ")
+        self.create_search_le = QtWidgets.QLineEdit()
+
+        for create_type in self.create_types:
+            create_item = QtWidgets.QTreeWidgetItem()
+            create_item.setSizeHint(0, QtCore.QSize(30, 30))
+            create_item.setText(0, create_type)
+            create_item.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.ShowIndicator)
+
+            self.create_tw.addTopLevelItem(create_item)
+
+        # Console
+        self.console_header_lbl = MWidgets.HeaderLabel("Console")
+
+        self.console_tw = QtWidgets.QTreeWidget()
+        self.console_tw.setAlternatingRowColors(True)
+        self.console_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+        console_tw_header_item = QtWidgets.QTreeWidgetItem(
+            ["Enabled", "", "Name", "Exposure", "Color", "Tex", "Directional"])
+
+        self.console_tw.setHeaderItem(console_tw_header_item)
+
+        self.console_tw.setColumnWidth(0, 100)
+        self.console_tw.setColumnWidth(2, 250)
+        self.console_tw.setColumnWidth(3, 100)
+        self.console_tw.resizeColumnToContents(1)
+
+        # Asset Browser
+        self.asset_browser_wdgt = AssetBrowser(1.8, 7)
+
+        # Properties
+        self.properties_header_lbl = MWidgets.HeaderLabel("Properties")
+
+        self.tmp_info_lbl = QtWidgets.QLabel()
+        self.tmp_info_lbl.setText("Lights: color, intensity/exp, temp, tex, directional"
+                                  "Render Layer")
+
+        # Sets
+        self.sets_tw = QtWidgets.QTreeWidget()
+
+        sets_tw_header = QtWidgets.QTreeWidgetItem()
+        sets_tw_header.setText(0, "Sets")
+        self.sets_tw.setHeaderItem(sets_tw_header)
+
+        # Create Main Section Widgets
+
+        # MAIN SECTION (2200, 1500)
+        # Row 1 (2100, 75)
+        #   Col 1 (2100, 75)
+        #   - Tool Buttons (2100, 100)
+        # Row 2 (2100, 1200)
+        #   Col 1 (300, 1200)
+        #   - Render Layers (300, 400)
+        #   - Create Nodes (300, 900)
+        #   Col 2 (1275, 1200)
+        #   - Console (1275, 900)
+        #   - Asset Browser (1050, 300)
+        #   Col 3 (525, 1200)
+        #   - Properties (525, ?)
+        #   - Sets (525, ?)
+
+        # Tool Buttons
+        self.tool_buttons_cw = QtWidgets.QWidget()
+        self.tool_buttons_cw.setMinimumSize(self.res_x, self.res_y * .05)
+
+        tools_buttons_layout = QtWidgets.QHBoxLayout(self.tool_buttons_cw)
+
+        tools_buttons_layout.addWidget(self.render_img_btn)
+        tools_buttons_layout.addWidget(MWidgets.QVLine())
+        tools_buttons_layout.addWidget(self.create_shotcam_img_btn)
+        tools_buttons_layout.addWidget(self.focus_light_img_btn)
+        tools_buttons_layout.addWidget(MWidgets.QVLine())
+        tools_buttons_layout.addWidget(self.light_rig_img_btn)
+        tools_buttons_layout.addWidget(MWidgets.QVLine())
+        tools_buttons_layout.addWidget(self.rect_light_img_btn)
+        tools_buttons_layout.addWidget(self.sphere_light_img_btn)
+        tools_buttons_layout.addWidget(self.dome_light_img_btn)
+        tools_buttons_layout.addWidget(self.dist_light_img_btn)
+        tools_buttons_layout.addWidget(self.gobo_img_btn)
+        tools_buttons_layout.addWidget(MWidgets.QVLine())
+        tools_buttons_layout.addWidget(self.vray_cloud_img_btn)
+        tools_buttons_layout.addStretch()
+
+        # Render Layers
+        self.render_layers_cw = QtWidgets.QWidget()
+        self.render_layers_cw.setMinimumWidth(self.res_x * .14)
+        self.render_layers_cw.setMaximumHeight(self.res_y * .25)
+
+        render_layers_layout = QtWidgets.QVBoxLayout(self.render_layers_cw)
+
+        render_layers_layout.addWidget(self.render_layers_header_lbl)
+        render_layers_layout.addWidget(self.render_layers_tw)
+
+        render_layers_btn_layout = QtWidgets.QHBoxLayout()
+        render_layers_btn_layout.addStretch()
+        render_layers_btn_layout.addWidget(self.render_layer_refresh_btn)
+        render_layers_btn_layout.addWidget(self.render_layer_add_btn)
+        render_layers_btn_layout.addWidget(self.render_layer_remove_btn)
+
+        render_layers_layout.addLayout(render_layers_btn_layout)
+
+        # Create Nodes
+        self.create_cw = QtWidgets.QWidget()
+        self.create_cw.setMinimumWidth(self.res_x * .14)
+
+        create_layout = QtWidgets.QVBoxLayout(self.create_cw)
+
+        create_layout.addWidget(self.create_header_lbl)
+        create_layout.addWidget(self.create_search_le)
+        create_layout.addWidget(self.create_tw)
+
+        # Console
+        self.console_cw = QtWidgets.QWidget()
+        self.console_cw.setMinimumSize(self.res_x * .65, self.res_y * .53)
+
+        console_layout = QtWidgets.QVBoxLayout(self.console_cw)
+
+        console_layout.addWidget(self.console_header_lbl)
+        console_layout.addWidget(self.console_tw)
+
+        # Asset Browser
+        self.asset_browser_cw = QtWidgets.QWidget()
+        self.asset_browser_cw.setMinimumWidth(self.res_x * .65)
+
+        asset_browser_layout = QtWidgets.QVBoxLayout(self.asset_browser_cw)
+
+        asset_browser_layout.addWidget(self.asset_browser_wdgt)
+
+        # Properties
+        self.properties_cw = QtWidgets.QWidget()
+        self.properties_cw.setMinimumSize(self.res_x * .2, self.res_y * .6)
+
+        properties_layout = QtWidgets.QVBoxLayout(self.properties_cw)
+
+        properties_layout.addWidget(self.properties_header_lbl)
+        properties_layout.addStretch()
+
+        # Sets
+        self.sets_cw = QtWidgets.QWidget()
+        self.sets_cw.setMinimumSize(self.res_x * .2, self.res_y * .3)
+
+        sets_layout = QtWidgets.QVBoxLayout(self.sets_cw)
+
+        sets_layout.addWidget(self.sets_tw)
+
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(central_widget)
 
         main_layout = QtWidgets.QVBoxLayout(central_widget)
 
-        header_btns_layout = QtWidgets.QHBoxLayout()
-        header_btns_layout.addWidget(self.render_img_btn)
-        # header_btns_layout.addWidget(self.render_ipr_img_btn)
-        header_btns_layout.addWidget(MWidgets.QVLine())
-        header_btns_layout.addWidget(self.create_shotcam_img_btn)
-        header_btns_layout.addWidget(self.focus_light_img_btn)
-        header_btns_layout.addWidget(MWidgets.QVLine())
-        header_btns_layout.addWidget(self.light_rig_img_btn)
-        header_btns_layout.addWidget(MWidgets.QVLine())
-        # header_btns_layout.addWidget(self.asset_browser_img_btn)
-        # header_btns_layout.addWidget(self.asset_builder_img_btn)
-        # header_btns_layout.addWidget(MWidgets.QVLine())
-        header_btns_layout.addWidget(self.rect_light_img_btn)
-        header_btns_layout.addWidget(self.sphere_light_img_btn)
-        header_btns_layout.addWidget(self.dome_light_img_btn)
-        header_btns_layout.addWidget(self.dist_light_img_btn)
-        header_btns_layout.addWidget(self.gobo_img_btn)
-        header_btns_layout.addWidget(MWidgets.QVLine())
-        header_btns_layout.addWidget(self.vray_cloud_img_btn)
-        header_btns_layout.addStretch()
+        main_layout.addWidget(MWidgets.QHLine())
+        main_layout.addWidget(self.tool_buttons_cw)
+        main_layout.addWidget(MWidgets.QHLine())
 
-        col_layout = QtWidgets.QHBoxLayout()
-
+        # Col 1 Layout
         col_1_layout = QtWidgets.QVBoxLayout()
-        col_1_layout.addWidget(self.render_layers_wdgt)
+
+        col_1_layout.addWidget(self.render_layers_cw)
         col_1_layout.addWidget(MWidgets.QHLine())
-        col_1_layout.addWidget(self.create_header_lbl)
-        col_1_layout.addWidget(self.create_search_le)
-        col_1_layout.addWidget(self.create_tw)
+        col_1_layout.addWidget(self.create_cw)
 
+        # Col 2 Layout
         col_2_layout = QtWidgets.QVBoxLayout()
-        col_2_layout.addWidget(self.console_wdgt)
-        col_2_layout.addWidget(self.aovs_tw)
 
+        col_2_layout.addWidget(self.console_cw)
+        col_2_layout.addWidget(MWidgets.QHLine())
+        col_2_layout.addWidget(self.asset_browser_cw)
+
+        col_2_layout.addStretch()
+
+        # Col 3 Layout
         col_3_layout = QtWidgets.QVBoxLayout()
-        col_3_layout.addWidget(self.properties_header_lbl)
-        col_3_layout.addWidget(self.tmp_info_lbl)
+
+        col_3_layout.addWidget(self.properties_cw)
+        col_3_layout.addWidget(MWidgets.QHLine())
+        col_3_layout.addWidget(self.sets_cw)
+
         col_3_layout.addStretch()
 
-        col_layout.addLayout(col_1_layout)
-        col_layout.addLayout(col_2_layout)
-        col_layout.addLayout(col_3_layout)
-        col_layout.addStretch()
+        # Row Layout
+        row_2_layout = QtWidgets.QHBoxLayout()
 
-        main_layout.addLayout(header_btns_layout)
-        main_layout.addWidget(MWidgets.QHLine())
-        main_layout.addLayout(col_layout)
+        row_2_layout.addLayout(col_1_layout)
+        row_2_layout.addLayout(col_2_layout)
+        row_2_layout.addLayout(col_3_layout)
+
+        main_layout.addLayout(row_2_layout)
 
     def create_connections(self):
         # BTNs
@@ -297,8 +353,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.create_shotcam_img_btn.clicked.connect(self.create_shotcam_img_btn_callback)
         self.focus_light_img_btn.clicked.connect(self.focus_light_img_btn_callback)
         self.light_rig_img_btn.clicked.connect(self.light_rig_img_btn_callback)
-        self.asset_browser_img_btn.clicked.connect(self.asset_browser_img_btn_callback)
-        self.asset_builder_img_btn.clicked.connect(self.asset_builder_img_btn_callback)
         self.rect_light_img_btn.clicked.connect(self.rect_light_img_btn_callback)
         self.sphere_light_img_btn.clicked.connect(self.sphere_light_img_btn_callback)
         self.dome_light_img_btn.clicked.connect(self.dome_light_img_btn_callback)
@@ -395,7 +449,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.addTopLevelItem(new_light_item)
 
         icon = MWidgets.PreviewLabel()
-        icon.setFixedSize(45, 45)
+        icon.setMinimumSize(45 * self.scale, 45 * self.scale)
         icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png", 45)
 
         cb = QtWidgets.QCheckBox()
@@ -412,7 +466,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.addTopLevelItem(new_light_item)
 
         icon = MWidgets.PreviewLabel()
-        icon.setFixedSize(45, 45)
+        icon.setMinimumSize(45 * self.scale, 45 * self.scale)
         icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightSphere_200.png", 45)
 
         cb = QtWidgets.QCheckBox()
@@ -429,7 +483,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.addTopLevelItem(new_light_item)
 
         icon = MWidgets.PreviewLabel()
-        icon.setFixedSize(45, 45)
+        icon.setMinimumSize(45 * self.scale, 45 * self.scale)
         icon.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightDome_200.png", 45)
 
         cb = QtWidgets.QCheckBox()
@@ -446,7 +500,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.addTopLevelItem(new_light_item)
 
         icon = MWidgets.PreviewLabel()
-        icon.setFixedSize(45, 45)
+        icon.setMinimumSize(45 * self.scale, 45 * self.scale)
         icon.set_image(":/directionallight.png", 45)
 
         cb = QtWidgets.QCheckBox()
@@ -456,7 +510,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.setItemWidget(new_light_item, 1, icon)
 
         # new_light_item.setSelected(True)
-
 
     def gobo_img_btn_callback(self):
         log.info("TODO: gobo_img_btn_callback")
@@ -522,8 +575,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         cmds.select(light)
 
 
-if __name__ == "__main__" or __name__ == "maya_core.render_manager.render_manager_ui":
-
+def main():
     try:
         dialog.close()
         dialog.deleteLater()
@@ -532,3 +584,7 @@ if __name__ == "__main__" or __name__ == "maya_core.render_manager.render_manage
 
     dialog = LightingConsole()
     dialog.show()
+
+
+if __name__ == "__main__":
+    main()
