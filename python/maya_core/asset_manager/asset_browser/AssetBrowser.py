@@ -323,8 +323,8 @@ class AssetBrowser(QtWidgets.QWidget):
         path = LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
 
         dome_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        dome_light = cmds.createNode('VRayLightDomeShape', n='{}_vray_dome_lightShape'.format(self.current_asset[:-4]),
-                                     p=dome_trans)
+        dome_light = cmds.shadingNode('VRayLightDomeShape', n='{}_vray_dome_lightShape'.format(self.current_asset[:-4]),
+                                      p=dome_trans, asLight=True)
         mel.eval('sets -edit -forceElement  defaultLightSet {} ;'.format(dome_light))
 
         cmds.setAttr('{}.useDomeTex'.format(dome_light), 1)
@@ -350,8 +350,8 @@ class AssetBrowser(QtWidgets.QWidget):
     def import_studio_light(self):
         path = LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        area_lgt = cmds.createNode('VRayLightRectShape', n='{}_vray_rect_lightShape'.format(self.current_asset[:-4]),
-                                   p=area_trans)
+        area_lgt = cmds.shadingNode('VRayLightRectShape', n='{}_vray_rect_lightShape'.format(self.current_asset[:-4]),
+                                    p=area_trans, asLight=True)
         cmds.setAttr('{}.useRectTex'.format(area_lgt), 1)
         mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(area_lgt))
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
@@ -370,8 +370,8 @@ class AssetBrowser(QtWidgets.QWidget):
         path = LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
 
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        gobo_lgt = cmds.createNode('VRayLightRectShape', n='l_{}_goboShape'.format(self.current_asset[:-4]),
-                                   p=area_trans)
+        gobo_lgt = cmds.shadingNode('VRayLightRectShape', n='l_{}_goboShape'.format(self.current_asset[:-4]),
+                                    p=area_trans, asLight=True)
         cmds.setAttr('{}.useRectTex'.format(gobo_lgt), 1)
         mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(gobo_lgt))
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
@@ -386,6 +386,9 @@ class AssetBrowser(QtWidgets.QWidget):
         aspect_ratio = self.get_preview_size()
 
         cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
+
+        uv_node = cmds.shadingNode("place2dTexture", name='{}_place2d'.format(self.current_asset[:-4]), asUtility=True)
+        cmds.connectAttr('{}.outUV'.format(uv_node), '{}.uvCoord'.format(tex))
 
     def import_proxy_action_callback(self):
         proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_vrayproxy.ma".format(self.current_asset)

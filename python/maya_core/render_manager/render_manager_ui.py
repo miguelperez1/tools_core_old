@@ -195,11 +195,9 @@ class LightingConsole(QtWidgets.QMainWindow):
                                   "Render Layer")
 
         # Sets
+        self.sets_header_lbl = MWidgets.HeaderLabel("Sets")
         self.sets_tw = QtWidgets.QTreeWidget()
-
-        sets_tw_header = QtWidgets.QTreeWidgetItem()
-        sets_tw_header.setText(0, "Sets")
-        self.sets_tw.setHeaderItem(sets_tw_header)
+        self.sets_tw.setHeaderHidden(True)
 
         # Create Main Section Widgets
 
@@ -300,6 +298,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         sets_layout = QtWidgets.QVBoxLayout(self.sets_cw)
 
+        sets_layout.addWidget(self.sets_header_lbl)
         sets_layout.addWidget(self.sets_tw)
 
     def create_layout(self):

@@ -23,7 +23,8 @@ def startup_maya():
     cmds.setAttr("defaultRenderGlobals.currentRenderer", "vray", type="string")
     log.result("Set V-Ray as current renderer")
 
-    cmds.evalDeferred(set_render_settings, lp=1)
+    cmds.objExists("vraySettings")
 
 
 cmds.evalDeferred(startup_maya, lp=1)
+cmds.evalDeferred(set_render_settings, lp=1)
