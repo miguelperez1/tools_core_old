@@ -23,16 +23,16 @@ log = logger.Logger()
 
 LIBRARIES_ROOT = "F:\\share\\assets\\libraries\\"
 
-LIBRARIES = OrderedDict()
+_LIBRARIES = OrderedDict()
 
-LIBRARIES["model"] = "F:\\share\\assets\\libraries\\model"
-LIBRARIES["material"] = "F:\\share\\assets\\libraries\\material"
-LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
-LIBRARIES["studio_lights"] = "F:\\share\\assets\\libraries\\studiolights"
-LIBRARIES["gobo_lights"] = "F:\\share\\assets\\libraries\\gobolights"
-LIBRARIES["clouds"] = "F:\\share\\assets\\libraries\\clouds"
-LIBRARIES["rigs"] = "F:\\share\\assets\\libraries\\rigs"
-LIBRARIES["plants"] = "F:\\share\\assets\\libraries\\plants"
+_LIBRARIES["model"] = "F:\\share\\assets\\libraries\\model"
+_LIBRARIES["material"] = "F:\\share\\assets\\libraries\\material"
+_LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
+_LIBRARIES["studio_lights"] = "F:\\share\\assets\\libraries\\studiolights"
+_LIBRARIES["gobo_lights"] = "F:\\share\\assets\\libraries\\gobolights"
+_LIBRARIES["clouds"] = "F:\\share\\assets\\libraries\\clouds"
+_LIBRARIES["rigs"] = "F:\\share\\assets\\libraries\\rigs"
+_LIBRARIES["plants"] = "F:\\share\\assets\\libraries\\plants"
 
 NORMAL_LIBRARIES = ['model',
                     'material',
@@ -66,10 +66,12 @@ class PreviewLabel(QtWidgets.QLabel):
 
 
 class AssetBrowser(QtWidgets.QWidget):
-    def __init__(self, image_scale=1.3, columns=5, parent=None):
+    def __init__(self, image_scale=2.08, columns=5, parent=None, libraries=['all']):
         super(AssetBrowser, self).__init__(parent)
         self.image_scale = image_scale
         self.columns = columns
+
+        self.libraries = libraries
 
         self.create_actions()
         self.create_widgets()
@@ -98,7 +100,10 @@ class AssetBrowser(QtWidgets.QWidget):
         # Create Asset Preview Widgets
         self.asset_widgets = OrderedDefaultDict(list)
 
-        for library, library_path in LIBRARIES.items():
+        for library, library_path in _LIBRARIES.items():
+            if library not in self.libraries and self.libraries[0] != 'all':
+                continue
+
             library_yml = library_path + "\\library.yml"
 
             data = yaml_reader.read_yaml(library_yml)
@@ -190,14 +195,17 @@ class AssetBrowser(QtWidgets.QWidget):
         self.update_asset_count()
 
     def update_asset_count(self):
-        count = self.tab_widget.currentWidget().widget().layout().count()
-        self.asset_count_lbl.setText("Asset Count: {}".format(count))
+        try:
+            count = self.tab_widget.currentWidget().widget().layout().count()
+            self.asset_count_lbl.setText("Asset Count: {}".format(count))
+        except AttributeError:
+            pass
 
     def show_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
 
         self.current_asset = child.accessibleName()
-        self.current_asset_root_path = LIBRARIES[self.library] + "\\{0}_root".format(self.current_asset)
+        self.current_asset_root_path = _LIBRARIES[self.library] + "\\{0}_root".format(self.current_asset)
         self.current_preview_path = child.objectName()
 
         contextMenu = QtWidgets.QMenu(self)
@@ -219,7 +227,7 @@ class AssetBrowser(QtWidgets.QWidget):
         if self.library in NORMAL_LIBRARIES:
             contextMenu.addAction(self.reference_action)
 
-            asset_path = LIBRARIES[self.library] + "\\{}_root".format(self.current_asset)
+            asset_path = _LIBRARIES[self.library] + "\\{}_root".format(self.current_asset)
 
             if "vrayproxy" in os.listdir(asset_path):
                 contextMenu.addAction(self.import_proxy_action)
@@ -241,7 +249,7 @@ class AssetBrowser(QtWidgets.QWidget):
         if self.library in NORMAL_LIBRARIES:
             root_path = os.path.join(library_path.replace("\\\\", "\\"), "{0}_root".format(self.current_asset))
         else:
-            root_path = LIBRARIES[self.library]
+            root_path = _LIBRARIES[self.library]
 
         subprocess.Popen('explorer "{}"'.format(root_path))
 
@@ -308,7 +316,7 @@ class AssetBrowser(QtWidgets.QWidget):
                 cmds.sets(node, e=True, forceElement=shading_group)
 
     def import_cloud(self):
-        cloud_path = LIBRARIES['clouds'] + "\\{}.vdb".format(self.current_asset)
+        cloud_path = _LIBRARIES['clouds'] + "\\{}.vdb".format(self.current_asset)
         cloud_node_vray = cmds.createNode('VRayVolumeGrid', n='{}_vray_volume_grid'.format(self.current_asset))
         cmds.rename('transform1', '{}'.format(self.current_asset))
         cloud_node = '{}'.format(self.current_asset)
@@ -320,7 +328,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.setAttr('{}.detailReduction'.format(cloud_node), 20)
 
     def import_hdr(self):
-        path = LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
+        path = _LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
 
         dome_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
         dome_light = cmds.shadingNode('VRayLightDomeShape', n='{}_vray_dome_lightShape'.format(self.current_asset[:-4]),
@@ -348,7 +356,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.connectAttr('{}.outColor'.format(cc_node), '{}.domeTex'.format(dome_light))
 
     def import_studio_light(self):
-        path = LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
+        path = _LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
         area_lgt = cmds.shadingNode('VRayLightRectShape', n='{}_vray_rect_lightShape'.format(self.current_asset[:-4]),
                                     p=area_trans, asLight=True)
@@ -367,7 +375,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
 
     def import_gobo_light(self):
-        path = LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
+        path = _LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
 
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
         gobo_lgt = cmds.shadingNode('VRayLightRectShape', n='l_{}_goboShape'.format(self.current_asset[:-4]),

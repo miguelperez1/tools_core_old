@@ -3,19 +3,31 @@ class Logger(object):
         self.status = True
 
     def info(self, message):
+        out_message = None
         if self.status:
-            print("# Info:  " + ("-" * 15) + "  " + message)
+            out_message = "# Info:  " + ("-" * 15) + "  " + message
+            print(out_message)
+
+        return out_message
 
     def warning(self, message):
+        out_message = None
+
         if self.status:
-            print("# Warning:  " + ("-" * 15) + "  " + message)
+            out_message = "# Warning:  " + ("-" * 15) + "  " + message
+            print out_message
+
+        return out_message
 
     def error(self, message):
-        if self.status:
-            print("# Error:  " + ("-" * 15) + "  " + message)
+        out_message = "# Error:  " + ("-" * 15) + "  " + message
+        print(out_message)
+        return out_message
 
     def result(self, message):
         prev_status = self.status
         self.status = True
-        print("# Result:  " + ("-" * 15) + "  " + message)
+        out_message = "# Result:  " + ("-" * 15) + "  " + message
+        print(out_message)
         self.status = prev_status
+        return out_message

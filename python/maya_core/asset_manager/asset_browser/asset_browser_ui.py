@@ -3,22 +3,13 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 from shiboken2 import wrapInstance
 
-from shutil import copyfile
-
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
-import maya.mel as mel
 
-from maya_core.common_tools import yaml_reader
 from maya_core.common_tools import logger
 from maya_core.asset_manager.asset_browser import AssetBrowser
 
-import os
-import re
-import subprocess
-import operator
-from collections import OrderedDict, defaultdict
-import imagesize
+reload(AssetBrowser)
 
 log = logger.Logger()
 
