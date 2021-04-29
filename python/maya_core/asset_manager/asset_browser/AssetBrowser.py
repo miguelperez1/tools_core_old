@@ -27,8 +27,8 @@ _LIBRARIES = OrderedDict()
 
 _LIBRARIES["model"] = "F:\\share\\assets\\libraries\\model"
 _LIBRARIES["material"] = "F:\\share\\assets\\libraries\\material"
-_LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
 _LIBRARIES["studio_lights"] = "F:\\share\\assets\\libraries\\studiolights"
+_LIBRARIES["hdri"] = "F:\\share\\assets\\libraries\\hdri"
 _LIBRARIES["gobo_lights"] = "F:\\share\\assets\\libraries\\gobolights"
 _LIBRARIES["clouds"] = "F:\\share\\assets\\libraries\\clouds"
 _LIBRARIES["rigs"] = "F:\\share\\assets\\libraries\\rigs"

@@ -12,6 +12,7 @@ from maya_core.material_builder import material_builder_ui
 from maya_core.lookdev_tools import create_cc_node
 from maya_core.lookdev_tools import cc_node_editor_ui
 from maya_core.common_tools import logger
+from maya_core.asset_manager.publish_textures import publish_textures_ui
 
 log = logger.Logger()
 
@@ -46,6 +47,8 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
 
         self.create_displacement_nodes_btn = QtWidgets.QPushButton("Create Displacement Nodes")
 
+        self.texture_asset_manager_btn = QtWidgets.QPushButton("Publish / Remap Images")
+
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
         self.setCentralWidget(central_widget)
@@ -56,6 +59,8 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addWidget(self.import_lookdev_light_rig_btn)
+        main_layout.addWidget(MWidgets.QHLine())
+        main_layout.addWidget(self.texture_asset_manager_btn)
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addWidget(self.material_builder_btn)
         main_layout.addWidget(MWidgets.QHLine())
@@ -83,6 +88,7 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
     def create_connections(self):
         self.import_lookdev_light_rig_btn.clicked.connect(self.import_lookdev_light_rig_btn_callback)
         self.material_builder_btn.clicked.connect(self.material_builder_btn_callback)
+        self.texture_asset_manager_btn.clicked.connect(self.texture_asset_manager_btn_callback)
         self.create_cc_node_btn.clicked.connect(self.create_cc_node_btn_callback)
         self.cc_node_editor_btn.clicked.connect(self.cc_node_editor_btn_callback)
         self.create_displacement_nodes_btn.clicked.connect(self.create_displacement_nodes_btn_callback)
@@ -101,6 +107,9 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
 
     def create_displacement_nodes_btn_callback(self):
         log.warning("TO DO create_displacement_nodes_btn_callback")
+
+    def texture_asset_manager_btn_callback(self):
+        publish_textures_ui.main()
 
 
 def main():

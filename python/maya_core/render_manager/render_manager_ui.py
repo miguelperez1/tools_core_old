@@ -67,15 +67,18 @@ class LightConsoleItem(QtWidgets.QTreeWidgetItem):
     def create_light(self):
         self.light_trans = cmds.createNode('transform', n=self.light_type.split("Shape")[0])
 
-        self.light = cmds.shadingNode(self.light_type, asLight=True, p=self.light_trans)
+        self.light = cmds.shadingNode(self.light_type, n=self.light_type, asLight=True, p=self.light_trans)
 
         self.setData(0, QtCore.Qt.UserRole, self.light)
 
-        self.setText(2, self.light)
+        self.setText(2, self.light.split(""))
 
         if self.light.startswith("VRay"):
             intensity = cmds.getAttr("{}.intensity".format(self.light))
             self.setText(3, str(intensity))
+
+        if cmds.objExists("l_rig"):
+            cmds.parent(self.light_trans, "l_rig")
 
 
 class LightingConsole(QtWidgets.QMainWindow):
@@ -215,7 +218,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
         console_tw_header_item = QtWidgets.QTreeWidgetItem(
-            ["Enabled", "", "Name", "Exposure", "Color", "Tex", "Directional"])
+            ["Enabled", "", "Name", "Exposure", "Color", 'Temperature', "Tex", "Directional", 'Invisible'])
 
         self.console_tw.setHeaderItem(console_tw_header_item)
 
@@ -474,6 +477,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.render_layer_add_btn.clicked.connect(self.render_layer_add_btn_callback)
         self.render_layer_remove_btn.clicked.connect(self.render_layer_remove_btn_callback)
         self.render_layer_refresh_btn.clicked.connect(self.render_layer_refresh_btn_callback)
+        self.render_layer_duplicate_btn.clicked.connect(self.rl_duplicate_action_callback)
 
         self.render_layers_tw.currentItemChanged.connect(self.update_current_rl)
         self.render_layers_tw.itemChanged.connect(self.render_layers_tw_rename_callback)
@@ -702,7 +706,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.update_render_layers()
 
     def rl_duplicate_action_callback(self):
-        self.log.info("TODO: rl_duplicate_action_callback")
         if self.current_rl is None:
             return
 
@@ -757,6 +760,11 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.update_render_layers()
 
     def update_current_rl(self, current_item):
+        if current_item is None:
+            self.current_rl_item = None
+            self.current_rl = None
+            return
+
         self.current_rl_item = current_item
         self.current_rl = self.current_rl_item.text(0)
 
@@ -924,8 +932,11 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         new_set = cmds.duplicate(self.current_set)[0]
 
-        for obj in cmds.sets(self.current_set, q=True):
-            cmds.sets(obj, edit=True, add=new_set)
+        try:
+            for obj in cmds.sets(self.current_set, q=True):
+                cmds.sets(obj, edit=True, add=new_set)
+        except TypeError:
+            pass
 
         self.update_sets()
 
