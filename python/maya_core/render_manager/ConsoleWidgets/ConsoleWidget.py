@@ -64,7 +64,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.setHeaderItem(self.header_item)
 
         self.setAlternatingRowColors(True)
-        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
         self.setColumnWidth(2, 250)
@@ -128,12 +128,12 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         icon = MWidgets.PreviewLabel()
         icon.set_image(self.light_icons[light_type], size)
 
-        cb = QtWidgets.QCheckBox()
-        cb.setChecked(True)
+        enabled_cb = QtWidgets.QCheckBox()
+        enabled_cb.setChecked(True)
 
         self.addTopLevelItem(new_item)
 
-        self.setItemWidget(new_item, 0, cb)
+        self.setItemWidget(new_item, 0, enabled_cb)
         self.setItemWidget(new_item, 1, icon)
 
         cmds.setAttr("{}.intensity".format(light_shape), 1)
@@ -145,6 +145,13 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             new_item.setText(7, "{:.3f}".format((round(float(directional), 3))))
 
         new_item.setText(3, "{:.2f}".format((round(float(exposure), 2))))
+
+        if light_type != "directionalLight":
+            cmds.setAttr("{}.invisible".format(light_shape), 1)
+            invisible_cb = QtWidgets.QCheckBox()
+            invisible_cb.setChecked(cmds.getAttr("{}.invisible".format(light_shape)))
+
+            self.setItemWidget(new_item, 8, invisible_cb)
 
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)

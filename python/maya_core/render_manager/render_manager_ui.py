@@ -98,7 +98,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_widget = ConsoleWidget.ConsoleWidget()
 
         # Asset Browser
-        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.875, 5, libraries=['hdri', 'studio_lights', 'gobo_lights',
+        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.5, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
                                                                                  'clouds'])
 
         # Properties
@@ -120,15 +120,15 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.tool_buttons_widget.setFixedSize(self.res_x, self.res_y * .05)
 
-        self.render_layers_widget.setFixedSize(col1_width, row_height * .25)
-        self.modifiers_widget.setFixedSize(col1_width, row_height * .75)
+        self.render_layers_widget.setFixedSize(col1_width, row_height * .225)
+        self.modifiers_widget.setFixedSize(col1_width, row_height * .725)
 
-        self.console_widget.setFixedSize(col2_width, row_height * .6)
-        self.aovs_widget.setFixedSize(col2_width * .35, row_height * .4)
-        self.asset_browser_widget.setFixedSize(col2_width * .65, row_height * .4)
+        self.console_widget.setFixedSize(col2_width, row_height * .575)
+        self.aovs_widget.setFixedSize(col2_width * .325, row_height * .375)
+        self.asset_browser_widget.setFixedSize(col2_width * .635, row_height * .375)
 
-        self.properties_widget.setMinimumSize(col3_width, row_height * .6)
-        self.sets_widget.setMinimumSize(col3_width, row_height * .4)
+        self.properties_widget.setMinimumSize(col3_width, row_height * .575)
+        self.sets_widget.setMinimumSize(col3_width, row_height * .375)
 
         self.log.log_le.setFixedSize(self.res_x, self.res_y * .025)
 
