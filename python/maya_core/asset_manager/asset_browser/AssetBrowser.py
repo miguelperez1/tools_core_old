@@ -66,6 +66,8 @@ class PreviewLabel(QtWidgets.QLabel):
 
 
 class AssetBrowser(QtWidgets.QWidget):
+    light_created = QtCore.Signal(str, str)
+
     def __init__(self, image_scale=2.08, columns=5, parent=None, libraries=['all']):
         super(AssetBrowser, self).__init__(parent)
         self.image_scale = image_scale
@@ -97,7 +99,7 @@ class AssetBrowser(QtWidgets.QWidget):
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
 
     def create_widgets(self):
-        # Create Asset Preview Widgets
+        # Create Asset Preview ConsoleWidgets
         self.asset_widgets = OrderedDefaultDict(list)
 
         for library, library_path in _LIBRARIES.items():
@@ -331,13 +333,12 @@ class AssetBrowser(QtWidgets.QWidget):
         path = _LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
 
         dome_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        dome_light = cmds.shadingNode('VRayLightDomeShape', n='{}_vray_dome_lightShape'.format(self.current_asset[:-4]),
-                                      p=dome_trans, asLight=True)
-        mel.eval('sets -edit -forceElement  defaultLightSet {} ;'.format(dome_light))
+        lgt = cmds.shadingNode('VRayLightDomeShape', n=dome_trans + "Shape", p=dome_trans, asLight=True)
+        mel.eval('sets -edit -forceElement  defaultLightSet {} ;'.format(lgt))
 
-        cmds.setAttr('{}.useDomeTex'.format(dome_light), 1)
-        cmds.setAttr('{}.invisible'.format(dome_light), 1)
-        cmds.setAttr('{}.viewportTexEnable'.format(dome_light), 0)
+        cmds.setAttr('{}.useDomeTex'.format(lgt), 1)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.viewportTexEnable'.format(lgt), 0)
 
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
         cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
@@ -353,43 +354,51 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.connectAttr("{}.outUV".format(vray_place_tex), "{}.uvCoord".format(tex))
 
         cmds.connectAttr("{}.outColor".format(tex), "{}.inColor".format(cc_node))
-        cmds.connectAttr('{}.outColor'.format(cc_node), '{}.domeTex'.format(dome_light))
+        cmds.connectAttr('{}.outColor'.format(cc_node), '{}.domeTex'.format(lgt))
+
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit("VRayLightDomeShape", lgt)
 
     def import_studio_light(self):
         path = _LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        area_lgt = cmds.shadingNode('VRayLightRectShape', n='{}_vray_rect_lightShape'.format(self.current_asset[:-4]),
-                                    p=area_trans, asLight=True)
-        cmds.setAttr('{}.useRectTex'.format(area_lgt), 1)
-        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(area_lgt))
+        lgt = cmds.shadingNode('VRayLightRectShape', n=area_trans + "Shape", p=area_trans, asLight=True)
+
+        cmds.setAttr('{}.useRectTex'.format(lgt), 1)
+        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(lgt))
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
-        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(area_lgt))
+        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(lgt))
         cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
-        cmds.setAttr('{}.intensityMult'.format(area_lgt), 1)
-        cmds.setAttr('{}.showTex'.format(area_lgt), 1)
-        cmds.setAttr('{}.invisible'.format(area_lgt), 1)
-        cmds.setAttr('{}.multiplyByTheLightColor'.format(area_lgt), 1)
+        cmds.setAttr('{}.intensityMult'.format(lgt), 1)
+        cmds.setAttr('{}.showTex'.format(lgt), 1)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
 
         aspect_ratio = self.get_preview_size()
 
         cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
 
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit("VRayLightRectShape", lgt)
+
     def import_gobo_light(self):
         path = _LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
 
         area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
-        gobo_lgt = cmds.shadingNode('VRayLightRectShape', n='l_{}_goboShape'.format(self.current_asset[:-4]),
-                                    p=area_trans, asLight=True)
-        cmds.setAttr('{}.useRectTex'.format(gobo_lgt), 1)
-        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(gobo_lgt))
+        lgt = cmds.shadingNode('VRayLightRectShape', n=area_trans + "Shape", p=area_trans, asLight=True)
+
+        cmds.setAttr('{}.useRectTex'.format(lgt), 1)
+        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(lgt))
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
-        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(gobo_lgt))
+        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(lgt))
         cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
-        cmds.setAttr('{}.intensityMult'.format(gobo_lgt), 1)
-        cmds.setAttr('{}.showTex'.format(gobo_lgt), 1)
-        cmds.setAttr('{}.invisible'.format(gobo_lgt), 1)
-        cmds.setAttr('{}.multiplyByTheLightColor'.format(gobo_lgt), 1)
-        cmds.setAttr('{}.directional'.format(gobo_lgt), .99)
+        cmds.setAttr('{}.intensityMult'.format(lgt), 1)
+        cmds.setAttr('{}.showTex'.format(lgt), 1)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
+        cmds.setAttr('{}.directional'.format(lgt), .99)
 
         aspect_ratio = self.get_preview_size()
 
@@ -397,6 +406,10 @@ class AssetBrowser(QtWidgets.QWidget):
 
         uv_node = cmds.shadingNode("place2dTexture", name='{}_place2d'.format(self.current_asset[:-4]), asUtility=True)
         cmds.connectAttr('{}.outUV'.format(uv_node), '{}.uvCoord'.format(tex))
+
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit("VRayLightRectShape", lgt)
 
     def import_proxy_action_callback(self):
         proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_vrayproxy.ma".format(self.current_asset)

@@ -141,7 +141,7 @@ class AssetBrowser(QtWidgets.QWidget):
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
 
     def create_widgets(self):
-        # Create Asset Preview Widgets
+        # Create Asset Preview ConsoleWidgets
         self.asset_widgets = OrderedDefaultDict(list)
 
         for library, library_path in LIBRARIES.items():
