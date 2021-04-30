@@ -60,7 +60,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         }
 
         self.header_item = QtWidgets.QTreeWidgetItem(
-            ["Enabled", "", "Name", "Exposure", "Color", 'Temperature', "Tex", "Directional", 'Invisible'])
+            ["Enabled", "", "Name", "Exposure", "Color", 'Temperature', "Tex", "Directional", 'Angle', 'Invisible'])
         self.setHeaderItem(self.header_item)
 
         self.setAlternatingRowColors(True)
@@ -74,7 +74,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         self.itemDoubleClicked.connect(self.onTreeWidgetItemDoubleClicked)
         self.itemChanged.connect(self.update_attribute)
-        self.itemClicked.connect(self.select_light)
+        self.itemSelectionChanged.connect(self.select_light)
 
     def onTreeWidgetItemDoubleClicked(self, item, column):
         if self.can_edit_column(item, column):
@@ -100,6 +100,9 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         elif attribute == "directional":
             cmds.setAttr("{0}.directional".format(light_shape), float(value))
             item.setText(column, "{:.3f}".format((round(float(value), 3))))
+        elif attribute == "angle":
+            cmds.setAttr("{0}.lightAngle".format(light_shape), float(value))
+            item.setText(column, "{:.3f}".format((round(float(value), 3))))
 
     def can_edit_column(self, item, column):
         light_type = item.data(0, QtCore.Qt.UserRole)
@@ -108,7 +111,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             "VRayLightRectShape": [2, 3, 5, 7],
             "VRayLightSphereShape": [2, 3, 5],
             "VRayLightDomeShape": [2, 3, 5],
-            "directionalLight": [2, 3, 5]
+            "directionalLight": [2, 3, 5, 8]
         }
 
         if column in column_editability[light_type]:
@@ -118,7 +121,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
     def create_light(self, light_type, light_name):
         light_shape = cmds.listRelatives(light_name, shapes=True)[0]
 
-        size = 40
+        size = 35
         new_item = QtWidgets.QTreeWidgetItem()
         new_item.setText(2, light_name)
         new_item.setSizeHint(0, QtCore.QSize(size, size))
@@ -151,13 +154,23 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             invisible_cb = QtWidgets.QCheckBox()
             invisible_cb.setChecked(cmds.getAttr("{}.invisible".format(light_shape)))
 
-            self.setItemWidget(new_item, 8, invisible_cb)
+            self.setItemWidget(new_item, 9, invisible_cb)
+
+        if light_type == "directionalLight":
+            angle = cmds.getAttr("{}.lightAngle".format(light_shape))
+            new_item.setText(8, "{:.3f}".format((round(float(angle), 3))))
+
+        new_item.setText(3, "{:.2f}".format((round(float(exposure), 2))))
 
         self.resizeColumnToContents(0)
         self.resizeColumnToContents(1)
 
-    def select_light(self, item, column):
-        cmds.select(item.text(2))
+    def select_light(self):
+
+        selection = []
+        for i in self.selectedItems():
+            selection.append(i.text(2))
+        cmds.select(selection)
 
 
 class ConsoleWidget(QtWidgets.QWidget):
