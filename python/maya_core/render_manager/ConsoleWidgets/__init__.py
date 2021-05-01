@@ -704,9 +704,11 @@ class ToolButtons(QtWidgets.QWidget):
 
     def light_rig_img_btn_callback(self):
         if cmds.objExists("l_rig"):
+            self.log_event.emit("warning", "light rig already exists, skipping")
             return
 
         cmds.group(n="l_rig", em=True)
+        self.log_event.emit("result", "created empty light rig")
 
     def material_builder_img_btn_callback(self):
         material_builder_ui.main()
@@ -715,13 +717,20 @@ class ToolButtons(QtWidgets.QWidget):
         trans = cmds.createNode('transform', n='l_rect')
         lgt = cmds.shadingNode('VRayLightRectShape', n=trans + "Shape", p=trans, asLight=True)
 
-        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
+        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
 
         self.light_created.emit("VRayLightRectShape", lgt)
 
     def sphere_light_img_btn_callback(self):
         trans = cmds.createNode('transform', n='l_sphere')
         lgt = cmds.shadingNode('VRayLightSphereShape', n=trans + "Shape", p=trans, asLight=True)
+        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
+        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
 
         self.light_created.emit("VRayLightSphereShape", lgt)
 
@@ -729,11 +738,21 @@ class ToolButtons(QtWidgets.QWidget):
         trans = cmds.createNode('transform', n='l_dome')
         lgt = cmds.shadingNode('VRayLightDomeShape', n=trans + "Shape", p=trans, asLight=True)
 
+        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
+        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
+
         self.light_created.emit("VRayLightDomeShape", lgt)
 
     def dist_light_img_btn_callback(self):
         trans = cmds.createNode('transform', n='l_directional')
         lgt = cmds.shadingNode('directionalLight', n=trans + "Shape", p=trans, asLight=True)
+
+        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
+        cmds.setAttr("{}.lightAngle".format(lgt_shape), 3)
 
         self.light_created.emit("directionalLight", lgt)
 
