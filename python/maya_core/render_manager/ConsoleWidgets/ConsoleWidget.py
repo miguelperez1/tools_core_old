@@ -584,7 +584,6 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         for connection in pm.listConnections(pm_node.getShape(), c=1):
             if connection[0].endswith("Tex"):
-                print connection[0]
                 self.log_event.emit("info", "need to break tex")
 
     def create_group(self, name=None, parent="l_rig", startup=False):

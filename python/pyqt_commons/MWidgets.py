@@ -29,12 +29,8 @@ def get_signals(source):
             if isinstance(getattr(cls, name), signal):
                 signals.append(name)
         except AttributeError:
-            print name
-
+            pass
     return signals
-
-
-get_signals(QtWidgets.QPushButton)
 
 
 class QHLine(QtWidgets.QFrame):

@@ -772,7 +772,6 @@ class RenderSettings(QtWidgets.QWidget):
 
         for cam in pm.ls(type="camera"):
             if str(cam).replace("Shape", "") == str(render_cam):
-                print "render cam: " + str(cam).replace("Shape", "")
                 cam.renderable.set(1)
             else:
                 cam.renderable.set(0)
@@ -794,9 +793,6 @@ class RenderSettings(QtWidgets.QWidget):
 
         settings.width.set(x)
         settings.height.set(y)
-
-        print x
-        print y
 
         cmds.setAttr("defaultResolution.width", x)
         cmds.setAttr("defaultResolution.height", y)
