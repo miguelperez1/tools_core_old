@@ -66,7 +66,7 @@ class PreviewLabel(QtWidgets.QLabel):
 
 
 class AssetBrowser(QtWidgets.QWidget):
-    light_created = QtCore.Signal(str, str)
+    light_created = QtCore.Signal(str)
 
     def __init__(self, image_scale=2.08, columns=5, parent=None, libraries=['all']):
         super(AssetBrowser, self).__init__(parent)
@@ -358,7 +358,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
         light_shape = cmds.listRelatives(lgt, shapes=True)[0]
 
-        self.light_created.emit("VRayLightDomeShape", lgt)
+        self.light_created.emit(lgt)
 
     def import_studio_light(self):
         path = _LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
@@ -381,7 +381,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
         light_shape = cmds.listRelatives(lgt, shapes=True)[0]
 
-        self.light_created.emit("VRayLightRectShape", lgt)
+        self.light_created.emit(lgt)
 
     def import_gobo_light(self):
         path = _LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
@@ -409,7 +409,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
         light_shape = cmds.listRelatives(lgt, shapes=True)[0]
 
-        self.light_created.emit("VRayLightRectShape", lgt)
+        self.light_created.emit(lgt)
 
     def import_proxy_action_callback(self):
         proxy_path = self.current_asset_root_path + "\\vrayproxy\\{0}_vrayproxy.ma".format(self.current_asset)

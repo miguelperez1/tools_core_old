@@ -42,6 +42,7 @@ class QHLine(QtWidgets.QFrame):
         super(QHLine, self).__init__()
         self.setFrameShape(QtWidgets.QFrame.HLine)
         self.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.setContentsMargins(0, 0, 0, 0)
 
 
 class QVLine(QtWidgets.QFrame):
@@ -103,7 +104,7 @@ class PreviewLabel(QtWidgets.QLabel):
         super(PreviewLabel, self).__init__(*args, **kwargs)
         self.setAlignment(QtCore.Qt.AlignCenter)
         self.setMinimumSize(1, 1)
-        self.setContentsMargins(5, 5, 5, 5)
+        self.setContentsMargins(0, 0, 0, 0)
         self.set_default()
 
     def set_image(self, path, scale=160):
@@ -244,7 +245,6 @@ class ColorPickerTreeWidgetItemWidget(QtWidgets.QWidget):
         pass
 
     def set_color(self):
-        self.item.setText(5, "6500")
         light_color = self.light.color.get()
         color = pm.colorEditor(rgbValue=light_color)
 

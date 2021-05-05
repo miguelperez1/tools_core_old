@@ -61,6 +61,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.version = "1.0.0"
 
         self.setWindowTitle("Lighting Console")
+        self.setObjectName("LightingConsole")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -74,6 +75,9 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.setMinimumSize(self.res_x, self.res_y)
 
+        if not cmds.objExists("l_rig"):
+            cmds.group(n="l_rig", em=True)
+
         self.create_actions()
         self.create_widgets()
         self.create_layout()
@@ -84,9 +88,11 @@ class LightingConsole(QtWidgets.QMainWindow):
         pass
 
     def create_widgets(self):
+        # Render settings
+        self.render_settings_widget = ConsoleWidgets.RenderSettings(self.res_x * .175, self.res_y * .07)
+
         # Tool Buttons
         self.tool_buttons_widget = ConsoleWidgets.ToolButtons()
-        self.tool_buttons_widget.setMinimumSize(self.res_x, self.res_y * .05)
 
         # Render Layers
         self.render_layers_widget = ConsoleWidgets.RenderLayersWidget()
@@ -118,7 +124,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         col2_width = row_width * .675
         col3_width = row_width * .125
 
-        self.tool_buttons_widget.setFixedSize(self.res_x, self.res_y * .05)
+        self.tool_buttons_widget.setFixedHeight(self.res_y * .05)
 
         self.render_layers_widget.setFixedSize(col1_width, row_height * .225)
         self.modifiers_widget.setFixedSize(col1_width, row_height * .725)
@@ -137,22 +143,25 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         main_layout = QtWidgets.QVBoxLayout(central_widget)
+        main_layout.setSpacing(0)
 
-        row_0_layout = QtWidgets.QVBoxLayout()
+        row_0_layout = QtWidgets.QHBoxLayout()
         row_0_layout.setSpacing(0)
         row_0_layout.addWidget(self.tool_buttons_widget)
+        row_0_layout.addStretch()
+        row_0_layout.addWidget(self.render_settings_widget)
 
         row_1_layout = QtWidgets.QHBoxLayout()
-        row_1_layout.setSpacing(0)
+        row_1_layout.setSpacing(5)
 
         row1_col1_layout = QtWidgets.QVBoxLayout()
-        row1_col1_layout.setSpacing(0)
+        row1_col1_layout.setSpacing(5)
         row1_col1_layout.addWidget(self.render_layers_widget)
         row1_col1_layout.addWidget(MWidgets.QHLine())
         row1_col1_layout.addWidget(self.modifiers_widget)
 
         row1_col2_layout = QtWidgets.QVBoxLayout()
-        row1_col2_layout.setSpacing(0)
+        row1_col2_layout.setSpacing(5)
         row1_col2_layout.addWidget(self.console_widget)
 
         aov_browser_layout = QtWidgets.QHBoxLayout()
@@ -165,7 +174,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         row1_col2_layout.addLayout(aov_browser_layout)
 
         row1_col3_layout = QtWidgets.QVBoxLayout()
-        row1_col3_layout.setSpacing(0)
+        row1_col3_layout.setSpacing(5)
         row1_col3_layout.addWidget(self.properties_widget)
         row1_col3_layout.addWidget(MWidgets.QHLine())
         row1_col3_layout.addWidget(self.sets_widget)
@@ -179,6 +188,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addLayout(row_0_layout)
         main_layout.addWidget(MWidgets.QHLine())
+        main_layout.addSpacing(10)
         main_layout.addLayout(row_1_layout)
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addWidget(self.log.log_le)
@@ -222,9 +232,8 @@ class LightingConsole(QtWidgets.QMainWindow):
 
 def main():
     try:
-        dialog.close()
-        dialog.deleteLater()
-    except:
+        cmds.deleteUI("LightingConsole")
+    except Exception:
         pass
 
     dialog = LightingConsole()

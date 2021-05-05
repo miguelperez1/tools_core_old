@@ -3,6 +3,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import maya.mel as mel
 import pymel.core as pm
 import vray
 
@@ -543,16 +544,12 @@ class SetsWidget(QtWidgets.QWidget):
         self.update_sets()
 
     def add_to_set(self):
-        print self.current_set
-
         for obj in cmds.ls(sl=True):
             cmds.sets(obj, edit=True, add=self.current_set)
 
         self.update_set_members()
 
     def remove_from_set(self):
-        print self.current_set
-
         for obj in cmds.ls(sl=True):
             cmds.sets(obj, edit=True, rm=self.current_set)
 
@@ -583,9 +580,142 @@ class SetsWidget(QtWidgets.QWidget):
         # self.log.result("Created " + new_set)
 
 
+class RenderSettings(QtWidgets.QWidget):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, width, height, *args, **kwargs):
+        super(RenderSettings, self).__init__(*args, **kwargs)
+
+        self.width = width
+        self.height = height
+        self.setContentsMargins(0, 0, 0, 0)
+
+        self.setFixedHeight(self.height)
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.render_cam_lbl = QtWidgets.QLabel("Render Cam: ")
+        self.render_cam_cmbx = QtWidgets.QComboBox()
+        self.render_cam_cmbx.setFixedWidth(150)
+        self.get_current_cameras()
+
+        self.res_x_lbl = QtWidgets.QLabel("Width: ")
+        self.res_y_lbl = QtWidgets.QLabel("Height: ")
+
+        self.res_x_le = QtWidgets.QLineEdit()
+        self.res_y_le = QtWidgets.QLineEdit()
+
+        self.res_x_le.setFixedWidth(80)
+        self.res_y_le.setFixedWidth(80)
+        # self.res_y_le.setMaximumWidth(self.width * .2)
+
+        self.res_x_le.setAlignment(QtCore.Qt.AlignRight)
+        self.res_y_le.setAlignment(QtCore.Qt.AlignRight)
+
+        self.get_resolution()
+
+    def get_current_cameras(self):
+        self.cameras = []
+        all_cameras = pm.ls(type="camera")
+
+        render_cam = "persp"
+
+        for cam in all_cameras:
+            cam = pm.PyNode(cam)
+
+            if cam.startswith("front") or cam.startswith("side") or cam.startswith("top"):
+                try:
+                    cam.renderable.set(0)
+                except Exception:
+                    pass
+                continue
+
+            self.render_cam_cmbx.addItem(str(cam).replace("Shape", ""))
+
+            self.cameras.append(cam)
+
+            if cam.renderable.get():
+                self.render_cam_cmbx.setCurrentText(str(cam).replace("Shape", ""))
+
+    def create_layout(self):
+        main_layout = QtWidgets.QHBoxLayout(self)
+        main_layout.setSpacing(10)
+        main_layout.addStretch()
+
+        main_layout.addWidget(self.render_cam_lbl)
+        main_layout.addWidget(self.render_cam_cmbx)
+
+        main_layout.addWidget(MWidgets.QVLine())
+
+        res_lbl_layout = QtWidgets.QVBoxLayout()
+        res_lbl_layout.setSpacing(0)
+        res_lbl_layout.addWidget(self.res_x_lbl)
+        res_lbl_layout.addWidget(self.res_y_lbl)
+
+        main_layout.addLayout(res_lbl_layout)
+
+        res_le_layout = QtWidgets.QVBoxLayout()
+        res_le_layout.setSpacing(0)
+        res_le_layout.addWidget(self.res_x_le)
+        res_le_layout.addWidget(self.res_y_le)
+
+        main_layout.addLayout(res_le_layout)
+
+    def create_connections(self):
+        self.render_cam_cmbx.currentIndexChanged.connect(self.set_render_cam)
+        self.res_x_le.returnPressed.connect(self.set_resolution)
+        self.res_y_le.returnPressed.connect(self.set_resolution)
+
+    def set_render_cam(self):
+        render_cam = pm.PyNode(self.render_cam_cmbx.currentText())
+
+        for cam in pm.ls(type="camera"):
+            if str(cam).replace("Shape", "") == str(render_cam):
+                print "render cam: " + str(cam).replace("Shape", "")
+                cam.renderable.set(1)
+            else:
+                cam.renderable.set(0)
+
+    def get_resolution(self):
+        settings = pm.PyNode("vraySettings")
+
+        self.res_x_le.setText(str(settings.width.get()))
+        self.res_y_le.setText(str(settings.height.get()))
+
+    def set_resolution(self):
+        settings = pm.PyNode("vraySettings")
+
+        try:
+            x = float(self.res_x_le.text())
+            y = float(self.res_y_le.text())
+        except Exception:
+            return
+
+        settings.width.set(x)
+        settings.height.set(y)
+
+        print x
+        print y
+
+        cmds.setAttr("defaultResolution.width", x)
+        cmds.setAttr("defaultResolution.height", y)
+        cmds.setAttr("defaultResolution.deviceAspectRatio", (x / y))
+        cmds.setAttr("defaultResolution.lockDeviceAspectRatio", 0)
+        cmds.setAttr("defaultResolution.pixelAspect", 1.0)
+
+        settings.aspectRatio.set(float(x) / float(y))
+
+
 class ToolButtons(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
-    light_created = QtCore.Signal(str, str)
+    light_created = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
         super(ToolButtons, self).__init__(*args, **kwargs)
@@ -685,8 +815,13 @@ class ToolButtons(QtWidgets.QWidget):
 
     def render_img_btn_callback(self):
         # self.log.result("Rendering")
+        for cam in pm.ls(type="camera"):
+            cam = pm.PyNode(cam.replace("Shape", ""))
+            if cam.renderable.get():
+                render_cam = cam
+                break
 
-        pm.vrend()
+        pm.vrend(camera=render_cam)
 
     def create_shotcam_img_btn_callback(self):
         cameraName = cmds.camera()
@@ -717,44 +852,45 @@ class ToolButtons(QtWidgets.QWidget):
         trans = cmds.createNode('transform', n='l_rect')
         lgt = cmds.shadingNode('VRayLightRectShape', n=trans + "Shape", p=trans, asLight=True)
 
-        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+        light_node = pm.PyNode(lgt)
 
-        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
-        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
+        light_node.intensity.set(1)
+        light_node.invisible.set(1)
 
-        self.light_created.emit("VRayLightRectShape", lgt)
+        self.light_created.emit(lgt)
 
     def sphere_light_img_btn_callback(self):
         trans = cmds.createNode('transform', n='l_sphere')
         lgt = cmds.shadingNode('VRayLightSphereShape', n=trans + "Shape", p=trans, asLight=True)
         lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
 
-        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
-        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
+        lgt_node = pm.PyNode(lgt)
 
-        self.light_created.emit("VRayLightSphereShape", lgt)
+        lgt_node.intensity.set(1)
+        lgt_node.invisible.set(1)
+
+        self.light_created.emit(lgt)
 
     def dome_light_img_btn_callback(self):
         trans = cmds.createNode('transform', n='l_dome')
         lgt = cmds.shadingNode('VRayLightDomeShape', n=trans + "Shape", p=trans, asLight=True)
+        lgt_node = pm.PyNode(lgt)
 
-        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+        lgt_node.intensity.set(1)
+        lgt_node.invisible.set(1)
 
-        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
-        cmds.setAttr("{}.invisible".format(lgt_shape), 1)
-
-        self.light_created.emit("VRayLightDomeShape", lgt)
+        self.light_created.emit(lgt)
 
     def dist_light_img_btn_callback(self):
         trans = cmds.createNode('transform', n='l_directional')
         lgt = cmds.shadingNode('directionalLight', n=trans + "Shape", p=trans, asLight=True)
 
-        lgt_shape = cmds.listRelatives(lgt, shapes=True)[0]
+        lgt_node = pm.PyNode(lgt)
 
-        cmds.setAttr("{}.intensity".format(lgt_shape), 1)
-        cmds.setAttr("{}.lightAngle".format(lgt_shape), 3)
+        lgt_node.intensity.set(1)
+        lgt_node.lightAngle.set(3)
 
-        self.light_created.emit("directionalLight", lgt)
+        self.light_created.emit(lgt)
 
     def vray_cloud_img_btn_callback(self):
         vray.vray_cloud_rendering.vrayCreateCloudSettingsWindow()
