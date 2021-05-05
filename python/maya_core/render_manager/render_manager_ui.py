@@ -67,7 +67,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
         self.log = LightConsoleLogger()
-        self.log.result("Loaded Lighting Console version-" + self.version)
 
         self.scale = 1
         self.res_x = 2550 * self.scale
@@ -83,6 +82,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.create_layout()
         self.create_connections()
         self.create_menu()
+
+        self.log.result("Loaded Lighting Console version-" + self.version)
 
     def create_actions(self):
         pass
@@ -135,7 +136,6 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.properties_widget.setMinimumSize(col3_width, row_height * .575)
         self.sets_widget.setMinimumSize(col3_width, row_height * .375)
-
 
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
