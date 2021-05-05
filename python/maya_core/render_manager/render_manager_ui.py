@@ -136,7 +136,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.properties_widget.setMinimumSize(col3_width, row_height * .575)
         self.sets_widget.setMinimumSize(col3_width, row_height * .375)
 
-        self.log.log_le.setFixedSize(self.res_x, self.res_y * .025)
 
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
@@ -191,6 +190,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         main_layout.addSpacing(10)
         main_layout.addLayout(row_1_layout)
         main_layout.addWidget(MWidgets.QHLine())
+        main_layout.addSpacing(5)
+
         main_layout.addWidget(self.log.log_le)
 
     def create_connections(self):

@@ -580,6 +580,49 @@ class SetsWidget(QtWidgets.QWidget):
         # self.log.result("Created " + new_set)
 
 
+class RenderOverridesWidget(QtWidgets.QWidget):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, *args, **kwargs):
+        super(RenderOverridesWidget, self).__init__(*args, **kwargs)
+
+        self.setContentsMargins(0, 0, 0, 0)
+        self.vray_settings = pm.PyNode("vraySettings")
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.displacement_override_cb = QtWidgets.QCheckBox("Displacement")
+        self.subdivision_ovveride_cb = QtWidgets.QCheckBox("Subdivision")
+
+        self.displacement_override_cb.setChecked(self.vray_settings.globopt_geom_displacement.get())
+        self.subdivision_ovveride_cb.setChecked(self.vray_settings.globopt_subdivision.get())
+
+    def create_layout(self):
+        main_layout = QtWidgets.QHBoxLayout(self)
+        main_layout.setSpacing(0)
+
+        geo_overrides_layout = QtWidgets.QVBoxLayout()
+        geo_overrides_layout.setSpacing(0)
+
+        geo_overrides_layout.addWidget(self.displacement_override_cb)
+        geo_overrides_layout.addWidget(self.subdivision_ovveride_cb)
+
+        main_layout.addLayout(geo_overrides_layout)
+
+    def create_connections(self):
+        self.displacement_override_cb.stateChanged.connect(
+            lambda: self.vray_settings.globopt_geom_displacement.set(self.displacement_override_cb.isChecked()))
+        self.subdivision_ovveride_cb.stateChanged.connect(
+            lambda: self.vray_settings.globopt_subdivision.set(self.subdivision_ovveride_cb.isChecked()))
+
+
 class RenderSettings(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
@@ -589,6 +632,8 @@ class RenderSettings(QtWidgets.QWidget):
         self.width = width
         self.height = height
         self.setContentsMargins(0, 0, 0, 0)
+
+        self.vray_settings = pm.PyNode("vraySettings")
 
         self.setFixedHeight(self.height)
 
@@ -621,6 +666,22 @@ class RenderSettings(QtWidgets.QWidget):
 
         self.get_resolution()
 
+        self.overrides_widget = RenderOverridesWidget()
+
+        self.threshold_lbl = QtWidgets.QLabel("Noise Threshold: ")
+        self.threshold_le = QtWidgets.QLineEdit()
+        self.threshold_le.setFixedWidth(80)
+        self.threshold_le.setAlignment(QtCore.Qt.AlignRight)
+
+        self.get_threshold()
+
+    def get_threshold(self):
+        if self.vray_settings.samplerType.get() == 4:
+            threshold = self.vray_settings.dmcThreshold.get()
+        else:
+            threshold = self.vray_settings.progressiveThreshold.get()
+        self.threshold_le.setText("{:.3f}".format(threshold))
+
     def get_current_cameras(self):
         self.cameras = []
         all_cameras = pm.ls(type="camera")
@@ -649,8 +710,23 @@ class RenderSettings(QtWidgets.QWidget):
         main_layout.setSpacing(10)
         main_layout.addStretch()
 
-        main_layout.addWidget(self.render_cam_lbl)
-        main_layout.addWidget(self.render_cam_cmbx)
+        render_cam_layout = QtWidgets.QHBoxLayout()
+
+        render_cam_layout.addWidget(self.render_cam_lbl)
+        render_cam_layout.addWidget(self.render_cam_cmbx)
+
+        cam_tresh_layout = QtWidgets.QVBoxLayout()
+        cam_tresh_layout.addLayout(render_cam_layout)
+
+        thresh_layout = QtWidgets.QHBoxLayout()
+        thresh_layout.setSpacing(0)
+        thresh_layout.addStretch()
+        thresh_layout.addWidget(self.threshold_lbl)
+        thresh_layout.addWidget(self.threshold_le)
+
+        cam_tresh_layout.addLayout(thresh_layout)
+
+        main_layout.addLayout(cam_tresh_layout)
 
         main_layout.addWidget(MWidgets.QVLine())
 
@@ -668,10 +744,28 @@ class RenderSettings(QtWidgets.QWidget):
 
         main_layout.addLayout(res_le_layout)
 
+        main_layout.addWidget(MWidgets.QVLine())
+        main_layout.addWidget(self.overrides_widget)
+
     def create_connections(self):
         self.render_cam_cmbx.currentIndexChanged.connect(self.set_render_cam)
         self.res_x_le.returnPressed.connect(self.set_resolution)
         self.res_y_le.returnPressed.connect(self.set_resolution)
+        self.threshold_le.returnPressed.connect(self.set_threshold)
+
+    def set_threshold(self):
+        try:
+            if self.vray_settings.samplerType.get() == 4:
+                threshold = self.vray_settings.dmcThreshold.set(float(self.threshold_le.text()))
+            else:
+                threshold = self.vray_settings.progressiveThreshold.set(float(self.threshold_le.text()))
+        except Exception:
+            if self.vray_settings.samplerType.get() == 4:
+                threshold = self.vray_settings.dmcThreshold.get()
+            else:
+                threshold = self.vray_settings.progressiveThreshold.get()
+
+        self.get_threshold()
 
     def set_render_cam(self):
         render_cam = pm.PyNode(self.render_cam_cmbx.currentText())
@@ -730,7 +824,7 @@ class ToolButtons(QtWidgets.QWidget):
         pass
 
     def create_widgets(self):
-        icon_scale = .50
+        icon_scale = .45
 
         self.render_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
         self.render_img_btn.set_image("F:\\share\\tools\\shelf_icons\\render.png")
@@ -784,10 +878,8 @@ class ToolButtons(QtWidgets.QWidget):
 
         tools_buttons_layout.addWidget(self.render_img_btn)
         tools_buttons_layout.addWidget(MWidgets.QVLine())
-        tools_buttons_layout.addWidget(self.create_shotcam_img_btn)
         tools_buttons_layout.addWidget(self.focus_light_img_btn)
         tools_buttons_layout.addWidget(MWidgets.QVLine())
-        tools_buttons_layout.addWidget(self.light_rig_img_btn)
         tools_buttons_layout.addWidget(self.material_builder_img_btn)
         tools_buttons_layout.addWidget(MWidgets.QVLine())
         tools_buttons_layout.addWidget(self.volumebox_img_btn)
@@ -928,6 +1020,7 @@ class PropertiesWidget(QtWidgets.QWidget):
 
         main_layout.addWidget(self.properties_header_lbl)
         main_layout.addWidget(self.tmp_info_lbl)
+        main_layout.addStretch()
 
     def create_connections(self):
         pass
