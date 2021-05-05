@@ -203,8 +203,20 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.properties_widget.log_event.connect(self.push_log)
         self.sets_widget.log_event.connect(self.push_log)
 
+        # self.tool_buttons_widget.update_properties.connect(self.push_log)
+        self.render_layers_widget.update_properties.connect(self.update_properties_panel)
+        # self.modifiers_widget.update_properties.connect(self.push_log)
+        self.console_widget.update_properties.connect(self.update_properties_panel)
+        # self.aovs_widget.update_properties.connect(self.push_log)
+        # self.properties_widget.update_properties.connect(self.push_log)
+        # self.sets_widget.update_properties.connect(self.push_log)
+
         self.tool_buttons_widget.light_created.connect(self.console_widget.create_light)
         self.asset_browser_widget.light_created.connect(self.console_widget.create_light)
+
+    def update_properties_panel(self, item):
+        print item
+        self.properties_widget.set_properties(item)
 
     def push_log(self, log_type, log_message):
         if log_type == "info":

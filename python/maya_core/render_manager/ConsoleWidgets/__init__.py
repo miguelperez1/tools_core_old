@@ -16,8 +16,34 @@ RES_Y = 1320 * SCALE
 GLOBAL_SPACING = 7
 
 
+class PropertiesRenderLayersWidget(QtWidgets.QWidget):
+    def __init__(self, render_layer, *args, **kwargs):
+        super(PropertiesRenderLayersWidget, self).__init__(*args, **kwargs)
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.label = QtWidgets.QLabel("PropertiesRenderLayersWidget")
+
+    def create_layout(self):
+        main_layout = QtWidgets.QVBoxLayout(self)
+
+        main_layout.addWidget(self.label)
+        main_layout.addStretch()
+
+    def create_connections(self):
+        pass
+
+
 class RenderLayersWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
+    update_properties = QtCore.Signal(object)
 
     def __init__(self, *args, **kwargs):
         super(RenderLayersWidget, self).__init__(*args, **kwargs)
@@ -181,6 +207,8 @@ class RenderLayersWidget(QtWidgets.QWidget):
         else:
             cmds.editRenderLayerGlobals(crl=self.current_rl)
 
+        self.update_properties.emit(self.current_rl_item.properties_widget)
+
     def render_layers_tw_rename_callback(self, item, column):
         prev_rl_name = self.current_rl
         new_rl_name = item.text(0)
@@ -203,6 +231,8 @@ class RenderLayersWidget(QtWidgets.QWidget):
         for render_layer in renderlayers:
             render_layer_item = QtWidgets.QTreeWidgetItem()
             render_layer_item.setText(0, render_layer)
+
+            render_layer_item.properties_widget = PropertiesRenderLayersWidget(render_layer)
 
             if render_layer != "masterLayer":
                 render_layer_item.setFlags(render_layer_item.flags() | QtCore.Qt.ItemIsEditable)
@@ -1020,3 +1050,6 @@ class PropertiesWidget(QtWidgets.QWidget):
 
     def create_connections(self):
         pass
+
+    def set_properties(self, item):
+        print "{0} : {1}".format(item, type(item))

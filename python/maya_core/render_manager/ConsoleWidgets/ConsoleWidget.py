@@ -112,7 +112,33 @@ def convert_K_to_RGB(colour_temperature):
     return red / 255, green / 255, blue / 255
 
 
+class PropertiesLightConsoleTreeLightItem(QtWidgets.QWidget):
+    def __init__(self, light, *args, **kwargs):
+        super(PropertiesLightConsoleTreeLightItem, self).__init__(*args, **kwargs)
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.label = QtWidgets.QLabel("ProperitesLightConsoleTreeLightItem")
+
+    def create_layout(self):
+        main_layout = QtWidgets.QVBoxLayout(self)
+
+        main_layout.addWidget(self.label)
+        main_layout.addStretch()
+
+    def create_connections(self):
+        pass
+
+
 class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
+
     def __init__(self, light=None, parent=None, *args, **kwargs):
         super(LightConsoleTreeLightItem, self).__init__(*args, **kwargs)
 
@@ -230,6 +256,8 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
         self.setSizeHint(0, QtCore.QSize(35, 35))
 
+        self.properties_widget = PropertiesLightConsoleTreeLightItem(self.light)
+
     def set_enabled(self):
         enabled = self.widget_data[1].layout().itemAt(1).widget().isChecked()
         if self.light_type != "directionalLight":
@@ -305,6 +333,7 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
 
 class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
     log_event = QtCore.Signal(str, str)
+    update_properties = QtCore.Signal(object)
 
     def dropEvent(self, event):
         self.dragged_item = event.source().selectedItems()[0]
@@ -547,6 +576,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.delete_tex_action.triggered.connect(self.delete_tex)
         self.duplicate_item_action.triggered.connect(self.duplicate_item)
         self.delete_item_action.triggered.connect(self.delete_item)
+        self.itemClicked.connect(self.select_item_callback)
+
+    def select_item_callback(self, item, column):
+        if not item.data(0, QtCore.Qt.UserRole):
+            self.update_properties.emit(item.properties_widget)
 
     def duplicate_item(self):
         self.current_item.pm_node.duplicate(un=True)
@@ -655,6 +689,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
 class ConsoleWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
+    update_properties = QtCore.Signal(object)
 
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
@@ -681,6 +716,10 @@ class ConsoleWidget(QtWidgets.QWidget):
 
     def create_connections(self):
         self.console_tw.log_event.connect(self.push_console_tw_log)
+        self.console_tw.update_properties.connect(self.push_console_properties)
+
+    def push_console_properties(self, light):
+        self.update_properties.emit(light)
 
     def push_console_tw_log(self, log_type, log_message):
         self.log_event.emit(log_type, log_message)
