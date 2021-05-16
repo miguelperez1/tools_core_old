@@ -10,14 +10,12 @@ import vray
 
 from pyqt_commons import MWidgets
 from maya_core.asset_manager.asset_browser import AssetBrowser
-from maya_core.common_tools.logger import Logger
-from maya_core.material_builder import material_builder_ui
 
-from maya_core.render_manager import ConsoleWidgets
-from maya_core.render_manager.ConsoleWidgets import ConsoleWidget
+from maya_core.lighting_console import Widgets
+from maya_core.lighting_console.Widgets import ConsoleWidget
 
 reload(ConsoleWidget)
-reload(ConsoleWidgets)
+reload(Widgets)
 reload(MWidgets)
 reload(AssetBrowser)
 
@@ -28,31 +26,6 @@ def maya_main_window():
     """
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
-
-
-class LightConsoleLogger(object):
-    def __init__(self):
-        self.log = Logger()
-        self.log.status = True
-
-        self.log_le = QtWidgets.QLineEdit()
-        self.log_le.setEnabled(False)
-
-    def info(self, message):
-        self.log_le.setStyleSheet("color: rgb(135, 203, 203);")
-        self.log_le.setText(self.log.info(message))
-
-    def warning(self, message):
-        self.log_le.setStyleSheet("color: rgb(223, 229, 39);")
-        self.log_le.setText(self.log.warning(message))
-
-    def error(self, message):
-        self.log_le.setStyleSheet("color: rgb(244, 40, 40);")
-        self.log_le.setText(self.log.error(message))
-
-    def result(self, message):
-        self.log_le.setStyleSheet("color: rgb(42, 180, 34);")
-        self.log_le.setText(self.log.result(message))
 
 
 class LightingConsole(QtWidgets.QMainWindow):
@@ -66,7 +39,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
-        self.log = LightConsoleLogger()
+        self.log = Widgets.LogWidget()
 
         self.scale = 1
         self.res_x = 2550 * self.scale
@@ -90,16 +63,16 @@ class LightingConsole(QtWidgets.QMainWindow):
 
     def create_widgets(self):
         # Render settings
-        self.render_settings_widget = ConsoleWidgets.RenderSettings(self.res_x * .175, self.res_y * .07)
+        self.render_settings_widget = Widgets.RenderSettings(self.res_x * .175, self.res_y * .07)
 
         # Tool Buttons
-        self.tool_buttons_widget = ConsoleWidgets.ToolButtons()
+        self.tool_buttons_widget = Widgets.ToolButtons()
 
         # Render Layers
-        self.render_layers_widget = ConsoleWidgets.RenderLayersWidget()
+        self.render_layers_widget = Widgets.RenderLayersWidget()
 
         # Modifiers
-        self.modifiers_widget = ConsoleWidgets.ModifiersWidget()
+        self.modifiers_widget = Widgets.ModifiersWidget()
 
         # Console
         self.console_widget = ConsoleWidget.ConsoleWidget()
@@ -109,13 +82,13 @@ class LightingConsole(QtWidgets.QMainWindow):
                                                                                  'clouds'])
 
         # Properties
-        self.properties_widget = ConsoleWidgets.PropertiesWidget()
+        self.properties_widget = Widgets.PropertiesWidget()
 
         # AOVs
-        self.aovs_widget = ConsoleWidgets.AOVsWidget()
+        self.aovs_widget = Widgets.AOVsWidget()
 
         # Sets
-        self.sets_widget = ConsoleWidgets.SetsWidget()
+        self.sets_widget = Widgets.SetsWidget()
 
         # Sizing
         row_width = self.res_x * .95
@@ -241,6 +214,23 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.menu_bar.addMenu(edit_menu)
         self.menu_bar.addMenu(tools_menu)
         self.menu_bar.addMenu(help_menu)
+
+    def delete_script_jobs(self):
+        # Execute each widgets delete script jobs methods
+        self.console_widget.delete_script_jobs()
+        pass
+
+    def create_script_jobs(self):
+        # Execute each widgets create script jobs methods
+        self.console_widget.create_script_jobs()
+
+        pass
+
+    def showEvent(self, event):
+        self.create_script_jobs()
+
+    def closeEvent(self, event):
+        self.delete_script_jobs()
 
 
 def main():

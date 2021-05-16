@@ -14,6 +14,8 @@ class ExampleDialog(QtWidgets.QMainWindow):
         self.setWindowTitle("Window")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
+        self.setObjectName("ExampleDialog")
+
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
         self.create_actions()

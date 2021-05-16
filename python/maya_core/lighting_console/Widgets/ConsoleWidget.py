@@ -6,50 +6,13 @@ import maya.cmds as cmds
 import pymel.core as pm
 import vray
 
-import os
 import math
 
 from pyqt_commons import MWidgets
-from maya_core.material_builder import material_builder_ui
 
 reload(MWidgets)
 
-SCALE = 1
-RES_X = 2550 * SCALE
-RES_Y = 1320 * SCALE
-
-ICONS = {
-    "VRayLightRectShape": "C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png",
-    "VRayLightSphereShape": "C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightSphere_200.png",
-    "VRayLightDomeShape": "C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightDome_200.png",
-    "directionalLight": ":/directionallight.png",
-    "connection_in": ":/hsUpStreamCon.png",
-    "group": "F:\\share\\tools\\shelf_icons\\group.png"
-}
-
-
-class RecursiveNodeSearch(object):
-    def _traverse(self, node, children):
-
-        connections = []
-
-        for c in pm.listRelatives(node, c=True):
-            connections.append(str(c))
-
-        for child in connections:
-            children[child] = {}
-
-    def get_nodes(self, node, children):
-        self._traverse(node, children)
-
-        for child in children:
-            self._traverse(child, children[child])
-
-    def search_nodes(self, node):
-        children = {}
-        self.get_nodes(node, children)
-
-        return children
+from maya_core.lighting_console.constants import *
 
 
 def convert_K_to_RGB(colour_temperature):
@@ -397,6 +360,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
     def __init__(self, *args, **kwargs):
         super(LightConsoleTreeWidget, self).__init__(*args, **kwargs)
 
+        self.setObjectName("LightConsoleTreeWidget")
+
+        self.light_items = []
+        self.script_jobs = []
+
         self.create_actions()
 
         self.header_item = QtWidgets.QTreeWidgetItem(
@@ -431,6 +399,19 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.resizeColumnToContents(10)
 
         self.get_light_rig()
+
+    def create_script_jobs(self):
+        # self.script_jobs.append(cmds.scriptJob(event=['DagObjectDeleted'])
+        pass
+
+    def delete_script_jobs(self):
+        for job in self.script_jobs:
+            cmds.scriptJob(kill=job)
+
+        self.script_jobs = []
+
+    def on_dag_object_deleted(self):
+        pass
 
     def create_actions(self):
         self.create_group_action = QtWidgets.QAction("Create Group")
@@ -590,7 +571,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         pm.delete(self.current_item.pm_node)
         self.get_light_rig()
 
-    def set_tex(self, use):
+    def use_tex(self, use):
         light_type = self.current_item.item_type
         pm_node = self.current_item.pm_node
         pm_node.multiplyByTheLightColor.set(1)
@@ -601,9 +582,9 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         elif light_type == "VRayLightDomeShape":
             self.current_item.pm_node.useDomeTex.set(use)
 
-            # if not tex, create, if tex, pass
+        # if not tex, create, if tex, pass
 
-            # if not tex, create, if tex, pass
+        # if not tex, create, if tex, pass
         has_tex = False
 
         for connection in pm.listConnections(self.current_item.pm_node.getShape(), c=1):
@@ -613,6 +594,13 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         if not has_tex and use:
             self.log_event.emit("info", "need to create tex")
 
+    def set_tex(self):
+        has_tex = False
+
+        for connection in pm.listConnections(self.current_item.pm_node.getShape(), c=1):
+            if connection[0].endswith("Tex"):
+                has_tex = True
+
     def delete_tex(self):
         pm_node = self.current_item.pm_node
 
@@ -621,11 +609,10 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
                 self.log_event.emit("info", "need to break tex")
 
     def create_group(self, name=None, parent="l_rig", startup=False):
-
         if startup:
             group = pm.PyNode(name)
         else:
-            group = pm.PyNode(pm.group(em=True, n="l_group_temp"))
+            group = pm.PyNode(pm.group(em=True, n="l_group_temp", p="l_rig"))
 
         new_group_item = LightConsoleTreeGroupItem(str(group), parent)
 
@@ -666,6 +653,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
                     elif pm.nodeType(child) == "transform" and len(pm.listRelatives(child, typ=light_types)) > 0:
                         new_item = self.create_light(str(child.getShape()).replace("Shape", ""), node)
+                        self.light_items.append(new_item)
 
                     if new_item is not None:
                         all_nodes.append(new_item)
@@ -693,6 +681,8 @@ class ConsoleWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
+
+        self.setObjectName("ConsoleWidget")
 
         self.create_actions()
         self.create_widgets()
@@ -725,6 +715,14 @@ class ConsoleWidget(QtWidgets.QWidget):
         self.log_event.emit(log_type, log_message)
 
     def create_light(self, light):
-        self.console_tw.create_light(light, "l_rig")
+        new_light_item = self.console_tw.create_light(light, "l_rig")
+        self.console_tw.light_items.append(new_light_item)
+
         self.log_event.emit("result", "Created " + light)
         pass
+
+    def delete_script_jobs(self):
+        self.console_tw.delete_script_jobs()
+
+    def create_script_jobs(self):
+        self.console_tw.create_script_jobs()

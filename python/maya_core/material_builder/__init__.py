@@ -1,4 +1,5 @@
 import maya.cmds as cmds
+import pymel.core as pm
 
 from maya_core.common_tools import logger
 
@@ -90,6 +91,7 @@ def build_vraymtl(asset_data, debug=False):
             # Displacement
             if key.startswith('displacement'):
                 continue
+                # TODO Fix this
                 disp_node = cmds.createNode('displacementShader', n='{}_displacementShader'.format(node))
                 cmds.setAttr('{}.ignoreColorSpaceFileRules'.format(tex), 1)
                 cmds.setAttr('{}.colorSpace'.format(tex), 'Raw', type='string')
