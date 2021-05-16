@@ -13,6 +13,8 @@ reload(MWidgets)
 from maya_core.lighting_console.constants import *
 
 
+# TODO Sets created script job
+
 class SetsWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
@@ -206,9 +208,9 @@ class SetsWidget(QtWidgets.QWidget):
             self.set_members_tw.addTopLevelItem(item)
 
     def add_set(self):
-        new_set = cmds.sets(empty=True)[0]
+        new_set = cmds.sets(empty=True)
 
-        # self.log.result("Created " + new_set)
+        self.log_event.emit("result", ("Created " + new_set))
 
         self.update_sets()
 
@@ -218,7 +220,7 @@ class SetsWidget(QtWidgets.QWidget):
 
         cmds.delete(self.current_set)
 
-        # self.log.result("Deleted " + self.current_set)
+        self.log_event.emit("result", ("Deleted " + self.current_set))
 
         self.update_sets()
 
@@ -226,17 +228,29 @@ class SetsWidget(QtWidgets.QWidget):
         for obj in cmds.ls(sl=True):
             cmds.sets(obj, edit=True, add=self.current_set)
 
+        if len(cmds.ls(sl=True)) > 1:
+            self.log_event.emit("result", "Added objects to set")
+        elif len(cmds.ls(sl=True)) == 1:
+            self.log_event.emit("result", "Added {} from set".format(cmds.ls(sl=True)[0]))
+
         self.update_set_members()
 
     def remove_from_set(self):
         for obj in cmds.ls(sl=True):
             cmds.sets(obj, edit=True, rm=self.current_set)
 
+        if len(cmds.ls(sl=True)) > 1:
+            self.log_event.emit("result", "Removed objects from set")
+        elif len(cmds.ls(sl=True)) == 1:
+            self.log_event.emit("result", "Removed {} from set".format(cmds.ls(sl=True)[0]))
+
         self.update_set_members()
 
     def duplicate_set(self):
         if self.current_set is None:
             return
+
+        current_set = self.current_set
 
         new_set = cmds.duplicate(self.current_set)[0]
 
@@ -256,4 +270,4 @@ class SetsWidget(QtWidgets.QWidget):
 
                 self.sets_tw.topLevelItem(i).setSelected(True)
 
-        # self.log.result("Created " + new_set)
+        self.log_event.emit("result", ("Duplicated {0} to {1}".format(current_set, new_set)))

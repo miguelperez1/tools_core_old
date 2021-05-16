@@ -75,8 +75,6 @@ class ImagePushButton(QtWidgets.QPushButton):
         self.size_x = size_x
         self.size_y = size_y
         self.setFixedSize(self.size_x, self.size_y)
-        self.setContentsMargins(5, 5, 5, 5)
-        # self.setStyleSheet("background-color: rgba(0, 0, 0, 0);")
 
     def set_image(self, path, scale=1):
         icon = QtGui.QIcon(path)
