@@ -21,6 +21,7 @@ class LogWidget(object):
         self.log.status = True
 
         self.log_le = QtWidgets.QLineEdit()
+        self.log_le.setObjectName("LogWidget")
         self.log_le.setEnabled(False)
 
     def info(self, message):

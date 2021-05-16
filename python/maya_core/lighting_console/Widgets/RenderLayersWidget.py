@@ -186,8 +186,6 @@ class RenderLayersWidget(QtWidgets.QWidget):
         else:
             cmds.editRenderLayerGlobals(crl=self.current_rl)
 
-        self.update_properties.emit(self.current_rl_item.properties_widget)
-
     def render_layers_tw_rename_callback(self, item, column):
         prev_rl_name = self.current_rl
         new_rl_name = item.text(0)
@@ -210,8 +208,6 @@ class RenderLayersWidget(QtWidgets.QWidget):
         for render_layer in renderlayers:
             render_layer_item = QtWidgets.QTreeWidgetItem()
             render_layer_item.setText(0, render_layer)
-
-            render_layer_item.properties_widget = PropertiesRenderLayersWidget(render_layer)
 
             if render_layer != "masterLayer":
                 render_layer_item.setFlags(render_layer_item.flags() | QtCore.Qt.ItemIsEditable)

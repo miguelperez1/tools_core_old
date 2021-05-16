@@ -15,6 +15,12 @@ reload(MWidgets)
 from maya_core.lighting_console.constants import *
 
 
+# TODO Clean up pass
+# TODO Tex
+# TODO Temperature
+# TODO Light Properties
+
+
 def convert_K_to_RGB(colour_temperature):
     """
     Converts from K to RGB, algorithm courtesy of

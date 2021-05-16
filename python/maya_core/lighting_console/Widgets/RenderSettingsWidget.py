@@ -13,6 +13,10 @@ reload(MWidgets)
 from maya_core.lighting_console.constants import *
 
 
+# TODO Combine all settings
+# TODO Aspect Ratio Lock
+
+
 class RenderOverridesWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 

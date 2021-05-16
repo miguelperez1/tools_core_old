@@ -21,7 +21,7 @@ class ToolButtonsWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(ToolButtonsWidget, self).__init__(*args, **kwargs)
 
-        self.setObjectName("ToolButtons")
+        self.setObjectName("ToolButtonsWidget")
 
         self.create_actions()
         self.create_widgets()
@@ -48,21 +48,20 @@ class ToolButtonsWidget(QtWidgets.QWidget):
         self.create_shotcam_img_btn.setToolTip("Create Shot Cam")
 
         self.rect_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
-        self.rect_light_img_btn.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightRect_200.png")
+        self.rect_light_img_btn.set_image(ICONS["VRayLightRectShape"])
         self.rect_light_img_btn.setToolTip("Create VRay Rect Light")
 
         self.sphere_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
-        self.sphere_light_img_btn.set_image(
-            "C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightSphere_200.png")
+        self.sphere_light_img_btn.set_image(ICONS["VRayLightSphereShape"])
         self.sphere_light_img_btn.setToolTip("Create VRay Sphere Light")
 
         self.dome_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
-        self.dome_light_img_btn.set_image("C:\\Program Files\\Autodesk\\Maya2020\\vray\\icons\\shelf_LightDome_200.png")
+        self.dome_light_img_btn.set_image(ICONS["VRayLightDomeShape"])
         self.dome_light_img_btn.setToolTip("Create VRay Dome Light")
 
         self.dist_light_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
-        self.dist_light_img_btn.set_image(":/directionallight.png")
-        self.dome_light_img_btn.setToolTip("Create Dist Light")
+        self.dist_light_img_btn.set_image(ICONS["directionalLight"])
+        self.dist_light_img_btn.setToolTip("Create Dist Light")
 
         self.vray_cloud_img_btn = MWidgets.ImagePushButton(100 * icon_scale, 100 * icon_scale)
         self.vray_cloud_img_btn.set_image(

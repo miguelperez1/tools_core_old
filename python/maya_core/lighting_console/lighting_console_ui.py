@@ -12,9 +12,7 @@ from pyqt_commons import MWidgets
 from maya_core.asset_manager.asset_browser import AssetBrowser
 
 from maya_core.lighting_console import Widgets
-from maya_core.lighting_console.Widgets import ConsoleWidget
 
-reload(ConsoleWidget)
 reload(Widgets)
 reload(MWidgets)
 reload(AssetBrowser)
@@ -39,7 +37,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
-        self.log = Widgets.LogWidget()
+        self.log = Widgets.LogWidget.LogWidget()
 
         self.scale = 1
         self.res_x = 2550 * self.scale
@@ -63,32 +61,32 @@ class LightingConsole(QtWidgets.QMainWindow):
 
     def create_widgets(self):
         # Render settings
-        self.render_settings_widget = Widgets.RenderSettings(self.res_x * .175, self.res_y * .07)
+        self.render_settings_widget = Widgets.RenderSettingsWidget.RenderSettingsWidget()
 
         # Tool Buttons
-        self.tool_buttons_widget = Widgets.ToolButtons()
+        self.tool_buttons_widget = Widgets.ToolButtonsWidget.ToolButtonsWidget()
 
         # Render Layers
-        self.render_layers_widget = Widgets.RenderLayersWidget()
+        self.render_layers_widget = Widgets.RenderLayersWidget.RenderLayersWidget()
 
         # Modifiers
-        self.modifiers_widget = Widgets.ModifiersWidget()
+        self.modifiers_widget = Widgets.ModifiersWidget.ModifiersWidget()
 
         # Console
-        self.console_widget = ConsoleWidget.ConsoleWidget()
+        self.console_widget = Widgets.ConsoleWidget.ConsoleWidget()
 
         # Asset Browser
         self.asset_browser_widget = AssetBrowser.AssetBrowser(1.5, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
                                                                                  'clouds'])
 
         # Properties
-        self.properties_widget = Widgets.PropertiesWidget()
+        self.properties_widget = Widgets.PropertiesWidget.PropertiesWidget()
 
         # AOVs
-        self.aovs_widget = Widgets.AOVsWidget()
+        self.aovs_widget = Widgets.AOVsWidget.AOVsWidget()
 
         # Sets
-        self.sets_widget = Widgets.SetsWidget()
+        self.sets_widget = Widgets.SetsWidget.SetsWidget()
 
         # Sizing
         row_width = self.res_x * .95
@@ -177,7 +175,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.sets_widget.log_event.connect(self.push_log)
 
         # self.tool_buttons_widget.update_properties.connect(self.push_log)
-        self.render_layers_widget.update_properties.connect(self.update_properties_panel)
+        # self.render_layers_widget.update_properties.connect(self.update_properties_panel)
         # self.modifiers_widget.update_properties.connect(self.push_log)
         self.console_widget.update_properties.connect(self.update_properties_panel)
         # self.aovs_widget.update_properties.connect(self.push_log)
@@ -214,23 +212,6 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.menu_bar.addMenu(edit_menu)
         self.menu_bar.addMenu(tools_menu)
         self.menu_bar.addMenu(help_menu)
-
-    def delete_script_jobs(self):
-        # Execute each widgets delete script jobs methods
-        self.console_widget.delete_script_jobs()
-        pass
-
-    def create_script_jobs(self):
-        # Execute each widgets create script jobs methods
-        self.console_widget.create_script_jobs()
-
-        pass
-
-    def showEvent(self, event):
-        self.create_script_jobs()
-
-    def closeEvent(self, event):
-        self.delete_script_jobs()
 
 
 def main():
