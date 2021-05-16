@@ -229,9 +229,9 @@ class SetsWidget(QtWidgets.QWidget):
             cmds.sets(obj, edit=True, add=self.current_set)
 
         if len(cmds.ls(sl=True)) > 1:
-            self.log_event.emit("result", "Added objects to set")
+            self.log_event.emit("result", "Added objects to {0}".format(self.current_set))
         elif len(cmds.ls(sl=True)) == 1:
-            self.log_event.emit("result", "Added {} from set".format(cmds.ls(sl=True)[0]))
+            self.log_event.emit("result", "Added {0} to {1}".format(cmds.ls(sl=True)[0]), self.current_set)
 
         self.update_set_members()
 
@@ -240,9 +240,9 @@ class SetsWidget(QtWidgets.QWidget):
             cmds.sets(obj, edit=True, rm=self.current_set)
 
         if len(cmds.ls(sl=True)) > 1:
-            self.log_event.emit("result", "Removed objects from set")
+            self.log_event.emit("result", "Removed objects from {0}".format(self.current_set))
         elif len(cmds.ls(sl=True)) == 1:
-            self.log_event.emit("result", "Removed {} from set".format(cmds.ls(sl=True)[0]))
+            self.log_event.emit("result", "Removed {0} from {1}".format(cmds.ls(sl=True)[0]), self.current_set)
 
         self.update_set_members()
 

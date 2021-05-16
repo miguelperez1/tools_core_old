@@ -371,7 +371,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(lgt))
         cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
         cmds.setAttr('{}.intensityMult'.format(lgt), 1)
-        cmds.setAttr('{}.showTex'.format(lgt), 1)
+        cmds.setAttr('{}.showTex'.format(lgt), 0)
         cmds.setAttr('{}.invisible'.format(lgt), 1)
         cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
 

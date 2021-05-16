@@ -17,8 +17,6 @@ from maya_core.lighting_console.constants import *
 
 # TODO Clean up pass
 # TODO Tex
-# TODO Temperature
-# TODO Light Properties
 
 
 def convert_K_to_RGB(colour_temperature):
@@ -116,6 +114,8 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         self.light_type = pm.nodeType(self.light_shape)
         self.item_type = self.light_type
         self.pm_node = self.light
+        self.is_group = False
+        self.use_temp = False
 
         if parent is not None:
             if cmds.objExists(str(parent)):
@@ -130,8 +130,6 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         self.setSizeHint(2, QtCore.QSize(self.size, self.size))
 
         self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
-
-        self.setData(0, QtCore.Qt.UserRole, False)
 
         self.create_widgets()
 
@@ -249,6 +247,7 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
         self.setText(3, str(self.group))
         self.item_type = "group"
         self.pm_node = self.group
+        self.is_group = True
 
         if parent is not None:
             if cmds.objExists(parent):
@@ -268,7 +267,6 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
 
         self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
 
-        self.setData(0, QtCore.Qt.UserRole, True)
         self.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.ShowIndicator)
 
         self.create_widgets()
@@ -318,7 +316,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
             if self.dropped_at_item:
                 self.dropped_parent = self.dropped_at_item.parent()
-                dropped_at_is_group = self.dropped_at_item.data(0, QtCore.Qt.UserRole)
+                dropped_at_is_group = self.dropped_at_item.is_group
 
             else:
                 self.dropped_parent = None
@@ -406,19 +404,6 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         self.get_light_rig()
 
-    def create_script_jobs(self):
-        # self.script_jobs.append(cmds.scriptJob(event=['DagObjectDeleted'])
-        pass
-
-    def delete_script_jobs(self):
-        for job in self.script_jobs:
-            cmds.scriptJob(kill=job)
-
-        self.script_jobs = []
-
-    def on_dag_object_deleted(self):
-        pass
-
     def create_actions(self):
         self.create_group_action = QtWidgets.QAction("Create Group")
 
@@ -426,8 +411,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.delete_item_action = QtWidgets.QAction("Delete")
         self.select_light_action = QtWidgets.QAction("Select Light")
 
-        self.add_tex_action = QtWidgets.QAction("Use Tex")
-        self.add_tex_action.setCheckable(True)
+        self.use_tex_action = QtWidgets.QAction("Use Tex")
+        self.use_tex_action.setCheckable(True)
+
+        self.use_temp_action = QtWidgets.QAction("Use Temperature")
+        self.use_temp_action.setCheckable(True)
 
         self.delete_tex_action = QtWidgets.QAction("Delete Tex")
 
@@ -484,12 +472,22 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         item_type = item.item_type
 
         column_editability = {
-            "VRayLightRectShape": [3, 4, 5, 6, 8],
-            "VRayLightSphereShape": [3, 4, 5, 6],
-            "VRayLightDomeShape": [3, 4, 5, 6],
-            "directionalLight": [3, 3, 4, 6, 9],
+            "VRayLightRectShape": [3, 4, 5, 8],
+            "VRayLightSphereShape": [3, 4, 5],
+            "VRayLightDomeShape": [3, 4, 5],
+            "directionalLight": [3, 3, 4, 9],
             "group": [3]
         }
+
+        if item_type != "group":
+            if item.use_temp:
+                column_editability[item_type].append(6)
+            else:
+                try:
+                    column_editability[item_type].remove(6)
+
+                except Exception:
+                    pass
 
         if column in column_editability[item_type]:
             return True
@@ -538,13 +536,24 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             context_menu.addAction(self.delete_item_action)
             context_menu.addSeparator()
 
+            # Temp Action
+            context_menu.addAction(self.use_temp_action)
+
+            if self.current_item.item_type != "directionalLight":
+                self.use_temp_action.setChecked(pm_node.colorMode.get())
+            else:
+                pass
+                # self.use_temp_action.setChecked(self.current_item.use_temp)
+
+            # Tex Action
             if self.current_item.item_type in ["VRayLightRectShape", "VRayLightDomeShape"]:
-                context_menu.addAction(self.add_tex_action)
+                context_menu.addSeparator()
+                context_menu.addAction(self.use_tex_action)
 
                 if self.current_item.item_type == "VRayLightRectShape":
-                    self.add_tex_action.setChecked(pm_node.useRectTex.get())
+                    self.use_tex_action.setChecked(pm_node.useRectTex.get())
                 elif self.current_item.item_type == "VRayLightDomeShape":
-                    self.add_tex_action.setChecked(pm_node.useDomeTex.get())
+                    self.use_tex_action.setChecked(pm_node.useDomeTex.get())
 
                 has_tex = False
 
@@ -559,14 +568,31 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
     def create_connections(self):
         self.create_group_action.triggered.connect(self.create_group)
-        self.add_tex_action.toggled.connect(self.set_tex)
+        self.use_tex_action.toggled.connect(self.set_tex)
+        self.use_temp_action.toggled.connect(self.set_temp)
         self.delete_tex_action.triggered.connect(self.delete_tex)
         self.duplicate_item_action.triggered.connect(self.duplicate_item)
         self.delete_item_action.triggered.connect(self.delete_item)
         self.itemClicked.connect(self.select_item_callback)
 
+    def set_temp(self):
+        use_temp = self.use_temp_action.isChecked()
+
+        if self.current_item.item_type != "directionalLight":
+            self.current_item.light.colorMode.set(use_temp)
+        else:
+            pass
+
+        self.current_item.use_temp = use_temp
+
+        if use_temp:
+            value = int(self.current_item.text(6))
+            color_btn_widget = self.itemWidget(self.current_item, 5).layout().itemAt(1).widget()
+            color = convert_K_to_RGB(int(value))
+            color_btn_widget.set_button_color(color, 1)
+
     def select_item_callback(self, item, column):
-        if not item.data(0, QtCore.Qt.UserRole):
+        if not item.is_group:
             self.update_properties.emit(item.properties_widget)
 
     def duplicate_item(self):
@@ -726,9 +752,3 @@ class ConsoleWidget(QtWidgets.QWidget):
 
         self.log_event.emit("result", "Created " + light)
         pass
-
-    def delete_script_jobs(self):
-        self.console_tw.delete_script_jobs()
-
-    def create_script_jobs(self):
-        self.console_tw.create_script_jobs()

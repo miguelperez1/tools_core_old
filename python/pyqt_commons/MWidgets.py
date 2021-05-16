@@ -239,6 +239,9 @@ class ColorPickerTreeWidgetItemWidget(QtWidgets.QWidget):
         pass
 
     def set_color(self):
+        if self.item.use_temp:
+            return
+
         light_color = self.light.color.get()
         color = pm.colorEditor(rgbValue=light_color)
 

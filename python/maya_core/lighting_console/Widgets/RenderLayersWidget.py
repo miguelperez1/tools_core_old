@@ -12,11 +12,7 @@ reload(MWidgets)
 
 from maya_core.lighting_console.constants import *
 
-
-# TODO Properties Widget
-# TODO Properties Push Signal
-# TODO Add selected to render layer
-# TODO Remove selected from render layer
+# Completed for 1.0
 
 class RenderLayersWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
@@ -159,10 +155,20 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.update_render_layers()
 
     def add_to_layer(self):
-        self.log_event.emit("info", "TODO: add_to_layer")
+        for obj in cmds.ls(sl=1):
+            try:
+                cmds.editRenderLayerMembers(self.current_rl, obj)
+            except Exception as e:
+                print e
+                continue
 
     def remove_from_layer(self):
-        self.log_event.emit("info", "TODO: remove_from_layer")
+        for obj in cmds.ls(sl=1):
+            try:
+                cmds.editRenderLayerMembers(self.current_rl, obj, remove=True)
+            except Exception as e:
+                print e
+                continue
 
     def refresh_layers(self):
         self.update_render_layers()
