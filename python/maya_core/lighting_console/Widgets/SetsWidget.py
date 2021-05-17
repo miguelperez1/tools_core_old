@@ -14,6 +14,7 @@ from maya_core.lighting_console.constants import *
 
 
 # TODO Sets created script job
+# TODO Select Set
 
 class SetsWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)

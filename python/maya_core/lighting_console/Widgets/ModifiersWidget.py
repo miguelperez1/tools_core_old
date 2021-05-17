@@ -96,6 +96,10 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifiers_duplicate_btn.set_image("F:\\share\\tools\\shelf_icons\\duplicate.png")
         self.modifiers_duplicate_btn.setFixedSize(30, 30)
 
+        self.modifiers_refresh_btn = MWidgets.ImagePushButton(30, 30)
+        self.modifiers_refresh_btn.set_image("F:\\share\\tools\\shelf_icons\\refresh.png")
+        self.modifiers_refresh_btn.setFixedSize(30, 30)
+
         self.modifiers_tw = QtWidgets.QTreeWidget()
         modifiers_tw_header = QtWidgets.QTreeWidgetItem(['Modifier'])
         self.modifiers_tw.setHeaderItem(modifiers_tw_header)
@@ -118,6 +122,7 @@ class ModifiersWidget(QtWidgets.QWidget):
 
         modifiers_btn_layout.addWidget(self.modifiers_header_lbl)
         modifiers_btn_layout.addStretch()
+        modifiers_btn_layout.addWidget(self.modifiers_refresh_btn)
         modifiers_btn_layout.addWidget(self.modifiers_add_btn)
         modifiers_btn_layout.addWidget(self.modifiers_remove_btn)
         modifiers_btn_layout.addWidget(self.modifiers_duplicate_btn)
@@ -131,6 +136,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifiers_tw.currentItemChanged.connect(self.update_current_modifier)
         self.modifiers_tw.itemChanged.connect(self.modifiers_tw_rename_callback)
 
+        self.modifiers_refresh_btn.clicked.connect(self.refresh_modifiers)
         self.modifiers_add_btn.clicked.connect(self.create_modifier)
 
     def update_current_modifier(self, current_item=None):

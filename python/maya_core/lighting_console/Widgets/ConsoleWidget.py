@@ -537,13 +537,14 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             context_menu.addSeparator()
 
             # Temp Action
-            context_menu.addAction(self.use_temp_action)
+            if self.current_item.item_type != "group":
+                context_menu.addAction(self.use_temp_action)
 
-            if self.current_item.item_type != "directionalLight":
-                self.use_temp_action.setChecked(pm_node.colorMode.get())
-            else:
-                pass
-                # self.use_temp_action.setChecked(self.current_item.use_temp)
+                if self.current_item.item_type != "directionalLight":
+                    self.use_temp_action.setChecked(pm_node.colorMode.get())
+                else:
+                    pass
+                    # self.use_temp_action.setChecked(self.current_item.use_temp)
 
             # Tex Action
             if self.current_item.item_type in ["VRayLightRectShape", "VRayLightDomeShape"]:

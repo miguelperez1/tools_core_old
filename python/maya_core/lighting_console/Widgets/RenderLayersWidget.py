@@ -12,7 +12,7 @@ reload(MWidgets)
 
 from maya_core.lighting_console.constants import *
 
-# Completed for 1.0
+# TODO Move buttons up
 
 class RenderLayersWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
