@@ -7,7 +7,7 @@ from maya_core import maya_startup
 
 log = logger.Logger()
 
-version = "1.0.1"
+version = "1.0.2"
 
 
 def set_render_settings():
@@ -21,11 +21,10 @@ def set_render_settings():
     cmds.setAttr("vraySettings.height", 696)
     cmds.setAttr("vraySettings.aspectRatio", 1920 / 696)
     cmds.setAttr("vraySettings.pixelAspect", 1)
-    cmds.setAttr("vraySettings.imageFormatStr", 6)
+    cmds.setAttr("vraySettings.imageFormatStr", "exr", type="string")
 
 
 def startup_maya():
-    maya_startup.publish_startup_script()
     log.result("startup version-" + version)
     log.result("loaded tools_core-" + maya_core.version)
     set_render_settings()

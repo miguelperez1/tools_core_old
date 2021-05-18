@@ -113,6 +113,12 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifier_objects_tw.setHeaderItem(linked_sets_tw_header)
         self.modifier_objects_tw.setMaximumHeight(RES_Y * .15)
 
+        self.modifiers_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.modifiers_tw.customContextMenuRequested.connect(self.show_modifiers_tw_context_menu)
+
+        self.modifier_objects_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.modifier_objects_tw.customContextMenuRequested.connect(self.show_modifier_objects_tw_context_menu)
+
     def create_layout(self):
         modifiers_layout = QtWidgets.QVBoxLayout(self)
         modifiers_layout.setSpacing(GLOBAL_SPACING)
@@ -138,6 +144,20 @@ class ModifiersWidget(QtWidgets.QWidget):
 
         self.modifiers_refresh_btn.clicked.connect(self.refresh_modifiers)
         self.modifiers_add_btn.clicked.connect(self.create_modifier)
+
+    def show_modifiers_tw_context_menu(self, eventPosition):
+        child = self.childAt(self.sender().mapTo(self, eventPosition))
+        self.current_modifier_item = self.modifiers_tw.itemAt(eventPosition)
+
+        contextMenu = QtWidgets.QMenu(self)
+
+        action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+
+    def show_modifier_objects_tw_context_menu(self, eventPosition):
+        child = self.childAt(self.sender().mapTo(self, eventPosition))
+        self.current_modifier_object_item = self.modifier_objects_tw.itemAt(eventPosition)
+
+        contextMenu = QtWidgets.QMenu(self)
 
     def update_current_modifier(self, current_item=None):
         self.current_modifier_item = current_item
@@ -213,29 +233,6 @@ class ModifiersWidget(QtWidgets.QWidget):
             self.log_event.emit("result", "Removed objects from {0}".format(current_modifier))
         elif len(cmds.ls(sl=True)) == 1:
             self.log_event.emit("result", "Removed {0} from {1}".format(cmds.ls(sl=True)[0]), current_modifier)
-
-    def show_modifiers_tw_context_menu(self, eventPosition):
-        child = self.childAt(self.sender().mapTo(self, eventPosition))
-        self.current_set_item = self.sets_tw.itemAt(eventPosition)
-
-        contextMenu = QtWidgets.QMenu(self)
-
-        if self.current_set is None:
-            contextMenu.addAction(self.add_set_action)
-            contextMenu.addAction(self.refresh_sets_action)
-
-        else:
-            about_action = QtWidgets.QAction(self.current_set)
-
-            contextMenu.addAction(about_action)
-            contextMenu.addSeparator()
-            contextMenu.addAction(self.add_set_action)
-            contextMenu.addAction(self.remove_set_action)
-            contextMenu.addAction(self.duplicate_set_action)
-            contextMenu.addSeparator()
-            contextMenu.addAction(self.refresh_sets_action)
-
-        action = contextMenu.exec_(child.mapToGlobal(eventPosition))
 
     def show_modifier_objects_tw_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
