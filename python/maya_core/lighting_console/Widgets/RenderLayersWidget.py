@@ -12,6 +12,7 @@ reload(MWidgets)
 
 from maya_core.lighting_console.constants import *
 
+
 # TODO Move buttons up
 
 class RenderLayersWidget(QtWidgets.QWidget):
@@ -67,8 +68,10 @@ class RenderLayersWidget(QtWidgets.QWidget):
         render_layers_layout = QtWidgets.QVBoxLayout(self)
         render_layers_layout.setSpacing(GLOBAL_SPACING)
 
-        render_layers_layout.addWidget(self.render_layers_header_lbl)
-        render_layers_layout.addWidget(self.render_layers_tw)
+        render_layers_header_layout = QtWidgets.QHBoxLayout()
+        render_layers_header_layout.setSpacing(GLOBAL_SPACING)
+
+        render_layers_header_layout.addWidget(self.render_layers_header_lbl)
 
         render_layers_btn_layout = QtWidgets.QHBoxLayout()
         render_layers_btn_layout.setSpacing(GLOBAL_SPACING)
@@ -79,7 +82,11 @@ class RenderLayersWidget(QtWidgets.QWidget):
         render_layers_btn_layout.addWidget(self.render_layer_remove_btn)
         render_layers_btn_layout.addWidget(self.render_layer_duplicate_btn)
 
-        render_layers_layout.addLayout(render_layers_btn_layout)
+        render_layers_header_layout.addLayout(render_layers_btn_layout)
+
+        render_layers_layout.addLayout(render_layers_header_layout)
+
+        render_layers_layout.addWidget(self.render_layers_tw)
 
     def create_connections(self):
         # Render Layers

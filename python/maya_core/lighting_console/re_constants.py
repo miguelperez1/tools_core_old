@@ -117,14 +117,6 @@ VRayRenderElementsAttributes['cryptomatteChannel'] = {
     }
 }
 
-VRayRenderElementsAttributes['atmosphereChannel'] = {
-    'vray_colorMapping_atmosphere': {
-        'label': "Apply Color Mapping",
-        'widget_class': 'BoolAttrWidget',
-        'values': [0, 1]
-    }
-}
-
 VRayRenderElementsAttributes['LightSelectElement'] = {
     'vray_type_lightselect': {
         'label': "Type",
@@ -150,14 +142,14 @@ for re_label, re in VRayAOVS.items():
 
     VRayRenderElementsAttributes[re]['enabled'] = {
         'label': 'Enabled',
-        'widget_class': 'BoolAttrWidget',
+        'widget_class': 'CheckBoxAttrWidget',
         'values': [0, 1]
     }
 
     if re in deep_output_res:
         VRayRenderElementsAttributes[re]['enableDeepOutput'] = {
-            'label': 'Enable Deep Output',
-            'widget_class': 'BoolAttrWidget',
+            'label': 'Enable deep output',
+            'widget_class': 'CheckBoxAttrWidget',
             'values': [0, 1]
         }
 
@@ -168,7 +160,7 @@ for render_element in VRayAOVS.values():
         if attr.startswith("vray_name_"):
             VRayRenderElementsAttributes[render_element][attr] = {
                 'label': 'Filename suffix',
-                'widget_class': 'StringEditAttrWidget',
+                'widget_class': 'LineEditAttrWidget',
                 'values': []
             }
             continue
@@ -176,7 +168,17 @@ for render_element in VRayAOVS.values():
         elif attr.startswith("vray_denoise_"):
             VRayRenderElementsAttributes[render_element][attr] = {
                 'label': 'Denoise',
-                'widget_class': 'BoolAttrWidget',
+                'widget_class': 'CheckBoxAttrWidget',
                 'values': [0, 1]
             }
+            continue
+
+        elif attr.startswith("vray_colorMapping_"):
+            VRayRenderElementsAttributes[render_element][attr] = {
+                'label': 'Apply color mapping',
+                'widget_class': 'CheckBoxAttrWidget',
+                'values': [0, 1]
+            }
+            continue
+
     pm.delete(pm_node)
