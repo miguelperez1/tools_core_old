@@ -40,10 +40,19 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         pass
 
 
-class ModifierItemWidget(QtWidgets.QTreeWidgetItem):
+class ModifierObjectWidgetItem(QtWidgets.QTreeWidgetItem):
+
+    def __init__(self, node, *args, **kwargs):
+        super(ModifierObjectWidgetItem, self).__init__(*args, **kwargs)
+
+        self.setText(0, node)
+        self.pm_node = pm.PyNode(node)
+
+
+class ModifierWidgetItem(QtWidgets.QTreeWidgetItem):
 
     def __init__(self, node, preset=None, parent=None, *args, **kwargs):
-        super(ModifierItemWidget, self).__init__(*args, **kwargs)
+        super(ModifierWidgetItem, self).__init__(*args, **kwargs)
 
         self.setFlags(self.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
 
@@ -67,6 +76,7 @@ class ModifierItemWidget(QtWidgets.QTreeWidgetItem):
 
 class ModifiersWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
+    push_properties = QtCore.Signal(object)
 
     def __init__(self, *args, **kwargs):
         super(ModifiersWidget, self).__init__(*args, **kwargs)
@@ -75,13 +85,28 @@ class ModifiersWidget(QtWidgets.QWidget):
 
         self.setContentsMargins(0, 0, 0, 0)
 
+        self.current_modifier_item = None
+        self.current_modifier_object_item = None
+
         self.create_actions()
         self.create_widgets()
         self.create_layout()
         self.create_connections()
 
     def create_actions(self):
-        pass
+        self.create_default_modifier_action = QtWidgets.QAction("Create Default")
+        self.create_hidden_modifier_action = QtWidgets.QAction("Create Hidden")
+        self.create_matte_modifier_action = QtWidgets.QAction("Create Matte")
+
+        self.set_to_default_action = QtWidgets.QAction("Set to Default")
+        self.set_to_hidden_action = QtWidgets.QAction("Set to Hidden")
+        self.set_to_matte_action = QtWidgets.QAction("Set to Matte")
+
+        self.delete_modifier_action = QtWidgets.QAction("Delete Modifier")
+        self.duplicate_modifier_action = QtWidgets.QAction("Duplicate Modifier")
+
+        self.add_to_modifier_action = QtWidgets.QAction("Add selected to modifier")
+        self.remove_from_modifier_action = QtWidgets.QAction("Remove selected from modifier")
 
     def create_widgets(self):
         self.modifiers_header_lbl = MWidgets.HeaderLabel("Modifiers")
@@ -145,11 +170,57 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifiers_refresh_btn.clicked.connect(self.refresh_modifiers)
         self.modifiers_add_btn.clicked.connect(self.create_modifier)
 
+        self.create_default_modifier_action.triggered.connect(self.create_modifier)
+
+        self.duplicate_modifier_action.triggered.connect(self.duplicate_modifier)
+        self.delete_modifier_action.triggered.connect(self.delete_modifier)
+
+        self.add_to_modifier_action.triggered.connect(self.add_to_modifier)
+        self.remove_from_modifier_action.triggered.connect(self.remove_from_modifier)
+
+    def duplicate_modifier(self):
+        try:
+            pm.duplicate(self.current_modifier_item.pm_node)
+            self.refresh_modifiers()
+        except Exception:
+            pass
+
+    def delete_modifier(self):
+        try:
+            pm.delete(self.current_modifier_item.pm_node)
+            self.refresh_modifiers()
+        except Exception:
+            pass
+
     def show_modifiers_tw_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
         self.current_modifier_item = self.modifiers_tw.itemAt(eventPosition)
 
         contextMenu = QtWidgets.QMenu(self)
+
+        if self.current_modifier_item is not None:
+            about_action = QtWidgets.QAction(self.current_modifier_item.text(0).strip())
+            about_action.triggered.connect(lambda: pm.select(self.current_modifier_item.pm_node, noExpand=True))
+            contextMenu.addAction(about_action)
+            contextMenu.addSeparator()
+
+            contextMenu.addAction(self.duplicate_modifier_action)
+            contextMenu.addAction(self.delete_modifier_action)
+
+            if len(pm.ls(sl=1)) > 0:
+                contextMenu.addSeparator()
+                contextMenu.addAction(self.add_to_modifier_action)
+                contextMenu.addAction(self.remove_from_modifier_action)
+
+            contextMenu.addSeparator()
+            contextMenu.addAction(self.set_to_default_action)
+            contextMenu.addAction(self.set_to_hidden_action)
+            contextMenu.addAction(self.set_to_matte_action)
+
+        else:
+            contextMenu.addAction(self.create_default_modifier_action)
+            contextMenu.addAction(self.create_hidden_modifier_action)
+            contextMenu.addAction(self.create_matte_modifier_action)
 
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
 
@@ -158,6 +229,36 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.current_modifier_object_item = self.modifier_objects_tw.itemAt(eventPosition)
 
         contextMenu = QtWidgets.QMenu(self)
+
+        if self.current_modifier_item is not None:
+            if self.current_modifier_object_item is None:
+                contextMenu.addAction(self.add_to_modifier_action)
+            else:
+                about_action = QtWidgets.QAction(self.current_modifier_object_item.text(0))
+                contextMenu.addAction(about_action)
+                contextMenu.addSeparator()
+
+            if self.current_modifier_object_item is None and self.selected_in_modifier():
+                contextMenu.addAction(self.remove_from_modifier_action)
+            elif self.current_modifier_object_item is not None:
+                remove_action = QtWidgets.QAction(
+                    "Remove {} from modifier".format(str(self.current_modifier_object_item.pm_node)))
+                remove_action.triggered.connect(self.remove_from_modifier)
+                contextMenu.addAction(remove_action)
+
+        action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+
+    def selected_in_modifier(self, objs=None):
+        if objs is None:
+            objs = pm.ls(sl=1)
+
+        selected_in_modifier = []
+
+        for obj in objs:
+            if cmds.sets(str(obj), im=str(self.current_modifier_item.pm_node)):
+                selected_in_modifier.append(obj)
+
+        return selected_in_modifier
 
     def update_current_modifier(self, current_item=None):
         self.current_modifier_item = current_item
@@ -181,8 +282,7 @@ class ModifiersWidget(QtWidgets.QWidget):
             return
 
         for m in members:
-            item = QtWidgets.QTreeWidgetItem()
-            item.setText(0, str(m))
+            item = ModifierObjectWidgetItem(m)
             self.modifier_objects_tw.addTopLevelItem(item)
 
     def modifiers_tw_rename_callback(self, item, column):
@@ -198,7 +298,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         nodes = pm.ls(type="VRayObjectProperties")
 
         for node in nodes:
-            new_item = ModifierItemWidget(node)
+            new_item = ModifierWidgetItem(node)
 
             self.modifiers_tw.addTopLevelItem(new_item)
 
@@ -216,38 +316,15 @@ class ModifiersWidget(QtWidgets.QWidget):
         for obj in cmds.ls(sl=True):
             cmds.sets(obj, edit=True, add=current_modifier)
 
-        if len(cmds.ls(sl=True)) > 1:
-            self.log_event.emit("result", "Added objects to {0}".format(current_modifier))
-        elif len(cmds.ls(sl=True)) == 1:
-            self.log_event.emit("result", "Added {0} to {1}".format(cmds.ls(sl=True)[0]), current_modifier)
-
-        self.update_set_members()
+        self.update_modifier_members()
 
     def remove_from_modifier(self):
         current_modifier = str(self.current_modifier_item.pm_node)
 
-        for obj in cmds.ls(sl=True):
-            cmds.sets(obj, edit=True, rm=current_modifier)
+        if self.current_modifier_object_item is not None:
+            cmds.sets(str(self.current_modifier_object_item.pm_node), edit=True, rm=current_modifier)
+        else:
+            for obj in cmds.ls(sl=True):
+                cmds.sets(obj, edit=True, rm=current_modifier)
 
-        if len(cmds.ls(sl=True)) > 1:
-            self.log_event.emit("result", "Removed objects from {0}".format(current_modifier))
-        elif len(cmds.ls(sl=True)) == 1:
-            self.log_event.emit("result", "Removed {0} from {1}".format(cmds.ls(sl=True)[0]), current_modifier)
-
-    def show_modifier_objects_tw_context_menu(self, eventPosition):
-        child = self.childAt(self.sender().mapTo(self, eventPosition))
-        self.current_set_member_item = self.set_members_tw.itemAt(eventPosition)
-
-        contextMenu = QtWidgets.QMenu(self)
-
-        if self.current_set_member_item is not None:
-            about_action = QtWidgets.QAction(self.current_set_member_item.text(0))
-            contextMenu.addAction(about_action)
-            contextMenu.addSeparator()
-            contextMenu.addAction(self.remove_from_set_action)
-            contextMenu.addSeparator()
-
-        contextMenu.addAction(self.add_to_set_action)
-        contextMenu.addAction(self.refresh_sets_action)
-
-        action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+        self.update_modifier_members()

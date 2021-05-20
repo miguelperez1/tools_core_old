@@ -3,18 +3,108 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import maya.mel as mel
 import pymel.core as pm
 import vray
+import re
 
 from pyqt_commons import MWidgets
 
 from maya_core.lighting_console.constants import *
+from maya_core.lighting_console import re_constants
+from maya_core.lighting_console.Widgets import PropertiesWidget
 
 reload(MWidgets)
+reload(re_constants)
+
+
+class AOVsWidgetProperties(QtWidgets.QWidget):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, node, *args, **kwargs):
+        super(AOVsWidgetProperties, self).__init__(*args, **kwargs)
+
+        # self.setObjectName("ModifiersWidgetProperties")
+
+        self.pm_node = node
+        self.class_type = self.pm_node.vrayClassType.get()
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+        self.setContentsMargins(0, 0, 0, 0)
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.header_lbl = QtWidgets.QLabel("VRayRenderElement: ")
+        self.header_le = QtWidgets.QLineEdit()
+        self.header_le.setEnabled(False)
+        self.header_le.setText(str(self.pm_node))
+
+        self.widgets = []
+        for attr in cmds.listAttr(str(self.pm_node)):
+            attr_widget = None
+            if attr in re_constants.VRayRenderElementsAttributes[self.class_type].keys():
+                try:
+                    attr_data = re_constants.VRayRenderElementsAttributes[self.class_type][attr]
+                    attr_label = attr_data['label']
+                    attr_widget_class = attr_data['widget_class']
+                    attr_values = attr_data['values']
+
+                    widget_class = getattr(PropertiesWidget, attr_widget_class)
+                    attr_widget = widget_class(self.pm_node, attr)
+                except Exception as e:
+                    pass
+                    print "error: " + str(e)
+            else:
+                pass
+                # print (attr, re_constants.VRayRenderElementsAttributes[self.class_type].keys())
+
+            if attr_widget:
+                self.widgets.append(attr_widget)
+
+    def create_layout(self):
+        self.main_layout = QtWidgets.QVBoxLayout(self)
+        self.main_layout.setSpacing(7)
+
+        header_layout = QtWidgets.QHBoxLayout()
+        header_layout.addWidget(self.header_lbl)
+        header_layout.addWidget(self.header_le)
+
+        self.main_layout.addLayout(header_layout)
+        self.main_layout.addWidget(MWidgets.QHLine())
+
+        for widget in self.widgets:
+            self.main_layout.addWidget(widget)
+
+    def create_connections(self):
+        pass
+
+    def refresh_attr(self):
+        for widget in self.widgets:
+            widget.refresh_attr()
+
+
+class AOVsWidgetItem(QtWidgets.QTreeWidgetItem):
+
+    def __init__(self, node=None, *args, **kwargs):
+        super(AOVsWidgetItem, self).__init__(*args, **kwargs)
+
+        self.pm_node = node
+
+        self.class_type = self.pm_node.vrayClassType.get()
+
+        self.setText(0, str(self.pm_node))
+
+        self.properties_widget = AOVsWidgetProperties(self.pm_node)
 
 
 class AOVsWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
+    push_properties = QtCore.Signal(object)
 
     def __init__(self, *args, **kwargs):
         super(AOVsWidget, self).__init__(*args, **kwargs)
@@ -27,34 +117,24 @@ class AOVsWidget(QtWidgets.QWidget):
         self.create_connections()
         self.setContentsMargins(0, 0, 0, 0)
 
+        self.refresh_res()
+
     def create_actions(self):
         pass
 
     def create_widgets(self):
-        self.aovs_header_lbl = MWidgets.HeaderLabel("AOVs")
+        self.aovs_header_lbl = MWidgets.HeaderLabel("Render Elements")
 
         self.aovs_create_tw = QtWidgets.QTreeWidget()
-        aovs_create_header_item = QtWidgets.QTreeWidgetItem(["Create Render Pass"])
+        aovs_create_header_item = QtWidgets.QTreeWidgetItem(["Create Render Element"])
         self.aovs_create_tw.setHeaderItem(aovs_create_header_item)
 
         self.aovs_tw = QtWidgets.QTreeWidget()
-        aovs_header_item = QtWidgets.QTreeWidgetItem(["Render Passes"])
+        aovs_header_item = QtWidgets.QTreeWidgetItem(["Render Elements"])
         self.aovs_tw.setHeaderItem(aovs_header_item)
+        self.aovs_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
 
-        aov_items = [
-            "Diffuse",
-            "Light Select",
-            "Multi Matte",
-            "Extra Tex",
-            "Reflection",
-            "Refraction",
-            "Specular",
-            "Velocity",
-            "Z-Depth",
-            "Normals"
-        ]
-
-        for aov in sorted(aov_items):
+        for aov in re_constants.VRayAOVS.keys():
             item = QtWidgets.QTreeWidgetItem()
             item.setText(0, aov)
             self.aovs_create_tw.addTopLevelItem(item)
@@ -74,4 +154,37 @@ class AOVsWidget(QtWidgets.QWidget):
         aovs_layout.addLayout(aovs_tw_layout)
 
     def create_connections(self):
-        pass
+        self.aovs_create_tw.itemDoubleClicked.connect(self.create_aov)
+
+        self.aovs_tw.currentItemChanged.connect(self.update_current_aov)
+
+    def update_current_aov(self, item, previous_item):
+        self.show_properties(item)
+        if item.class_type in ["LightSelectElement"]:
+            pm.select(item.text(0), noExpand=True)
+        else:
+            pm.select(item.text(0))
+
+    def show_properties(self, item):
+        self.push_properties.emit(item.properties_widget)
+
+    def refresh_res(self):
+        res = pm.ls(type='VRayRenderElement')
+
+        res.extend(pm.ls(type="VRayRenderElementSet"))
+
+        for re in res:
+            new_aov_item = AOVsWidgetItem(re)
+            self.aovs_tw.addTopLevelItem(new_aov_item)
+
+    def create_aov(self, item, column):
+        command = re_constants.VRayAOVS[item.text(0)]
+        pm_node = pm.PyNode(mel.eval("vrayAddRenderElement {}".format(command)))
+
+        print pm_node
+
+        new_aov_item = AOVsWidgetItem(pm_node)
+
+        self.aovs_tw.addTopLevelItem(new_aov_item)
+        self.aovs_tw.clearSelection()
+        new_aov_item.setSelected(True)

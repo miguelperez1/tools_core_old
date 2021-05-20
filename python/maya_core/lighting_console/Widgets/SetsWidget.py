@@ -16,6 +16,17 @@ from maya_core.lighting_console.constants import *
 # TODO Sets created script job
 # TODO Select Set
 
+class SetsWidgetItem(QtWidgets.QTreeWidgetItem):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, set, *args, **kwargs):
+        super(SetsWidgetItem, self).__init__(*args, **kwargs)
+
+        self.pm_node = pm.PyNode(set)
+        self.setText(0, set)
+        self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
+
+
 class SetsWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
@@ -122,6 +133,7 @@ class SetsWidget(QtWidgets.QWidget):
 
         else:
             about_action = QtWidgets.QAction(self.current_set)
+            about_action.triggered.connect(self.select_set)
 
             contextMenu.addAction(about_action)
             contextMenu.addSeparator()
@@ -132,6 +144,9 @@ class SetsWidget(QtWidgets.QWidget):
             contextMenu.addAction(self.refresh_sets_action)
 
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+
+    def select_set(self):
+        pm.select(self.current_set_item.pm_node, noExpand=True)
 
     def show_set_members_tw_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
@@ -169,8 +184,6 @@ class SetsWidget(QtWidgets.QWidget):
 
         self.update_current_set(item)
 
-        # self.log.result("Renamed {0} to {1}".format(prev_set_name, new_set_name))
-
     def update_sets(self):
         self.sets_tw.clear()
         self.update_current_set()
@@ -185,9 +198,7 @@ class SetsWidget(QtWidgets.QWidget):
             if set.startswith("default") or set.startswith("initial"):
                 continue
 
-            item = QtWidgets.QTreeWidgetItem()
-            item.setText(0, str(set))
-            item.setFlags(item.flags() | QtCore.Qt.ItemIsEditable)
+            item = SetsWidgetItem(set)
             self.sets_tw.addTopLevelItem(item)
 
         self.update_set_members()

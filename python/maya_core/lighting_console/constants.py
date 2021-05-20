@@ -1,6 +1,8 @@
 import maya.cmds as cmds
 import pymel.core as pm
 
+from collections import OrderedDict
+
 SCALE = 1
 RES_X = 2550 * SCALE
 RES_Y = 1320 * SCALE
@@ -14,6 +16,7 @@ ICONS = {
     "connection_in": ":/hsUpStreamCon.png",
     "group": "F:\\share\\tools\\shelf_icons\\group.png"
 }
+
 
 
 class RecursiveNodeSearch(object):
