@@ -180,7 +180,7 @@ class ModifiersWidget(QtWidgets.QWidget):
 
     def duplicate_modifier(self):
         try:
-            pm.duplicate(self.current_modifier_item.pm_node)
+            pm.duplicate(self.current_modifier_item.pm_node, un=True)
             self.refresh_modifiers()
         except Exception:
             pass

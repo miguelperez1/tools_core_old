@@ -18,7 +18,6 @@ ICONS = {
 }
 
 
-
 class RecursiveNodeSearch(object):
     def _traverse(self, node, children):
 

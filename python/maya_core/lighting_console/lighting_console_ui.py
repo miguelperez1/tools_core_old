@@ -76,7 +76,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_widget = Widgets.ConsoleWidget.ConsoleWidget()
 
         # Asset Browser
-        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.5, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
+        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.589, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
                                                                                  'clouds'])
 
         # Properties
@@ -102,11 +102,11 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.modifiers_widget.setFixedSize(col1_width, row_height * .725)
 
         self.console_widget.setFixedSize(col2_width, row_height * .575)
-        self.aovs_widget.setFixedSize(col2_width * .325, row_height * .375)
-        self.asset_browser_widget.setFixedSize(col2_width * .635, row_height * .375)
+        self.sets_widget.setFixedSize(col2_width * .333, row_height * .375)
+        self.asset_browser_widget.setFixedSize(col2_width * .666, row_height * .375)
 
         self.properties_widget.setMinimumSize(col3_width, row_height * .575)
-        self.sets_widget.setMinimumSize(col3_width, row_height * .375)
+        self.aovs_widget.setMinimumSize(col3_width, row_height * .375)
 
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
@@ -136,7 +136,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         aov_browser_layout = QtWidgets.QHBoxLayout()
         aov_browser_layout.setSpacing(0)
-        aov_browser_layout.addWidget(self.aovs_widget)
+        aov_browser_layout.addWidget(self.sets_widget)
         aov_browser_layout.addWidget(MWidgets.QVLine())
         aov_browser_layout.addWidget(self.asset_browser_widget)
 
@@ -147,7 +147,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         row1_col3_layout.setSpacing(5)
         row1_col3_layout.addWidget(self.properties_widget)
         row1_col3_layout.addWidget(MWidgets.QHLine())
-        row1_col3_layout.addWidget(self.sets_widget)
+        row1_col3_layout.addWidget(self.aovs_widget)
 
         row_1_layout.addLayout(row1_col1_layout)
         row_1_layout.addWidget(MWidgets.QVLine())

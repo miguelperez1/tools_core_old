@@ -20,6 +20,7 @@ reload(re_constants)
 
 class AOVsWidgetProperties(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
+    renamed = QtCore.Signal(str)
 
     def __init__(self, node, *args, **kwargs):
         super(AOVsWidgetProperties, self).__init__(*args, **kwargs)
@@ -41,7 +42,6 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
     def create_widgets(self):
         self.header_lbl = QtWidgets.QLabel("VRayRenderElement: ")
         self.header_le = QtWidgets.QLineEdit()
-        self.header_le.setEnabled(False)
         self.header_le.setText(str(self.pm_node))
 
         self.widgets = []
@@ -77,11 +77,21 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         self.main_layout.addLayout(header_layout)
         self.main_layout.addWidget(MWidgets.QHLine())
 
+        # TODO Add these to a scroll area instead
         for widget in self.widgets:
             self.main_layout.addWidget(widget)
 
     def create_connections(self):
-        pass
+        self.header_le.returnPressed.connect(self.rename)
+
+    def rename(self):
+        try:
+            pm.rename(self.pm_node, self.header_le.text())
+        except Exception:
+            pass
+
+        self.header_le.setText(str(self.pm_node))
+        self.renamed.emit(str(self.pm_node))
 
     def refresh_attr(self):
         for widget in self.widgets:
@@ -100,6 +110,11 @@ class AOVsWidgetItem(QtWidgets.QTreeWidgetItem):
         self.setText(0, str(self.pm_node))
 
         self.properties_widget = AOVsWidgetProperties(self.pm_node)
+
+        self.properties_widget.renamed.connect(self.rename)
+
+    def rename(self, new_name):
+        self.setText(0, new_name)
 
 
 class AOVsWidget(QtWidgets.QWidget):

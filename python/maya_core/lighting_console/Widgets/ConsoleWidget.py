@@ -373,7 +373,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         self.header_item = QtWidgets.QTreeWidgetItem(
             ["", "Enabled", "", "Name", "Exposure", "Color", 'Temperature', "Tex", "Directional", 'Angle', 'Invisible',
-             ''])
+             'Light Select Name', ''])
         self.setHeaderItem(self.header_item)
 
         self.setAlternatingRowColors(True)
@@ -431,32 +431,34 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         if self.prev_attr_value is None:
             return
 
-        attribute = self.header_item.text(column).lower()
+        attribute = self.header_item.text(column).lower().replace(" ", "")
+
         if value is None:
             value = item.text(column)
         else:
             value = value
 
         if attribute != "name":
-            attr = attribute
-            value = float(value)
-            if attribute == "exposure":
-                attr = "intensity"
-                item.setText(column, "{:.2f}".format(value))
-                value = math.pow(2, value)
+            if attribute != "lightselectname":
+                attr = attribute
+                value = float(value)
+                if attribute == "exposure":
+                    attr = "intensity"
+                    item.setText(column, "{:.2f}".format(value))
+                    value = math.pow(2, value)
 
-            elif attribute == "angle":
-                attr = "lightAngle"
-                item.setText(column, "{:.3f}".format(value))
+                elif attribute == "angle":
+                    attr = "lightAngle"
+                    item.setText(column, "{:.3f}".format(value))
 
-            elif attribute == "temperature":
-                color_btn_widget = self.itemWidget(item, 5).layout().itemAt(1).widget()
-                color = convert_K_to_RGB(int(value))
-                color_btn_widget.set_button_color(color, 1)
-            else:
-                item.setText(column, "{:.3f}".format(value))
+                elif attribute == "temperature":
+                    color_btn_widget = self.itemWidget(item, 5).layout().itemAt(1).widget()
+                    color = convert_K_to_RGB(int(value))
+                    color_btn_widget.set_button_color(color, 1)
+                elif attribute in ['directional']:
+                    item.setText(column, "{:.3f}".format(value))
 
-            getattr(item.light, attr).set(float(value))
+                getattr(item.light, attr).set(float(value))
 
         # Needs to go here
         if attribute == "name":
@@ -472,10 +474,10 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         item_type = item.item_type
 
         column_editability = {
-            "VRayLightRectShape": [3, 4, 5, 8],
-            "VRayLightSphereShape": [3, 4, 5],
-            "VRayLightDomeShape": [3, 4, 5],
-            "directionalLight": [3, 3, 4, 9],
+            "VRayLightRectShape": [3, 4, 5, 8, 11],
+            "VRayLightSphereShape": [3, 4, 5, 11],
+            "VRayLightDomeShape": [3, 4, 5, 11],
+            "directionalLight": [3, 3, 4, 9, 11],
             "group": [3]
         }
 
