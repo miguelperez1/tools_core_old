@@ -11,11 +11,22 @@ import re
 from pyqt_commons import MWidgets
 
 from maya_core.lighting_console.constants import *
+from maya_core.lighting_console import constants
 from maya_core.lighting_console import re_constants
 from maya_core.lighting_console.Widgets import PropertiesWidget
 
 reload(MWidgets)
 reload(re_constants)
+
+
+class LSMemberWidgetItem(QtWidgets.QTreeWidgetItem):
+
+    def __init__(self, node, *args, **kwargs):
+        super(LSMemberWidgetItem, self).__init__(*args, **kwargs)
+
+        self.pm_node = node
+
+        self.setText(0, str(self.pm_node))
 
 
 class LightSelectMembersWidget(QtWidgets.QWidget):
@@ -33,7 +44,8 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         self.create_connections()
 
     def create_actions(self):
-        pass
+        self.add_ls_member_action = QtWidgets.QAction("Add selected lights")
+        self.remove_ls_member_action = QtWidgets.QAction("Remove Light")
 
     def create_widgets(self):
         self.ls_members_header = QtWidgets.QLabel("Light Select Members")
@@ -48,6 +60,9 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         self.ls_tag_le = QtWidgets.QLineEdit()
 
         self.ls_tag_populate_btn = QtWidgets.QPushButton("Populate from tag")
+
+        self.ls_members_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ls_members_tw.customContextMenuRequested.connect(self.show_ls_members_tw_context_menu)
 
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -65,7 +80,8 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         main_layout.addStretch()
 
     def create_connections(self):
-        pass
+        self.add_ls_member_action.triggered.connect(self.add_ls_member)
+        self.remove_ls_member_action.triggered.connect(self.remove_ls_member)
 
     def refresh_ls_members(self):
         self.ls_members_tw.clear()
@@ -73,12 +89,49 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         ls_members = pm.sets(self.pm_node, q=True)
 
         for ls_member in ls_members:
-            new_ls_member_item = QtWidgets.QTreeWidgetItem()
-            new_ls_member_item.setText(0, str(ls_member))
+            new_ls_member_item = LSMemberWidgetItem(ls_member)
 
             self.ls_members_tw.addTopLevelItem(new_ls_member_item)
 
     def refresh_attr(self):
+        self.refresh_ls_members()
+
+    def show_ls_members_tw_context_menu(self, eventPosition):
+        child = self.childAt(self.sender().mapTo(self, eventPosition))
+        self.current_ls_member_tw_item = self.ls_members_tw.itemAt(eventPosition)
+
+        contextMenu = QtWidgets.QMenu(self)
+
+        if self.current_ls_member_tw_item is not None:
+            about_action = QtWidgets.QAction(str(self.current_ls_member_tw_item.pm_node))
+            contextMenu.addAction(about_action)
+            contextMenu.addSeparator()
+
+            contextMenu.addAction(self.remove_ls_member_action)
+
+        contextMenu.addAction(self.add_ls_member_action)
+
+        action = contextMenu.exec_(child.mapToGlobal(eventPosition))
+
+    def add_ls_member(self):
+        for node in pm.ls(sl=1):
+            if node.nodeType() != "transform":
+                node = node.getTransform()
+
+            if node.getShape().nodeType() in constants.ICONS.keys():
+                if node in pm.sets(self.pm_node, q=True):
+                    continue
+
+                cmds.sets(str(node), edit=True, add=str(self.pm_node))
+                new_ls_member_item = LSMemberWidgetItem(node)
+
+                self.ls_members_tw.addTopLevelItem(new_ls_member_item)
+
+    def remove_ls_member(self):
+        current_pm_node = self.current_ls_member_tw_item.pm_node
+
+        cmds.sets(str(current_pm_node), edit=True, rm=str(self.pm_node))
+
         self.refresh_ls_members()
 
 
