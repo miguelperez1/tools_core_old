@@ -94,6 +94,7 @@ VRayRenderElementsAttributes = {}
 
 VRayRenderElementsAttributes['cryptomatteChannel'] = {
     'vray_idtype_cryptomatte': {
+        'name': 'vray_idtype_cryptomatte',
         'label': "ID Type: ",
         'widget_class': 'ComboBoxAttrWidget',
         'values': [
@@ -107,6 +108,7 @@ VRayRenderElementsAttributes['cryptomatteChannel'] = {
         ]
     },
     'vray_add_root_name_cryptomatte': {
+        'name': 'vray_add_root_name_cryptomatte',
         'label': "Sub object name mode: ",
         'widget_class': 'ComboBoxAttrWidget',
         'values': [
@@ -114,11 +116,24 @@ VRayRenderElementsAttributes['cryptomatteChannel'] = {
             'Add short root object name',
             'Add full root object name'
         ]
+    },
+    'vray_userattr_cryptomatte': {
+        'name': 'vray_userattr_cryptomatte',
+        'label': 'User attribute name',
+        'widget_class': 'LineEditAttrWidget',
+        'values': []
+    },
+    'vray_numlevels_cryptomatte': {
+        'name': 'vray_numlevels_cryptomatte',
+        'label': 'Num levels',
+        'widget_class': 'SliderAttrWidget',
+        'values': [1, 20]
     }
 }
 
 VRayRenderElementsAttributes['LightSelectElement'] = {
     'vray_type_lightselect': {
+        'name': 'vray_type_lightselect',
         'label': "Type",
         'widget_class': 'ComboBoxAttrWidget',
         'values': [
@@ -133,6 +148,12 @@ VRayRenderElementsAttributes['LightSelectElement'] = {
             '',
             'Light path expression'
         ]
+    },
+    'vray_lpe_lightselect': {
+        'name': 'vray_lpe_lightselect',
+        'label': 'Light Path Expression',
+        'widget_class': 'LineEditAttrWidget',
+        'values': []
     }
 }
 
@@ -141,6 +162,7 @@ for re_label, re in VRayAOVS.items():
         VRayRenderElementsAttributes[re] = {}
 
     VRayRenderElementsAttributes[re]['enabled'] = {
+        'name': 'enabled',
         'label': 'Enabled',
         'widget_class': 'CheckBoxAttrWidget',
         'values': [0, 1]
@@ -148,6 +170,7 @@ for re_label, re in VRayAOVS.items():
 
     if re in deep_output_res:
         VRayRenderElementsAttributes[re]['enableDeepOutput'] = {
+            'name': 'enableDeepOutput',
             'label': 'Enable deep output',
             'widget_class': 'CheckBoxAttrWidget',
             'values': [0, 1]
@@ -159,6 +182,7 @@ for render_element in VRayAOVS.values():
     for attr in pm.listAttr(pm_node):
         if attr.startswith("vray_name_"):
             VRayRenderElementsAttributes[render_element][attr] = {
+                'name': attr,
                 'label': 'Filename suffix',
                 'widget_class': 'LineEditAttrWidget',
                 'values': []
@@ -167,6 +191,7 @@ for render_element in VRayAOVS.values():
 
         elif attr.startswith("vray_denoise_"):
             VRayRenderElementsAttributes[render_element][attr] = {
+                'name': attr,
                 'label': 'Denoise',
                 'widget_class': 'CheckBoxAttrWidget',
                 'values': [0, 1]
@@ -175,7 +200,16 @@ for render_element in VRayAOVS.values():
 
         elif attr.startswith("vray_colorMapping_"):
             VRayRenderElementsAttributes[render_element][attr] = {
+                'name': attr,
                 'label': 'Apply color mapping',
+                'widget_class': 'CheckBoxAttrWidget',
+                'values': [0, 1]
+            }
+            continue
+        elif attr.startswith("vray_considerforaa_"):
+            VRayRenderElementsAttributes[render_element][attr] = {
+                'name': attr,
+                'label': 'Consider for Anti-Aliasing',
                 'widget_class': 'CheckBoxAttrWidget',
                 'values': [0, 1]
             }

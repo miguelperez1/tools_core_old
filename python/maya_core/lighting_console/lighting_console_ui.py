@@ -12,10 +12,12 @@ from pyqt_commons import MWidgets
 from maya_core.asset_manager.asset_browser import AssetBrowser
 
 from maya_core.lighting_console import Widgets
+from maya_core.lighting_console import constants
 
 reload(Widgets)
 reload(MWidgets)
 reload(AssetBrowser)
+reload(constants)
 
 
 def maya_main_window():
@@ -40,8 +42,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.log = Widgets.LogWidget.LogWidget()
 
         self.scale = 1
-        self.res_x = 2550 * self.scale
-        self.res_y = 1320 * self.scale
+        self.res_x = constants.RES_X * self.scale
+        self.res_y = constants.RES_Y * self.scale
 
         self.setMinimumSize(self.res_x, self.res_y)
 
@@ -93,8 +95,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         row_height = self.res_y * .875
 
         col1_width = row_width * .15
-        col2_width = row_width * .675
-        col3_width = row_width * .125
+        col2_width = row_width * .65
+        col3_width = row_width * .15
 
         self.tool_buttons_widget.setFixedHeight(self.res_y * .05)
 
@@ -176,7 +178,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         # self.tool_buttons_widget.update_properties.connect(self.push_log)
         # self.render_layers_widget.update_properties.connect(self.update_properties_panel)
-        # self.modifiers_widget.push_properties.connect(self.update_properties_panel)
+        self.modifiers_widget.push_properties.connect(self.update_properties_panel)
         # self.console_widget.update_properties.connect(self.update_properties_panel)
         self.aovs_widget.push_properties.connect(self.update_properties_panel)
         # self.properties_widget.update_properties.connect(self.push_log)

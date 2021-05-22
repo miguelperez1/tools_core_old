@@ -22,15 +22,15 @@ INDENT = 40
 class CheckBoxAttrWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
-    def __init__(self, node, attr, *args, **kwargs):
+    def __init__(self, node, attr_data, *args, **kwargs):
         super(CheckBoxAttrWidget, self).__init__(*args, **kwargs)
 
         self.setContentsMargins(INDENT, 0, 0, 0)
 
         self.pm_node = node
-        self.class_type = self.pm_node.vrayClassType.get()
-        self.attr = attr
-        self.attr_data = re_constants.VRayRenderElementsAttributes[self.class_type][self.attr]
+        self.attr_data = attr_data
+        self.attr = self.attr_data['name']
+        self.setObjectName("{0}.{1}".format(str(self.pm_node), self.attr))
 
         self.create_actions()
         self.create_widgets()
@@ -68,14 +68,14 @@ class CheckBoxAttrWidget(QtWidgets.QWidget):
 class LineEditAttrWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
-    def __init__(self, node, attr, *args, **kwargs):
+    def __init__(self, node, attr_data, *args, **kwargs):
         super(LineEditAttrWidget, self).__init__(*args, **kwargs)
         self.setContentsMargins(INDENT, 0, 0, 0)
 
         self.pm_node = node
-        self.class_type = self.pm_node.vrayClassType.get()
-        self.attr = attr
-        self.attr_data = re_constants.VRayRenderElementsAttributes[self.class_type][self.attr]
+        self.attr_data = attr_data
+        self.attr = self.attr_data['name']
+        self.setObjectName("{0}.{1}".format(str(self.pm_node), self.attr))
 
         self.create_actions()
         self.create_widgets()
@@ -92,6 +92,7 @@ class LineEditAttrWidget(QtWidgets.QWidget):
 
         self.le = QtWidgets.QLineEdit()
         self.le.setText(str(getattr(self.pm_node, self.attr).get()))
+        self.le.setFixedWidth(270)
 
     def create_layout(self):
         main_layout = QtWidgets.QHBoxLayout(self)
@@ -122,14 +123,14 @@ class LineEditAttrWidget(QtWidgets.QWidget):
 class ComboBoxAttrWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
 
-    def __init__(self, node, attr, *args, **kwargs):
+    def __init__(self, node, attr_data, *args, **kwargs):
         super(ComboBoxAttrWidget, self).__init__(*args, **kwargs)
         self.setContentsMargins(INDENT, 0, 0, 0)
 
         self.pm_node = node
-        self.class_type = self.pm_node.vrayClassType.get()
-        self.attr = attr
-        self.attr_data = re_constants.VRayRenderElementsAttributes[self.class_type][self.attr]
+        self.attr_data = attr_data
+        self.attr = self.attr_data['name']
+        self.setObjectName("{0}.{1}".format(str(self.pm_node), self.attr))
 
         self.create_actions()
         self.create_widgets()
@@ -148,7 +149,6 @@ class ComboBoxAttrWidget(QtWidgets.QWidget):
 
     def create_layout(self):
         main_layout = QtWidgets.QHBoxLayout(self)
-        main_layout.setSpacing(0)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
         main_layout.addWidget(self.lbl)
@@ -164,6 +164,157 @@ class ComboBoxAttrWidget(QtWidgets.QWidget):
     def refresh_attr(self):
         value = getattr(self.pm_node, self.attr).get()
         self.cmbx.setCurrentIndex(value)
+
+
+class SliderAttrWidget(QtWidgets.QWidget):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, node, attr_data, *args, **kwargs):
+        super(SliderAttrWidget, self).__init__(*args, **kwargs)
+        self.setContentsMargins(INDENT, 0, 0, 0)
+
+        self.pm_node = node
+        self.attr_data = attr_data
+        self.attr = self.attr_data['name']
+        self.value = self.get_value()
+
+        self.setObjectName("{0}.{1}".format(str(self.pm_node), self.attr))
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.lbl = QtWidgets.QLabel()
+        self.lbl.setText(self.attr_data['label'])
+
+        self.le = QtWidgets.QLineEdit()
+        self.le.setFixedWidth(100)
+
+        self.slider = QtWidgets.QSlider()
+        self.slider.setFixedWidth(175)
+        self.slider.setRange(self.attr_data['values'][0], self.attr_data['values'][1])
+        self.slider.setOrientation(QtCore.Qt.Horizontal)
+
+    def create_layout(self):
+        main_layout = QtWidgets.QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        main_layout.addWidget(self.lbl)
+        main_layout.addWidget(self.le)
+        main_layout.addWidget(self.slider)
+        main_layout.addStretch()
+
+    def create_connections(self):
+        self.le.returnPressed.connect(self.le_returnPressed_callback)
+        self.slider.sliderMoved.connect(self.slider_sliderMoved_callback)
+
+    def refresh_attr(self):
+        self.le.setText(str(self.value))
+        self.slider.setValue(self.value)
+
+    def get_value(self):
+        self.value = getattr(self.pm_node, self.attr).get()
+        return self.value
+
+    def set_attr(self):
+        getattr(self.pm_node, self.attr).set(self.value)
+
+    def le_returnPressed_callback(self):
+        try:
+            self.value = int(self.le.text())
+            self.slider.setValue(self.value)
+            self.set_attr()
+        except Exception:
+            self.refresh_attr()
+
+    def slider_sliderMoved_callback(self, value):
+        try:
+            self.value = value
+            self.le.setText(str(self.value))
+            self.set_attr()
+        except Exception:
+            self.refresh_attr()
+
+
+class DoubleSliderAttrWidget(QtWidgets.QWidget):
+    log_event = QtCore.Signal(str, str)
+
+    def __init__(self, node, attr_data, *args, **kwargs):
+        super(DoubleSliderAttrWidget, self).__init__(*args, **kwargs)
+        self.setContentsMargins(INDENT, 0, 0, 0)
+
+        self.pm_node = node
+        self.attr_data = attr_data
+        self.attr = self.attr_data['name']
+        self.value = self.get_value()
+        self.setObjectName("{0}.{1}".format(str(self.pm_node), self.attr))
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.lbl = QtWidgets.QLabel()
+        self.lbl.setText(self.attr_data['label'])
+
+        self.le = QtWidgets.QLineEdit()
+        self.le.setFixedWidth(100)
+
+        self.slider = MWidgets.DoubleSlider()
+        self.slider.setFixedWidth(175)
+        self.slider.setMinimum(self.attr_data['values'][0])
+        self.slider.setMaximum(self.attr_data['values'][1])
+        self.slider.setOrientation(QtCore.Qt.Horizontal)
+
+    def create_layout(self):
+        main_layout = QtWidgets.QHBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+
+        main_layout.addWidget(self.lbl)
+        main_layout.addWidget(self.le)
+        main_layout.addWidget(self.slider)
+        main_layout.addStretch()
+
+    def create_connections(self):
+        pass
+        # self.le.returnPressed.connect(self.le_returnPressed_callback)
+        # self.slider.sliderMoved.connect(self.slider_sliderMoved_callback)
+
+    def refresh_attr(self):
+        self.le.setText(str(self.value))
+        self.slider.setValue(self.value)
+
+    def get_value(self):
+        self.value = getattr(self.pm_node, self.attr).get()
+        return self.value
+
+    def set_attr(self):
+        getattr(self.pm_node, self.attr).set(self.value)
+
+    def le_returnPressed_callback(self):
+        try:
+            self.value = float(self.le.text())
+            self.slider.setValue(self.value)
+            self.set_attr()
+        except Exception:
+            self.refresh_attr()
+
+    def slider_sliderMoved_callback(self, value):
+        try:
+            self.value = value
+            self.le.setText(str(self.value))
+            self.set_attr()
+        except Exception:
+            self.refresh_attr()
 
 
 class PropertiesWidget(QtWidgets.QWidget):
@@ -192,8 +343,8 @@ class PropertiesWidget(QtWidgets.QWidget):
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
 
-        main_layout.addWidget(self.properties_header_lbl)
-        main_layout.addWidget(MWidgets.QHLine())
+        # main_layout.addWidget(self.properties_header_lbl)
+        # main_layout.addWidget(MWidgets.QHLine())
 
         main_layout.addLayout(self.properties_cw)
         main_layout.addStretch()
@@ -209,7 +360,7 @@ class PropertiesWidget(QtWidgets.QWidget):
                 widget.setVisible(False)
                 self.properties_cw.removeWidget(widget)
 
-        if properties_widget:
+        if properties_widget is not None:
             properties_widget.setVisible(True)
             self.properties_cw.addWidget(properties_widget)
             properties_widget.refresh_attr()

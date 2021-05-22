@@ -4,7 +4,7 @@ import pymel.core as pm
 from collections import OrderedDict
 
 SCALE = 1
-RES_X = 2550 * SCALE
+RES_X = 2560 * SCALE
 RES_Y = 1320 * SCALE
 GLOBAL_SPACING = 7
 

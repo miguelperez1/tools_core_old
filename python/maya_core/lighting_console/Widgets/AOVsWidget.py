@@ -143,7 +143,7 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         super(AOVsWidgetProperties, self).__init__(*args, **kwargs)
         self.setContentsMargins(0, 0, 0, 0)
 
-        # self.setObjectName("ModifiersWidgetProperties")
+        self.setMinimumSize(constants.RES_X * .95 * .125, constants.RES_Y * .875 * .575 * .9)
 
         self.pm_node = node
         self.class_type = self.pm_node.vrayClassType.get()
@@ -172,7 +172,7 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
                     attr_values = attr_data['values']
 
                     widget_class = getattr(PropertiesWidget, attr_widget_class)
-                    attr_widget = widget_class(self.pm_node, attr)
+                    attr_widget = widget_class(self.pm_node, attr_data)
                 except Exception as e:
                     pass
                     print "error: " + str(e)
@@ -183,12 +183,15 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
                 self.widgets.append(attr_widget)
 
         if self.class_type == "LightSelectElement":
+            self.widgets.append(MWidgets.QHLine())
+
             attr_widget = LightSelectMembersWidget(self.pm_node)
             self.widgets.append(attr_widget)
 
+
     def create_layout(self):
         self.main_layout = QtWidgets.QVBoxLayout(self)
-        self.main_layout.setSpacing(7)
+        self.main_layout.setSpacing(8)
 
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addWidget(self.header_lbl)
@@ -198,8 +201,23 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         self.main_layout.addWidget(MWidgets.QHLine())
 
         # TODO Add these to a scroll area instead
+        scroll_area_widget = QtWidgets.QScrollArea()
+        scroll_area_widget.setWidgetResizable(True)
+        scroll_area_widget.setFrameShape(QtWidgets.QFrame.NoFrame)
+
+        properties_widget = QtWidgets.QWidget()
+        properties_layout = QtWidgets.QVBoxLayout(properties_widget)
+        properties_layout.setContentsMargins(0, 0, 0, 0)
+        properties_layout.setSpacing(8)
+
         for widget in self.widgets:
-            self.main_layout.addWidget(widget)
+            properties_layout.addWidget(widget)
+
+        properties_layout.addStretch()
+
+        scroll_area_widget.setWidget(properties_widget)
+
+        self.main_layout.addWidget(scroll_area_widget)
 
     def create_connections(self):
         self.header_le.returnPressed.connect(self.rename)
@@ -215,13 +233,15 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
 
     def refresh_attr(self):
         for widget in self.widgets:
-            widget.refresh_attr()
+            if hasattr(widget, 'refresh_attr'):
+                widget.refresh_attr()
 
 
 class AOVsWidgetItem(QtWidgets.QTreeWidgetItem):
 
     def __init__(self, node=None, *args, **kwargs):
         super(AOVsWidgetItem, self).__init__(*args, **kwargs)
+        self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
 
         self.pm_node = node
 
@@ -255,7 +275,8 @@ class AOVsWidget(QtWidgets.QWidget):
         self.refresh_res()
 
     def create_actions(self):
-        pass
+        self.remove_aov_action = QtWidgets.QAction("Remove")
+        self.duplicate_aov_action = QtWidgets.QAction("Duplicate")
 
     def create_widgets(self):
         self.aovs_header_lbl = MWidgets.HeaderLabel("Render Elements")
@@ -264,10 +285,13 @@ class AOVsWidget(QtWidgets.QWidget):
         aovs_create_header_item = QtWidgets.QTreeWidgetItem(["Create Render Element"])
         self.aovs_create_tw.setHeaderItem(aovs_create_header_item)
 
-        self.aovs_tw = QtWidgets.QTreeWidget()
+        self.aovs_tw = MWidgets.MTreeWidget()
         aovs_header_item = QtWidgets.QTreeWidgetItem(["Render Elements"])
         self.aovs_tw.setHeaderItem(aovs_header_item)
         self.aovs_tw.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+
+        self.aovs_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.aovs_tw.customContextMenuRequested.connect(self.show_aovs_tw_context_menu)
 
         for aov in re_constants.VRayAOVS.keys():
             item = QtWidgets.QTreeWidgetItem()
@@ -317,17 +341,52 @@ class AOVsWidget(QtWidgets.QWidget):
     def create_connections(self):
         self.aovs_create_tw.itemDoubleClicked.connect(self.create_aov)
 
-        self.aovs_tw.currentItemChanged.connect(self.update_current_aov)
+        self.aovs_tw.itemSelectionChanged.connect(self.update_current_aov)
+        self.aovs_tw.itemChanged.connect(self.rename_aov)
 
-    def update_current_aov(self, item, previous_item):
-        self.show_properties(item)
-        if item.class_type in ["LightSelectElement"]:
-            pm.select(item.text(0), noExpand=True)
-        else:
-            pm.select(item.text(0))
+        self.remove_aov_action.triggered.connect(self.remove_aov)
+        self.duplicate_aov_action.triggered.connect(self.duplicate_aov)
+
+    def rename_aov(self, item, column):
+        try:
+            pm.rename(item.pm_node, item.text(0))
+            self.refresh_res()
+        except Exception:
+            pass
+
+    def remove_aov(self):
+        try:
+            pm.delete(self.current_aov_tw_item.pm_node)
+            self.refresh_res()
+        except Exception:
+            pass
+
+    def duplicate_aov(self):
+        try:
+            pm.duplicate(self.current_aov_tw_item.pm_node, un=True)
+            self.refresh_res()
+        except Exception:
+            pass
+
+    def update_current_aov(self):
+        if not self.aovs_tw.selectedItems():
+            self.push_properties.emit(None)
+            return
+
+        item = self.aovs_tw.selectedItems()[0]
+
+        if item is not None:
+            self.show_properties(item)
+            if item.class_type in ["LightSelectElement"]:
+                pm.select(item.text(0), noExpand=True)
+            else:
+                pm.select(item.text(0))
 
     def show_properties(self, item):
-        self.push_properties.emit(item.properties_widget)
+        if item is not None:
+            self.push_properties.emit(item.properties_widget)
+        else:
+            self.push_properties.emit(None)
 
     def refresh_res(self):
         self.aovs_tw.clear()
@@ -339,6 +398,11 @@ class AOVsWidget(QtWidgets.QWidget):
         for re in res:
             new_aov_item = AOVsWidgetItem(re)
             self.aovs_tw.addTopLevelItem(new_aov_item)
+
+        if len(self.aovs_tw.selectedItems()) > 0:
+            self.push_properties.emit(self.aovs_tw.selectedItems()[0].properties_widget)
+        else:
+            self.push_properties.emit(None)
 
     def create_aov(self, item, column):
         command = re_constants.VRayAOVS[item.text(0)]
@@ -356,3 +420,19 @@ class AOVsWidget(QtWidgets.QWidget):
         self.aovs_tw.clearSelection()
         self.aovs_tw.setItemSelected(new_aov_item, True)
         self.push_properties.emit(new_aov_item.properties_widget)
+
+    def show_aovs_tw_context_menu(self, eventPosition):
+        child = self.childAt(self.sender().mapTo(self, eventPosition))
+        self.current_aov_tw_item = self.aovs_tw.itemAt(eventPosition)
+
+        contextMenu = QtWidgets.QMenu(self)
+
+        if self.current_aov_tw_item is not None:
+            about_action = QtWidgets.QAction(str(self.current_aov_tw_item.pm_node))
+            contextMenu.addAction(about_action)
+            contextMenu.addSeparator()
+
+            contextMenu.addAction(self.remove_aov_action)
+            contextMenu.addAction(self.duplicate_aov_action)
+
+        action = contextMenu.exec_(child.mapToGlobal(eventPosition))

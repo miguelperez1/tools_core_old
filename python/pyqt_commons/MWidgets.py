@@ -250,3 +250,55 @@ class ColorPickerTreeWidgetItemWidget(QtWidgets.QWidget):
         color = (r, g, b)
         self.light.color.set(color)
         self.set_button_color(self.light.color.get())
+
+
+class DoubleSlider(QtWidgets.QSlider):
+    log_event = QtCore.Signal(str, str)
+    clicked_event = QtCore.Signal(QtWidgets.QTreeWidgetItem)
+    doubleValueChanged = QtCore.Signal(float)
+
+    def __init__(self, decimals=3, *args, **kwargs):
+        super(DoubleSlider, self).__init__(*args, **kwargs)
+
+        self.decimals = decimals
+        self.multiplier = 10 ** self.decimals
+
+        self.valueChanged.connect(self.emitDoubleValueChanged)
+
+    def emitDoubleValueChanged(self):
+        value = float(super(DoubleSlider, self).value()) / self.multiplier
+        self.doubleValueChanged.emit(value)
+
+    def value(self):
+        return float(super(DoubleSlider, self).value()) / self.multiplier
+
+    def setMinimum(self, value):
+        return super(DoubleSlider, self).setMinimum(value * self.multiplier)
+
+    def setMaximum(self, value):
+        return super(DoubleSlider, self).setMaximum(value * self.multiplier)
+
+    def setSingleStep(self, value):
+        return super(DoubleSlider, self).setSingleStep(value * self.multiplier)
+
+    def singleStep(self):
+        return float(super(DoubleSlider, self).singleStep()) / self.multiplier
+
+    def setValue(self, value):
+        super(DoubleSlider, self).setValue(int(value * self.multiplier))
+
+
+class MTreeWidget(QtWidgets.QTreeWidget):
+    def __init__(self, *args, **kwargs):
+        super(MTreeWidget, self).__init__(*args, **kwargs)
+
+    def mousePressEvent(self, event):
+        self.clearSelection()
+        QtWidgets.QTreeWidget.mousePressEvent(self, event)
+
+
+class VSpacerWidget(QtWidgets.QWidget):
+    def __init__(self, height):
+        super(VSpacerWidget, self).__init__()
+
+        self.setFixedHeight(height)
