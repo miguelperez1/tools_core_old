@@ -40,7 +40,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         pass
 
     def create_widgets(self):
-        self.header_lbl = QtWidgets.QLabel("VRayRenderElement: ")
+        self.header_lbl = QtWidgets.QLabel("VRayObjectProperties: ")
         self.header_le = QtWidgets.QLineEdit()
         self.header_le.setText(str(self.pm_node))
 
