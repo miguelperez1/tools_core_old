@@ -10,13 +10,13 @@ import math
 
 from pyqt_commons import MWidgets
 
+from maya_core.common_tools import logger
+
+log = logger.Logger()
+
 reload(MWidgets)
 
-from maya_core.lighting_console.constants import *
-
-
-# TODO Clean up pass
-# TODO Tex
+from maya_core.lighting_console import constants
 
 
 def convert_K_to_RGB(colour_temperature):
@@ -154,7 +154,7 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         self.widget_data[1] = enabled_cw
 
         light_icon = MWidgets.PreviewLabel()
-        light_icon.set_image(ICONS[self.light_type], self.size)
+        light_icon.set_image(constants.ICONS[self.light_type], self.size)
         self.widget_data[2] = light_icon
 
         color_cw = QtWidgets.QWidget()
@@ -175,7 +175,7 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
         tex_img_btn_cw = QtWidgets.QWidget()
         tex_img_btn = MWidgets.ImagePushButton(self.size * 1.25, self.size * 1.25)
-        tex_img_btn.set_image(ICONS['connection_in'], self.size * 1.5)
+        tex_img_btn.set_image(constants.ICONS['connection_in'], self.size * 1.5)
         tex_img_btn_layout = QtWidgets.QHBoxLayout(tex_img_btn_cw)
         tex_img_btn_layout.addStretch()
         tex_img_btn_layout.addWidget(tex_img_btn)
@@ -184,6 +184,7 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         for connection in pm.listConnections(self.light_shape, c=1):
             if connection[0].endswith("Tex"):
                 self.widget_data[7] = tex_img_btn_cw
+                break
 
         if self.light_type != "directionalLight":
             self.widget_data[10] = invisible_cw
@@ -197,7 +198,7 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
         self.setText(3, str(self.light))
 
-        exposure = math.log(self.light.intensity.get())
+        exposure = math.log(self.light.intensity.get(), 2)
         self.setText(4, "{:.2f}".format(exposure))
 
         color = self.light.color.get()
@@ -207,7 +208,8 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
             temp = self.light.temperature.get()
             self.setText(6, str(int(temp)))
         else:
-            self.setText(6, "6500")
+            pass
+            # self.setText(6, "6500")
 
         if self.light_type == "VRayLightRectShape":
             directional = self.light.directional.get()
@@ -287,7 +289,7 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
         self.widget_data[1] = enabled_cw
 
         light_icon = MWidgets.PreviewLabel()
-        light_icon.set_image(ICONS["group"], self.size)
+        light_icon.set_image(constants.ICONS["group"], self.size)
         self.widget_data[2] = light_icon
 
         enabled_cb.setChecked(self.group.visibility.get())
@@ -300,7 +302,8 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
 
 class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
     log_event = QtCore.Signal(str, str)
-    update_properties = QtCore.Signal(object)
+    push_properties = QtCore.Signal(object)
+    properties_refresh_attr = QtCore.Signal()
 
     def dropEvent(self, event):
         self.dragged_item = event.source().selectedItems()[0]
@@ -368,8 +371,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         self.light_items = []
         self.script_jobs = []
-
-        self.create_actions()
+        self.prev_attr_value = None
 
         self.header_item = QtWidgets.QTreeWidgetItem(
             ["", "Enabled", "", "Name", "Exposure", "Color", 'Temperature', "Tex", "Directional", 'Angle', 'Invisible',
@@ -384,15 +386,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.setColumnWidth(4, 100)
         self.setColumnWidth(5, 150)
 
-        self.itemDoubleClicked.connect(self.onTreeWidgetItemDoubleClicked)
-        self.itemSelectionChanged.connect(self.select_light)
-        self.itemChanged.connect(self.update_attribute)
-
-        self.prev_attr_value = None
-
         self.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
-
-        self.create_connections()
 
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.show_context_menu)
@@ -402,7 +396,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         self.resizeColumnToContents(2)
         self.resizeColumnToContents(10)
 
+        self.create_actions()
+
         self.get_light_rig()
+
+        self.create_connections()
 
     def create_actions(self):
         self.create_group_action = QtWidgets.QAction("Create Group")
@@ -424,10 +422,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
     def onTreeWidgetItemDoubleClicked(self, item, column):
         if self.can_edit_column(item, column):
             self.prev_attr_value = item.text(column)
-            pass
             self.editItem(item, column)
 
     def update_attribute(self, item, column, value=None):
+        log.info("updating_attribute")
+
         if item.text(3) == "":
             return
         if self.prev_attr_value is None:
@@ -440,32 +439,39 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         else:
             value = value
 
-        if attribute != "name":
-            if attribute != "lightselectname":
-                attr = attribute
-                value = float(value)
-                if attribute == "exposure":
-                    attr = "intensity"
-                    item.setText(column, "{:.2f}".format(value))
-                    value = math.pow(2, value)
+        if attribute != "name" and attribute != "lightselectname":
+            attr = attribute
+            value = float(value)
 
-                elif attribute == "angle":
-                    attr = "lightAngle"
-                    item.setText(column, "{:.3f}".format(value))
+            if attribute == "exposure":
+                attr = "intensity"
+                value = math.pow(2, value)
 
-                elif attribute == "temperature":
-                    color_btn_widget = self.itemWidget(item, 5).layout().itemAt(1).widget()
-                    color = convert_K_to_RGB(int(value))
-                    color_btn_widget.set_button_color(color, 1)
-                elif attribute in ['directional']:
-                    item.setText(column, "{:.3f}".format(value))
+            elif attribute == "angle":
+                attr = "lightAngle"
+                item.setText(column, "{:.3f}".format(value))
 
-                getattr(item.light, attr).set(float(value))
+            elif attribute == "temperature":
+                color_btn_widget = self.itemWidget(item, 5).layout().itemAt(1).widget()
+                color = convert_K_to_RGB(int(value))
+                color_btn_widget.set_button_color(color, 1)
+
+            elif attribute in ['directional']:
+                item.setText(column, "{:.3f}".format(value))
+
+            getattr(item.light, attr).set(float(value))
+
+            current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+            if current_rl != "defaultRenderLayer" and (float(self.prev_attr_value) != float(value)):
+                cmds.editRenderLayerAdjustment("{0}.{1}".format(str(item.light), attr))
+
+            item.setText(column, str(getattr(item.light, attr).get()))
 
         # Needs to go here
         if attribute == "name":
             try:
-                item.pm_node.rename(value.replace(" ", ""))
+                item.pm_node.rename(value)
                 item.setText(column, str(item.pm_node))
             except Exception as e:
                 self.log_event.emit("error", e)
@@ -483,13 +489,12 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             "group": [3]
         }
 
-        if item_type != "group":
-            if item.use_temp:
+        if item_type != "group" and item_type != "directionalLight":
+            if item.light.colorMode.get():
                 column_editability[item_type].append(6)
             else:
                 try:
                     column_editability[item_type].remove(6)
-
                 except Exception:
                     pass
 
@@ -544,9 +549,9 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             if self.current_item.item_type != "group":
                 context_menu.addAction(self.add_to_ls_action)
                 context_menu.addSeparator()
-                context_menu.addAction(self.use_temp_action)
 
                 if self.current_item.item_type != "directionalLight":
+                    context_menu.addAction(self.use_temp_action)
                     self.use_temp_action.setChecked(pm_node.colorMode.get())
                 else:
                     pass
@@ -575,32 +580,42 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
     def create_connections(self):
         self.create_group_action.triggered.connect(self.create_group)
-        self.use_tex_action.toggled.connect(self.set_tex)
-        self.use_temp_action.toggled.connect(self.set_temp)
-        self.delete_tex_action.triggered.connect(self.delete_tex)
         self.duplicate_item_action.triggered.connect(self.duplicate_item)
         self.delete_item_action.triggered.connect(self.delete_item)
         self.itemClicked.connect(self.select_item_callback)
 
-    def set_temp(self):
-        use_temp = self.use_temp_action.isChecked()
+        self.use_temp_action.toggled.connect(self.set_temperature)
 
-        if self.current_item.item_type != "directionalLight":
-            self.current_item.light.colorMode.set(use_temp)
-        else:
-            pass
+        self.itemDoubleClicked.connect(self.onTreeWidgetItemDoubleClicked)
+        self.itemSelectionChanged.connect(self.select_light)
+        self.itemChanged.connect(self.update_attribute)
 
-        self.current_item.use_temp = use_temp
+        self.add_to_ls_action.triggered.connect(self.add_to_ls)
 
-        if use_temp:
-            value = int(self.current_item.text(6))
-            color_btn_widget = self.itemWidget(self.current_item, 5).layout().itemAt(1).widget()
-            color = convert_K_to_RGB(int(value))
-            color_btn_widget.set_button_color(color, 1)
+    def add_to_ls(self):
+        if len(pm.ls(sl=1)) > 1:
+            return
+
+        if pm.ls(sl=1)[0].nodeType() != "VRayRenderElementSet":
+            return
+
+        ls = pm.ls(sl=1)[0]
+        light = self.current_item.pm_node
+
+        if light.nodeType() != "transform":
+            light = light.getTransform()
+
+        if light.getShape().nodeType() in constants.ICONS.keys():
+            if light in pm.sets(ls, q=True):
+                return
+
+            cmds.sets(str(light), edit=True, add=str(ls))
+
+        self.properties_refresh_attr.emit()
 
     def select_item_callback(self, item, column):
         if not item.is_group:
-            self.update_properties.emit(item.properties_widget)
+            self.push_properties.emit(item.properties_widget)
 
     def duplicate_item(self):
         self.current_item.pm_node.duplicate(un=True)
@@ -610,42 +625,15 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         pm.delete(self.current_item.pm_node)
         self.get_light_rig()
 
-    def use_tex(self, use):
-        light_type = self.current_item.item_type
-        pm_node = self.current_item.pm_node
-        pm_node.multiplyByTheLightColor.set(1)
+    def set_temperature(self):
+        new_temp = not self.current_item.pm_node.colorMode.get()
 
-        if light_type == "VRayLightRectShape":
-            self.current_item.pm_node.useRectTex.set(use)
+        self.current_item.pm_node.colorMode.set(new_temp)
 
-        elif light_type == "VRayLightDomeShape":
-            self.current_item.pm_node.useDomeTex.set(use)
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
 
-        # if not tex, create, if tex, pass
-
-        # if not tex, create, if tex, pass
-        has_tex = False
-
-        for connection in pm.listConnections(self.current_item.pm_node.getShape(), c=1):
-            if connection[0].endswith("Tex"):
-                has_tex = True
-
-        if not has_tex and use:
-            self.log_event.emit("info", "need to create tex")
-
-    def set_tex(self):
-        has_tex = False
-
-        for connection in pm.listConnections(self.current_item.pm_node.getShape(), c=1):
-            if connection[0].endswith("Tex"):
-                has_tex = True
-
-    def delete_tex(self):
-        pm_node = self.current_item.pm_node
-
-        for connection in pm.listConnections(pm_node.getShape(), c=1):
-            if connection[0].endswith("Tex"):
-                self.log_event.emit("info", "need to break tex")
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.current_item.pm_node), "colorMode"))
 
     def create_group(self, name=None, parent="l_rig", startup=False):
         if startup:
@@ -717,6 +705,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 class ConsoleWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
     update_properties = QtCore.Signal(object)
+    properties_refresh_attr = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
@@ -745,7 +734,8 @@ class ConsoleWidget(QtWidgets.QWidget):
 
     def create_connections(self):
         self.console_tw.log_event.connect(self.push_console_tw_log)
-        self.console_tw.update_properties.connect(self.push_console_properties)
+        self.console_tw.push_properties.connect(self.push_console_properties)
+        self.console_tw.properties_refresh_attr.connect(lambda: self.properties_refresh_attr.emit())
 
     def push_console_properties(self, light):
         self.update_properties.emit(light)

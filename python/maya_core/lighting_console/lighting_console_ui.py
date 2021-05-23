@@ -78,8 +78,9 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_widget = Widgets.ConsoleWidget.ConsoleWidget()
 
         # asset Browser
-        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.589, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
-                                                                                 'clouds'])
+        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.589, 6,
+                                                              libraries=['hdri', 'studio_lights', 'gobo_lights',
+                                                                         'clouds'])
 
         # Properties
         self.properties_widget = Widgets.PropertiesWidget.PropertiesWidget()
@@ -177,18 +178,24 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.sets_widget.log_event.connect(self.push_log)
 
         # self.tool_buttons_widget.update_properties.connect(self.push_log)
-        # self.render_layers_widget.update_properties.connect(self.update_properties_panel)
+        self.render_layers_widget.push_properties.connect(self.update_properties_panel)
         self.modifiers_widget.push_properties.connect(self.update_properties_panel)
         # self.console_widget.update_properties.connect(self.update_properties_panel)
         self.aovs_widget.push_properties.connect(self.update_properties_panel)
         # self.properties_widget.update_properties.connect(self.push_log)
         # self.sets_widget.update_properties.connect(self.push_log)
 
+        self.console_widget.properties_refresh_attr.connect(self.properties_refresh_attrs)
+        self.render_layers_widget.properties_refresh_attr.connect(self.properties_refresh_attrs)
+
         self.tool_buttons_widget.light_created.connect(self.console_widget.create_light)
         self.asset_browser_widget.light_created.connect(self.console_widget.create_light)
 
     def update_properties_panel(self, properties_widget):
         self.properties_widget.set_properties(properties_widget)
+
+    def properties_refresh_attrs(self):
+        self.properties_widget.properties_widget.refresh_attr()
 
     def push_log(self, log_type, log_message):
         if log_type == "info":

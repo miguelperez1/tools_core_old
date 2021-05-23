@@ -12,12 +12,15 @@ reload(MWidgets)
 
 from maya_core.lighting_console.constants import *
 
+from maya_core.common_tools import logger
 
-# TODO Move buttons up
+log = logger.Logger()
+
 
 class RenderLayersWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
     push_properties = QtCore.Signal(object)
+    properties_refresh_attr = QtCore.Signal()
 
     def __init__(self, *args, **kwargs):
         super(RenderLayersWidget, self).__init__(*args, **kwargs)
@@ -196,8 +199,12 @@ class RenderLayersWidget(QtWidgets.QWidget):
 
         if self.current_rl == "masterLayer":
             cmds.editRenderLayerGlobals(crl="defaultRenderLayer")
+            log.info("Switching layers")
         else:
+            log.info("Switching layers")
             cmds.editRenderLayerGlobals(crl=self.current_rl)
+
+        self.properties_refresh_attr.emit()
 
     def render_layers_tw_rename_callback(self, item, column):
         prev_rl_name = self.current_rl
@@ -214,10 +221,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
 
         renderlayers = cmds.ls(type="renderLayer")
 
-        if "defaultRenderLayer" in renderlayers:
-            renderlayers.remove("defaultRenderLayer")
-            renderlayers.append("masterLayer")
-
+        rl_item_data = {}
         for render_layer in renderlayers:
             render_layer_item = QtWidgets.QTreeWidgetItem()
             render_layer_item.setText(0, render_layer)
@@ -226,8 +230,9 @@ class RenderLayersWidget(QtWidgets.QWidget):
                 render_layer_item.setFlags(render_layer_item.flags() | QtCore.Qt.ItemIsEditable)
             self.render_layers_tw.addTopLevelItem(render_layer_item)
 
-            current_render_layer = cmds.editRenderLayerGlobals(query=True, currentRenderLayer=True)
+            rl_item_data[render_layer] = render_layer_item
 
-            if render_layer == current_render_layer or (
-                    render_layer == "masterLayer" and current_render_layer == "defaultRenderLayer"):
-                render_layer_item.setSelected(True)
+        if rl_item_data:
+            current_rl = cmds.editRenderLayerGlobals(query=True, currentRenderLayer=True)
+
+            rl_item_data[current_rl].setSelected(True)

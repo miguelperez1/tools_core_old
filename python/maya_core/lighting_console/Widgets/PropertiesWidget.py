@@ -59,6 +59,11 @@ class CheckBoxAttrWidget(QtWidgets.QWidget):
     def set_attr(self):
         getattr(self.pm_node, self.attr).set(self.cb.isChecked())
 
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
+
     def refresh_attr(self):
         value = getattr(self.pm_node, self.attr).get()
 
@@ -115,6 +120,11 @@ class LineEditAttrWidget(QtWidgets.QWidget):
 
         self.le.setText(str(value))
 
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
+
     def refresh_attr(self):
         value = getattr(self.pm_node, self.attr).get()
         self.le.setText(str(value))
@@ -160,6 +170,11 @@ class ComboBoxAttrWidget(QtWidgets.QWidget):
 
     def set_attr(self):
         getattr(self.pm_node, self.attr).set(self.cmbx.currentIndex())
+
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def refresh_attr(self):
         value = getattr(self.pm_node, self.attr).get()
@@ -224,6 +239,11 @@ class SliderAttrWidget(QtWidgets.QWidget):
     def set_attr(self):
         getattr(self.pm_node, self.attr).set(self.value)
 
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
+
     def le_returnPressed_callback(self):
         try:
             self.value = int(self.le.text())
@@ -285,9 +305,8 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
         main_layout.addStretch()
 
     def create_connections(self):
-        pass
-        # self.le.returnPressed.connect(self.le_returnPressed_callback)
-        # self.slider.sliderMoved.connect(self.slider_sliderMoved_callback)
+        self.le.returnPressed.connect(self.le_returnPressed_callback)
+        self.slider.doubleValueChanged.connect(self.slider_sliderMoved_callback)
 
     def refresh_attr(self):
         self.le.setText(str(self.value))
@@ -300,9 +319,14 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
     def set_attr(self):
         getattr(self.pm_node, self.attr).set(self.value)
 
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
+
     def le_returnPressed_callback(self):
         try:
-            self.value = float(self.le.text())
+            self.value = int(self.le.text())
             self.slider.setValue(self.value)
             self.set_attr()
         except Exception:
@@ -361,6 +385,7 @@ class PropertiesWidget(QtWidgets.QWidget):
                 self.properties_cw.removeWidget(widget)
 
         if properties_widget is not None:
-            properties_widget.setVisible(True)
-            self.properties_cw.addWidget(properties_widget)
-            properties_widget.refresh_attr()
+            self.properties_widget = properties_widget
+            self.properties_widget.setVisible(True)
+            self.properties_cw.addWidget(self.properties_widget)
+            self.properties_widget.refresh_attr()
