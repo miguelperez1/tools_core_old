@@ -70,6 +70,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         super(TextureManagerUI, self).__init__(parent)
 
         self.setWindowTitle("Texture Manager")
+        self.setObjectName("TextureManagerUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -305,14 +306,13 @@ class TextureManagerUI(QtWidgets.QMainWindow):
 
         self.stats_lbl.setText(message)
 
-        cmds.select(self.objs)
+        pm.select(self.objs, af=True)
 
 
 def main():
     try:
-        dialog.close()
-        dialog.deleteLater()
-    except:
+        cmds.deleteUI("TextureManagerUI")
+    except Exception:
         pass
 
     dialog = TextureManagerUI()

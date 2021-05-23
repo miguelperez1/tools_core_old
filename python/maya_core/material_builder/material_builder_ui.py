@@ -32,6 +32,7 @@ class BuilderWindow(QtWidgets.QDialog):
         super(BuilderWindow, self).__init__(parent)
 
         self.setWindowTitle("VRay Material Builder")
+        self.setObjectName("MaterialBuilderUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -327,13 +328,9 @@ class BuilderWindow(QtWidgets.QDialog):
 
 
 def main():
-    root = cmds.workspace(q=True, rd=True)
-    os.chdir(root)
-
     try:
-        asset_builder_dialog.close()  # pylint: disable=E0601
-        asset_builder_dialog.deleteLater()
-    except:
+        cmds.deleteUI("MaterialBuilderUI")
+    except Exception:
         pass
 
     asset_builder_dialog = BuilderWindow()
