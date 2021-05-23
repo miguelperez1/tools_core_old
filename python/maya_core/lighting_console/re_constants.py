@@ -102,7 +102,7 @@ VRayRenderElementsAttributes['cryptomatteChannel'] = {
             'Material name',
             'Node name with heirarchy',
             'V-Ray user attribute',
-            'asset (reference scene) name',
+            'Asset (reference scene) name',
             '',
             'Sub object name'
         ]

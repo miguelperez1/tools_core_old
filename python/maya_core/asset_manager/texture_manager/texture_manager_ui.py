@@ -74,7 +74,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
-        self.setMinimumSize(1500, 900)
+        self.setMinimumSize(1500 * .75, 900 * .75)
 
         self.asset = None
         self.objs = cmds.ls(sl=1)
@@ -97,7 +97,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         self.browse_btn = QtWidgets.QPushButton()
         self.browse_btn.setIcon(file_browse_icon)
 
-        self.publish_tex_btn = QtWidgets.QPushButton("Publish")
+        self.publish_tex_btn = QtWidgets.QPushButton("Publish Images")
         self.remap_tex_btn = QtWidgets.QPushButton("Remap Images")
 
         self.header_lbl = MWidgets.HeaderLabel("Texture Manager")
@@ -109,12 +109,19 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         self.tex_tw = QtWidgets.QTreeWidget()
         # self.tex_tw.setHeaderHidden(True)
 
+        self.show_errors_cb = QtWidgets.QCheckBox("Only show missing/empty")
+        self.show_errors_cb.setChecked(0)
+
         header_item = QtWidgets.QTreeWidgetItem(["Shader / Texture", "File Path"])
         self.tex_tw.setHeaderItem(header_item)
         self.tex_tw.setAlternatingRowColors(True)
 
+        self.stats_lbl = QtWidgets.QLabel()
+
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
+        m = 10
+        central_widget.setContentsMargins(m, m, m, m)
         self.setCentralWidget(central_widget)
 
         main_layout = QtWidgets.QVBoxLayout(central_widget)
@@ -122,6 +129,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         header_layout = QtWidgets.QHBoxLayout()
         header_layout.addWidget(self.header_lbl)
         header_layout.addStretch()
+        header_layout.addWidget(self.show_errors_cb)
         header_layout.addWidget(self.refresh_btn)
 
         asset_root_layout = QtWidgets.QHBoxLayout()
@@ -131,6 +139,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
 
         btns_layout = QtWidgets.QHBoxLayout()
 
+        btns_layout.addWidget(self.stats_lbl)
         btns_layout.addStretch()
         btns_layout.addWidget(self.remap_tex_btn)
         btns_layout.addWidget(self.publish_tex_btn)
@@ -148,6 +157,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         self.refresh_btn.clicked.connect(self.refresh_tex)
 
         self.tex_tw.itemSelectionChanged.connect(self.update_selection)
+        self.show_errors_cb.stateChanged.connect(self.refresh_tex)
 
     def update_selection(self):
         try:
@@ -219,6 +229,8 @@ class TextureManagerUI(QtWidgets.QMainWindow):
         self.tex_tw.clear()
 
         self.mat_data = {}
+        self.empty_textures = []
+        self.missing_textures = []
 
         search = RecursiveNodeSearch()
 
@@ -249,31 +261,51 @@ class TextureManagerUI(QtWidgets.QMainWindow):
             mat_item.setText(0, mat)
 
             tex_error = False
+            mat_has_issue = False
             for tex in textures:
+                tex_has_issue = False
+
                 tex_item = PMWidgetItem(tex)
                 tex_item.setText(0, str(tex))
                 tex_item.setText(1, tex_item.pm_node.fileTextureName.get())
 
-                mat_item.addChild(tex_item)
-
                 if not os.path.isfile(tex_item.pm_node.fileTextureName.get()):
+                    tex_has_issue = True
+                    mat_has_issue = True
                     if tex_item.pm_node.fileTextureName.get() == "":
                         color = "yellow"
+                        self.empty_textures.append(tex)
                     else:
                         color = "red"
                         tex_error = True
+                        self.missing_textures.append(tex)
 
                     tex_item.setTextColor(0, QtGui.QColor(color))
                     tex_item.setTextColor(1, QtGui.QColor(color))
                     mat_item.setTextColor(0, QtGui.QColor(color))
 
+                if self.show_errors_cb.isChecked() and tex_has_issue:
+                    mat_item.addChild(tex_item)
+                elif not self.show_errors_cb.isChecked():
+                    mat_item.addChild(tex_item)
+
             if tex_error:
                 mat_item.setTextColor(0, QtGui.QColor("red"))
+
+            if self.show_errors_cb.isChecked() and not mat_has_issue:
+                continue
 
             self.tex_tw.addTopLevelItem(mat_item)
 
         self.tex_tw.resizeColumnToContents(0)
         self.tex_tw.resizeColumnToContents(1)
+
+        message = "Empty Textures: {0}, Missing Textures: {1}".format(len(list(set(self.empty_textures))),
+                                                                      len(list(set(self.missing_textures))))
+
+        self.stats_lbl.setText(message)
+
+        cmds.select(self.objs)
 
 
 def main():

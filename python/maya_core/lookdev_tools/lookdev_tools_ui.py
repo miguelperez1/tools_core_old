@@ -52,7 +52,7 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
 
         self.create_displacement_nodes_btn = QtWidgets.QPushButton("Create Displacement Nodes")
 
-        self.texture_asset_manager_btn = QtWidgets.QPushButton("Publish / Remap Images")
+        self.texture_asset_manager_btn = QtWidgets.QPushButton("Texture Manager")
 
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
