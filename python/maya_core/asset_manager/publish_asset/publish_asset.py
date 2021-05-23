@@ -16,6 +16,11 @@ import pymel.core as pm
 from maya_core import asset_manager
 
 from maya_core.common_tools import logger
+from maya_core.asset_manager import texture_manager
+from maya_core.asset_manager import asset
+
+reload(asset)
+reload(texture_manager)
 
 log = logger.Logger()
 
@@ -71,6 +76,7 @@ class AssetPublisher(object):
         self.proxy = create_proxy
 
         self.asset_root_path = 'F:\\share\\assets\\libraries\\{0}\\{1}_root'.format(self.type, self.name)
+        self.asset = asset.Asset(path=self.asset_root_path)
 
         self.maya_path = self.asset_root_path + "\\maya\\{}.ma".format(self.name)
 
@@ -87,53 +93,10 @@ class AssetPublisher(object):
             os.mkdir(self.asset_root_path + "\\vrayproxy")
 
     def publish_textures(self):
+        if self.selection and self.asset:
+            mat_data = texture_manager.get_mat_data(cmds.ls(sl=1))
 
-        mat_data = defaultdict(list)
-
-        if self.selection:
-            search = RecursiveNodeSearch()
-
-            for obj in cmds.ls(sl=True):
-                cmds.hyperShade(shaderNetworksSelectMaterialNodes=1)
-                material_selection = cmds.ls(sl=1)
-                for mat in material_selection:
-                    mat_tex_dst = self.asset_root_path + "\\textures\\" + mat
-                    os.mkdir(mat_tex_dst)
-
-                    connections = cmds.listConnections(mat)
-
-                    textures_tmp = []
-
-                    for c in connections:
-                        nodes = search.search_nodes(c)
-                        for n in nodes:
-                            if cmds.nodeType(n) == "file":
-                                textures_tmp.append(n)
-
-                    textures = list(set(textures_tmp))
-
-                    mat_data[mat_tex_dst].append(textures)
-
-        if len(mat_data.keys()) > 0:
-            for mat_tex_src, texture_lists in mat_data.items():
-                for textures in texture_lists:
-                    for tex in textures:
-                        tex_src_path = cmds.getAttr('{}.fileTextureName'.format(tex))
-                        tex_name = tex_src_path.split('/')[-1]
-
-                        tex_dst_path = (mat_tex_src + "\\{}".format(tex_name))
-
-                        log.info("copying {0} to {1}".format(tex_src_path, tex_dst_path))
-
-                        try:
-                            copyfile(tex_src_path, tex_dst_path)
-                            log.info("copied preview successfully")
-                        except Exception as e:
-                            log.warning("copy preview failed, skipping: {}".format(e))
-
-                        cmds.setAttr("{}.fileTextureName".format(tex), tex_dst_path, type="string")
-        else:
-            pass
+            texture_manager.publish_textures(self.asset, mat_data)
 
     def publish_file(self):
         if self.selection:
@@ -214,7 +177,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(PublishAssetWindow, self).__init__(parent)
 
-        self.setWindowTitle("Publish Asset")
+        self.setWindowTitle("Publish asset")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.setMinimumWidth(400)
@@ -232,7 +195,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
     def create_widgets(self):
         file_browse_icon = QtGui.QIcon(':fileOpen.png')
 
-        self.asset_name_lbl = QtWidgets.QLabel('Asset Name')
+        self.asset_name_lbl = QtWidgets.QLabel('asset Name')
         self.asset_name_le = QtWidgets.QLineEdit()
         self.asset_name_le.setMinimumWidth(300)
 
@@ -241,7 +204,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
         self.asset_preview_btn = QtWidgets.QPushButton()
         self.asset_preview_btn.setIcon(file_browse_icon)
 
-        self.asset_type_lbl = QtWidgets.QLabel('Asset Type:')
+        self.asset_type_lbl = QtWidgets.QLabel('asset Type:')
         self.asset_type_dd = QtWidgets.QComboBox()
         self.asset_type_dd.addItems(['model', 'material', 'rigs', 'plants'])
 
@@ -310,7 +273,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
 
     def publish_confirm(self):
         if os.path.isfile(self.maya_path):
-            message = "Asset {} published successfully".format(self.asset_name_le.text())
+            message = "asset {} published successfully".format(self.asset_name_le.text())
             log.result(message)
 
     def browse_preview(self):

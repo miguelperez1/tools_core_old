@@ -77,7 +77,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         # Console
         self.console_widget = Widgets.ConsoleWidget.ConsoleWidget()
 
-        # Asset Browser
+        # asset Browser
         self.asset_browser_widget = AssetBrowser.AssetBrowser(1.589, 6, libraries=['hdri', 'studio_lights', 'gobo_lights',
                                                                                  'clouds'])
 

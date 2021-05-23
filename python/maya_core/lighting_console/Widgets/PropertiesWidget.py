@@ -25,7 +25,7 @@ class CheckBoxAttrWidget(QtWidgets.QWidget):
     def __init__(self, node, attr_data, *args, **kwargs):
         super(CheckBoxAttrWidget, self).__init__(*args, **kwargs)
 
-        self.setContentsMargins(INDENT, 0, 0, 0)
+        self.setContentsMargins(INDENT * 2, 0, 0, 0)
 
         self.pm_node = node
         self.attr_data = attr_data
@@ -204,10 +204,10 @@ class SliderAttrWidget(QtWidgets.QWidget):
         main_layout = QtWidgets.QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        main_layout.addStretch()
         main_layout.addWidget(self.lbl)
         main_layout.addWidget(self.le)
         main_layout.addWidget(self.slider)
+        main_layout.addStretch()
 
     def create_connections(self):
         self.le.returnPressed.connect(self.le_returnPressed_callback)
@@ -279,10 +279,10 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
         main_layout = QtWidgets.QHBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 5, 0)
 
-        main_layout.addStretch()
         main_layout.addWidget(self.lbl)
         main_layout.addWidget(self.le)
         main_layout.addWidget(self.slider)
+        main_layout.addStretch()
 
     def create_connections(self):
         pass

@@ -167,15 +167,12 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
             if attr in re_constants.VRayRenderElementsAttributes[self.class_type].keys():
                 try:
                     attr_data = re_constants.VRayRenderElementsAttributes[self.class_type][attr]
-                    attr_label = attr_data['label']
                     attr_widget_class = attr_data['widget_class']
-                    attr_values = attr_data['values']
 
                     widget_class = getattr(PropertiesWidget, attr_widget_class)
                     attr_widget = widget_class(self.pm_node, attr_data)
                 except Exception as e:
-                    pass
-                    print "error: " + str(e)
+                    print str(e)
             else:
                 pass
 
@@ -200,7 +197,6 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         self.main_layout.addLayout(header_layout)
         self.main_layout.addWidget(MWidgets.QHLine())
 
-        # TODO Add these to a scroll area instead
         scroll_area_widget = QtWidgets.QScrollArea()
         scroll_area_widget.setWidgetResizable(True)
         scroll_area_widget.setFrameShape(QtWidgets.QFrame.NoFrame)

@@ -33,7 +33,7 @@ class VRayProxyUI(QtWidgets.QMainWindow):
         pass
 
     def create_widgets(self):
-        self.asset_root_lbl = QtWidgets.QLabel("Asset root:  ")
+        self.asset_root_lbl = QtWidgets.QLabel("asset root:  ")
         self.asset_root_le = QtWidgets.QLineEdit()
 
         file_browse_icon = QtGui.QIcon(':fileOpen.png')
@@ -82,7 +82,7 @@ class VRayProxyUI(QtWidgets.QMainWindow):
     def browse_path(self):
         library_path = "F:\\share\\assets\\libraries\\"
 
-        asset_path = QtWidgets.QFileDialog.getExistingDirectory(MWidgets.maya_main_window(), 'Asset Root', library_path)
+        asset_path = QtWidgets.QFileDialog.getExistingDirectory(MWidgets.maya_main_window(), 'asset Root', library_path)
 
         self.asset_root_le.setText(asset_path)
 

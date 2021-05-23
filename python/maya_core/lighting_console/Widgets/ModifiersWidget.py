@@ -26,7 +26,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         super(ModifiersWidgetProperties, self).__init__(*args, **kwargs)
         self.setContentsMargins(0, 0, 0, 0)
 
-        self.setMinimumSize(constants.RES_X * .95 * .125, constants.RES_Y * .875 * .575 * .9)
+        self.setMinimumSize(constants.RES_X * .95 * .125, constants.RES_Y * .875 * .575*.97)
 
         self.pm_node = node
         self.widgets = []
@@ -46,7 +46,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
 
         for attr_group, attr_group_data in modifiers_constants.MODIFIERS['attr_groups'].items():
             group_label_widget = QtWidgets.QLabel(attr_group_data['label'])
-            group_label_widget.setStyleSheet("font-weight: bold;")
+            group_label_widget.setStyleSheet("font: 18px; font-weight: bold;")
             self.widgets.append(group_label_widget)
             self.widgets.append(MWidgets.QHLine())
 

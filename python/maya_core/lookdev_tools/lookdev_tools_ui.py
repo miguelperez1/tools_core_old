@@ -12,9 +12,14 @@ from maya_core.material_builder import material_builder_ui
 from maya_core.lookdev_tools import create_cc_node
 from maya_core.lookdev_tools import cc_node_editor_ui
 from maya_core.common_tools import logger
-from maya_core.asset_manager.publish_textures import publish_textures_ui
+from maya_core.asset_manager.texture_manager import texture_manager_ui
 
 log = logger.Logger()
+
+reload(material_builder_ui)
+reload(create_cc_node)
+reload(cc_node_editor_ui)
+reload(texture_manager_ui)
 
 
 class LookDevToolsWindow(QtWidgets.QMainWindow):
@@ -97,19 +102,23 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
         cmds.file(r"F:\share\assets\maya\lookdev_kit.ma", i=True)
 
     def material_builder_btn_callback(self):
+        reload(material_builder_ui)
         material_builder_ui.main()
 
     def create_cc_node_btn_callback(self):
+        reload(create_cc_node)
         create_cc_node.main()
 
     def cc_node_editor_btn_callback(self):
+        reload(cc_node_editor_ui)
         cc_node_editor_ui.main()
 
     def create_displacement_nodes_btn_callback(self):
         log.warning("TO DO create_displacement_nodes_btn_callback")
 
     def texture_asset_manager_btn_callback(self):
-        publish_textures_ui.main()
+        reload(texture_manager_ui)
+        texture_manager_ui.main()
 
 
 def main():

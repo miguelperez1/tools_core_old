@@ -99,7 +99,7 @@ class AssetBrowser(QtWidgets.QWidget):
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
 
     def create_widgets(self):
-        # Create Asset Preview Widgets
+        # Create asset Preview Widgets
         self.asset_widgets = OrderedDefaultDict(list)
 
         for library, library_path in _LIBRARIES.items():
@@ -136,7 +136,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
                 self.asset_widgets[library].append(widget_data)
 
-        self.asset_count_lbl = QtWidgets.QLabel("Asset Count: ")
+        self.asset_count_lbl = QtWidgets.QLabel("asset Count: ")
 
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -199,7 +199,7 @@ class AssetBrowser(QtWidgets.QWidget):
     def update_asset_count(self):
         try:
             count = self.tab_widget.currentWidget().widget().layout().count()
-            self.asset_count_lbl.setText("Asset Count: {}".format(count))
+            self.asset_count_lbl.setText("asset Count: {}".format(count))
         except AttributeError:
             pass
 

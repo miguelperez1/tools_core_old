@@ -35,7 +35,7 @@ class BuilderWindow(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(BuilderWindow, self).__init__(parent)
 
-        self.setWindowTitle("Asset Builder")
+        self.setWindowTitle("asset Builder")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -120,13 +120,13 @@ class BuilderWindow(QtWidgets.QDialog):
         self.build_btn = QtWidgets.QPushButton('Build')
         self.cancel_btn = QtWidgets.QPushButton('Cancel')
 
-        # Asset Type Drop Down
-        self.asset_type_lbl = QtWidgets.QLabel('Asset Type: ')
+        # asset Type Drop Down
+        self.asset_type_lbl = QtWidgets.QLabel('asset Type: ')
         self.asset_type_dd = QtWidgets.QComboBox()
         self.asset_type_dd.addItems(['Model', 'Material'])
 
-        # Asset Library Drop Down
-        self.asset_lib_lbl = QtWidgets.QLabel('Asset Library: ')
+        # asset Library Drop Down
+        self.asset_lib_lbl = QtWidgets.QLabel('asset Library: ')
         self.asset_lib_dd = QtWidgets.QComboBox()
         projects = os.listdir(r'F:\share\projects')
         self.asset_lib_dd.addItems(['General'])
@@ -139,7 +139,7 @@ class BuilderWindow(QtWidgets.QDialog):
         self.mat_drop_down.addItems(['VRayMtl', 'None'])
 
         # asset name
-        self.asset_name_lbl = QtWidgets.QLabel('Asset Name: ')
+        self.asset_name_lbl = QtWidgets.QLabel('asset Name: ')
         self.asset_name_le = QtWidgets.QLineEdit()
 
         self.texture_line_edits = [
@@ -152,7 +152,7 @@ class BuilderWindow(QtWidgets.QDialog):
             self.disp_mat_le
         ]
 
-        self.header_lbl = MWidgets.HeaderLabel("Asset Builder")
+        self.header_lbl = MWidgets.HeaderLabel("asset Builder")
 
     def create_layout(self):
         # asset name
@@ -225,7 +225,7 @@ class BuilderWindow(QtWidgets.QDialog):
         button_layout.addWidget(self.build_btn)
         button_layout.addWidget(self.cancel_btn)
 
-        # Asset Type and Library Layout
+        # asset Type and Library Layout
         asset_layout = QtWidgets.QHBoxLayout()
         asset_layout.addWidget(self.asset_type_lbl)
         asset_layout.addWidget(self.asset_type_dd)
@@ -265,7 +265,7 @@ class BuilderWindow(QtWidgets.QDialog):
         # Validate asset name
         self.asset_name_le.textChanged.connect(self.validate_asset_name)
 
-        # Asset Type
+        # asset Type
         self.asset_type_dd.currentTextChanged.connect(self.asset_type_callback)
 
         # Cancel
@@ -470,7 +470,7 @@ class BuilderWindow(QtWidgets.QDialog):
     def build_asset(self):
         if not self.valid_asset_name:
             QtWidgets.QMessageBox.critical(self, "Error",
-                                           "Invalid Asset Name! Only alphabetical caharacters and '_' allowed")
+                                           "Invalid asset Name! Only alphabetical caharacters and '_' allowed")
             return
 
         if self.asset_type_dd.currentText() == 'Model' and not self.valid_mesh:

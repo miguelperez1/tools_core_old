@@ -419,6 +419,8 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
         self.delete_tex_action = QtWidgets.QAction("Delete Tex")
 
+        self.add_to_ls_action = QtWidgets.QAction("Add to Light Select")
+
     def onTreeWidgetItemDoubleClicked(self, item, column):
         if self.can_edit_column(item, column):
             self.prev_attr_value = item.text(column)
@@ -540,6 +542,8 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
 
             # Temp Action
             if self.current_item.item_type != "group":
+                context_menu.addAction(self.add_to_ls_action)
+                context_menu.addSeparator()
                 context_menu.addAction(self.use_temp_action)
 
                 if self.current_item.item_type != "directionalLight":

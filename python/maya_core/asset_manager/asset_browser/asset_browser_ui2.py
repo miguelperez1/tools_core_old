@@ -77,7 +77,7 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=maya_main_window()):
         super(AssetBrowserWindow, self).__init__(parent)
 
-        self.setWindowTitle("Asset Browser")
+        self.setWindowTitle("asset Browser")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -141,7 +141,7 @@ class AssetBrowser(QtWidgets.QWidget):
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
 
     def create_widgets(self):
-        # Create Asset Preview Widgets
+        # Create asset Preview Widgets
         self.asset_widgets = OrderedDefaultDict(list)
 
         for library, library_path in LIBRARIES.items():
@@ -176,7 +176,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
                 self.asset_widgets[library].append(widget_data)
 
-        self.asset_count_lbl = QtWidgets.QLabel("Asset Count: ")
+        self.asset_count_lbl = QtWidgets.QLabel("asset Count: ")
 
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -238,7 +238,7 @@ class AssetBrowser(QtWidgets.QWidget):
 
     def update_asset_count(self):
         count = self.tab_widget.currentWidget().widget().layout().count()
-        self.asset_count_lbl.setText("Asset Count: {}".format(count))
+        self.asset_count_lbl.setText("asset Count: {}".format(count))
 
     def show_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))

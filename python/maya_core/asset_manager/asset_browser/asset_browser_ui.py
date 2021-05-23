@@ -26,7 +26,7 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=maya_main_window()):
         super(AssetBrowserWindow, self).__init__(parent)
 
-        self.setWindowTitle("Asset Browser")
+        self.setWindowTitle("asset Browser")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
