@@ -243,7 +243,7 @@ class SetsWidget(QtWidgets.QWidget):
         if len(cmds.ls(sl=True)) > 1:
             self.log_event.emit("result", "Added objects to {0}".format(self.current_set))
         elif len(cmds.ls(sl=True)) == 1:
-            self.log_event.emit("result", "Added {0} to {1}".format(cmds.ls(sl=True)[0]), self.current_set)
+            self.log_event.emit("result", "Added {0} to {1}".format(cmds.ls(sl=True)[0], self.current_set))
 
         self.update_set_members()
 

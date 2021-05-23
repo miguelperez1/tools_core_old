@@ -195,7 +195,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.properties_widget.set_properties(properties_widget)
 
     def properties_refresh_attrs(self):
-        self.properties_widget.properties_widget.refresh_attr()
+        if hasattr(self.properties_widget, "properties_widget"):
+            self.properties_widget.properties_widget.refresh_attr()
 
     def push_log(self, log_type, log_message):
         if log_type == "info":

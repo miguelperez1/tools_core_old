@@ -367,9 +367,6 @@ class PropertiesWidget(QtWidgets.QWidget):
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
 
-        # main_layout.addWidget(self.properties_header_lbl)
-        # main_layout.addWidget(MWidgets.QHLine())
-
         main_layout.addLayout(self.properties_cw)
         main_layout.addStretch()
 

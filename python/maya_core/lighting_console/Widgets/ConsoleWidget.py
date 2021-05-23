@@ -729,7 +729,7 @@ class ConsoleWidget(QtWidgets.QWidget):
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
 
-        main_layout.addWidget(self.console_header_lbl)
+        # main_layout.addWidget(self.console_header_lbl)
         main_layout.addWidget(self.console_tw)
 
     def create_connections(self):

@@ -212,14 +212,17 @@ class RenderLayersWidget(QtWidgets.QWidget):
 
         cmds.rename(self.current_rl, new_rl_name)
 
-        self.update_current_set(item)
+        self.update_current_rl(item)
 
         self.log_event.emit("result", "Renamed {0} to {1}".format(prev_rl_name, new_rl_name))
 
     def update_render_layers(self):
         self.render_layers_tw.clear()
 
-        renderlayers = cmds.ls(type="renderLayer")
+        renderlayers = sorted(cmds.ls(type='renderLayer'), reverse=True, key=lambda r: cmds.getAttr(r + ".displayOrder"))
+
+        renderlayers.remove("defaultRenderLayer")
+        renderlayers.append("defaultRenderLayer")
 
         rl_item_data = {}
         for render_layer in renderlayers:

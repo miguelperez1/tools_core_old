@@ -26,7 +26,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         super(ModifiersWidgetProperties, self).__init__(*args, **kwargs)
         self.setContentsMargins(0, 0, 0, 0)
 
-        self.setMinimumSize(constants.RES_X * .95 * .125, constants.RES_Y * .875 * .575*.97)
+        self.setMinimumSize(constants.RES_X * .95 * .125, constants.RES_Y * .875 * .575 * .97)
 
         self.pm_node = node
         self.widgets = []
@@ -123,25 +123,18 @@ class ModifierObjectWidgetItem(QtWidgets.QTreeWidgetItem):
         self.setText(0, node)
         self.pm_node = pm.PyNode(node)
 
-        self.properties_widget = ModifiersWidgetProperties(self.pm_node)
-
 
 class ModifierWidgetItem(QtWidgets.QTreeWidgetItem):
 
     def __init__(self, node, preset=None, parent=None, *args, **kwargs):
         super(ModifierWidgetItem, self).__init__(*args, **kwargs)
 
-        self.setFlags(self.flags() | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEditable)
+        self.setFlags(self.flags() | QtCore.Qt.ItemIsEditable)
 
         self.pm_node = node
         self.properties_widget = ModifiersWidgetProperties(self.pm_node)
 
-        if self.pm_node.ignore.get():
-            self.setCheckState(0, QtCore.Qt.Unchecked)
-        else:
-            self.setCheckState(0, QtCore.Qt.Checked)
-
-        self.setText(0, "     " + str(self.pm_node))
+        self.setText(0, str(self.pm_node))
 
         self.setSizeHint(0, QtCore.QSize(100, 30))
 
@@ -182,11 +175,11 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.delete_modifier_action = QtWidgets.QAction("Delete Modifier")
         self.duplicate_modifier_action = QtWidgets.QAction("Duplicate Modifier")
 
-        self.add_to_modifier_action = QtWidgets.QAction("Add selected to modifier")
+        self.add_to_modifier_action = QtWidgets.QAction("Add selected set members to modifier")
         self.remove_from_modifier_action = QtWidgets.QAction("Remove selected from modifier")
 
     def create_widgets(self):
-        self.modifiers_header_lbl = MWidgets.HeaderLabel("Modifiers")
+        self.modifiers_header_lbl = MWidgets.HeaderLabel("Object Properties")
 
         self.modifiers_add_btn = QtWidgets.QPushButton("+")
         self.modifiers_add_btn.setFixedSize(30, 30)
@@ -203,7 +196,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifiers_refresh_btn.setFixedSize(30, 30)
 
         self.modifiers_tw = MWidgets.MTreeWidget()
-        modifiers_tw_header = QtWidgets.QTreeWidgetItem(['Modifier'])
+        modifiers_tw_header = QtWidgets.QTreeWidgetItem(['Object Properties'])
         self.modifiers_tw.setHeaderItem(modifiers_tw_header)
         self.modifiers_tw.resizeColumnToContents(0)
         self.modifiers_tw.setAlternatingRowColors(True)
@@ -211,7 +204,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.refresh_modifiers()
 
         self.modifier_objects_tw = QtWidgets.QTreeWidget()
-        linked_sets_tw_header = QtWidgets.QTreeWidgetItem(['Modifier Objects'])
+        linked_sets_tw_header = QtWidgets.QTreeWidgetItem(['Object Properties Members'])
         self.modifier_objects_tw.setHeaderItem(linked_sets_tw_header)
         self.modifier_objects_tw.setMaximumHeight(constants.RES_Y * .15)
 
@@ -358,21 +351,21 @@ class ModifiersWidget(QtWidgets.QWidget):
         if self.current_modifier is None:
             return
 
-        members = cmds.sets(self.current_modifier, q=True)
-
-        if members is None:
+        if not cmds.sets(self.current_modifier, q=1):
             return
 
-        for m in members:
+        for m in cmds.sets(str(self.current_modifier), q=1):
             item = ModifierObjectWidgetItem(m)
             self.modifier_objects_tw.addTopLevelItem(item)
 
     def modifiers_tw_rename_callback(self, item, column):
         try:
             item.pm_node.rename(item.text(0))
-            item.setText(0, "     " + str(item.pm_node))
+            item.setText(0, str(item.pm_node))
         except Exception:
-            item.setText(0, "     " + str(item.pm_node))
+            item.setText(0, str(item.pm_node))
+
+        self.refresh_modifiers()
 
     def refresh_modifiers(self):
         self.modifiers_tw.clear()
@@ -393,10 +386,16 @@ class ModifiersWidget(QtWidgets.QWidget):
         pass
 
     def add_to_modifier(self):
-        current_modifier = str(self.current_modifier_item.pm_node)
+        current_modifier_node = self.current_modifier_item.pm_node
 
-        for obj in cmds.ls(sl=True):
-            cmds.sets(obj, edit=True, add=current_modifier)
+        for obj in pm.ls(sl=True):
+            if obj.nodeType() != "objectSet":
+                continue
+
+            for member in pm.sets(obj, q=1):
+                if cmds.sets(str(member), im=str(current_modifier_node)):
+                    continue
+                cmds.sets(str(member), edit=True, add=str(current_modifier_node))
 
         self.update_modifier_members()
 
