@@ -35,7 +35,8 @@ class BuilderWindow(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(BuilderWindow, self).__init__(parent)
 
-        self.setWindowTitle("asset Builder")
+        self.setWindowTitle("Asset Builder")
+        self.setObjectName("AssetBuilderUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -547,9 +548,8 @@ class BuilderWindow(QtWidgets.QDialog):
 
 def main():
     try:
-        asset_builder_dialog.close()  # pylint: disable=E0601
-        asset_builder_dialog.deleteLater()
-    except:
+        cmds.deleteUI("AssetBuilderUI")
+    except Exception:
         pass
 
     asset_builder_dialog = BuilderWindow()

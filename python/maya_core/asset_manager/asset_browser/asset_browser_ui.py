@@ -26,7 +26,8 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=maya_main_window()):
         super(AssetBrowserWindow, self).__init__(parent)
 
-        self.setWindowTitle("asset Browser")
+        self.setWindowTitle("Asset Browser")
+        self.setObjectName("AssetBrowserUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -62,9 +63,8 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
 def main():
     try:
-        asset_browser.close()
-        asset_browser.deleteLater()
-    except:
+        cmds.deleteUI("AssetBrowserUI")
+    except Exception:
         pass
 
     asset_browser = AssetBrowserWindow()

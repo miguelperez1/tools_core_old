@@ -27,6 +27,7 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
         super(LookDevToolsWindow, self).__init__(parent)
 
         self.setWindowTitle("LookDev Tools")
+        self.setObjectName("LookDevToolsUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
         self.setFixedWidth(400)
 
@@ -123,9 +124,8 @@ class LookDevToolsWindow(QtWidgets.QMainWindow):
 
 def main():
     try:
-        dialog.close()
-        dialog.deleteLater()
-    except:
+        cmds.deleteUI("LookDevToolsUI")
+    except Exception:
         pass
 
     dialog = LookDevToolsWindow()

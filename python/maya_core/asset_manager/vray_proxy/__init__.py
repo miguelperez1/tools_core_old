@@ -18,6 +18,7 @@ class VRayProxyUI(QtWidgets.QMainWindow):
         super(VRayProxyUI, self).__init__(parent)
 
         self.setWindowTitle("Create VRay Proxy")
+        self.setObjectName("VRayProxyUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
@@ -155,10 +156,10 @@ def create_vrayproxy(asset_path):
 
 def main():
     try:
-        dialog.close()
-        dialog.deleteLater()
-    except:
+        cmds.deleteUI("VRayProxyUI")
+    except Exception:
         pass
+
 
     dialog = VRayProxyUI()
     dialog.show()

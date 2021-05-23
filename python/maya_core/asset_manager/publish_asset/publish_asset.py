@@ -177,7 +177,8 @@ class PublishAssetWindow(QtWidgets.QDialog):
     def __init__(self, parent=maya_main_window()):
         super(PublishAssetWindow, self).__init__(parent)
 
-        self.setWindowTitle("Publish asset")
+        self.setWindowTitle("Publish Asset")
+        self.setObjectName("PublishAssetUI")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.setMinimumWidth(400)
@@ -195,7 +196,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
     def create_widgets(self):
         file_browse_icon = QtGui.QIcon(':fileOpen.png')
 
-        self.asset_name_lbl = QtWidgets.QLabel('asset Name')
+        self.asset_name_lbl = QtWidgets.QLabel('Asset Name')
         self.asset_name_le = QtWidgets.QLineEdit()
         self.asset_name_le.setMinimumWidth(300)
 
@@ -204,7 +205,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
         self.asset_preview_btn = QtWidgets.QPushButton()
         self.asset_preview_btn.setIcon(file_browse_icon)
 
-        self.asset_type_lbl = QtWidgets.QLabel('asset Type:')
+        self.asset_type_lbl = QtWidgets.QLabel('Asset Type:')
         self.asset_type_dd = QtWidgets.QComboBox()
         self.asset_type_dd.addItems(['model', 'material', 'rigs', 'plants'])
 
@@ -273,7 +274,7 @@ class PublishAssetWindow(QtWidgets.QDialog):
 
     def publish_confirm(self):
         if os.path.isfile(self.maya_path):
-            message = "asset {} published successfully".format(self.asset_name_le.text())
+            message = "Asset {} published successfully".format(self.asset_name_le.text())
             log.result(message)
 
     def browse_preview(self):
@@ -306,10 +307,10 @@ class PublishAssetWindow(QtWidgets.QDialog):
 
 def main():
     try:
-        publish_dialog.close()  # pylint: disable=E0601
-        publish_dialog.deleteLater()
-    except:
+        cmds.deleteUI("PublishAssetUI")
+    except Exception:
         pass
+
 
     publish_dialog = PublishAssetWindow()
     publish_dialog.show()
