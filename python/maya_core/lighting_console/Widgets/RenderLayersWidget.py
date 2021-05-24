@@ -105,7 +105,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.render_layer_refresh_btn.clicked.connect(self.refresh_layers)
         self.render_layer_duplicate_btn.clicked.connect(self.duplicate_layer)
 
-        self.render_layers_tw.currentItemChanged.connect(self.update_current_rl)
+        self.render_layers_tw.itemSelectionChanged.connect(self.update_current_rl)
         self.render_layers_tw.itemChanged.connect(self.render_layers_tw_rename_callback)
 
     def show_rl_context_menu(self, eventPosition):
@@ -188,13 +188,13 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.log_event.emit("result", "Created " + rl)
         self.update_render_layers()
 
-    def update_current_rl(self, current_item):
-        if current_item is None:
+    def update_current_rl(self):
+        if not self.render_layers_tw.selectedItems():
             self.current_rl_item = None
             self.current_rl = None
             return
 
-        self.current_rl_item = current_item
+        self.current_rl_item = self.render_layers_tw.selectedItems()[0]
         self.current_rl = self.current_rl_item.text(0)
 
         if self.current_rl == "masterLayer":
@@ -218,6 +218,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
 
     def update_render_layers(self):
         self.render_layers_tw.clear()
+        self.render_layers_tw.blockSignals(True)
 
         renderlayers = sorted(cmds.ls(type='renderLayer'), reverse=True, key=lambda r: cmds.getAttr(r + ".displayOrder"))
 
@@ -239,3 +240,6 @@ class RenderLayersWidget(QtWidgets.QWidget):
             current_rl = cmds.editRenderLayerGlobals(query=True, currentRenderLayer=True)
 
             rl_item_data[current_rl].setSelected(True)
+
+        self.render_layers_tw.blockSignals(False)
+

@@ -205,6 +205,12 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         color_widget.set_button_color(color)
 
         if self.light_type != "directionalLight":
+            if self.light.colorMode.get():
+                temp = self.light.temperature.get()
+                color = convert_K_to_RGB(int(temp))
+                color_widget.set_button_color(color, 1)
+
+        if self.light_type != "directionalLight":
             temp = self.light.temperature.get()
             self.setText(6, str(int(temp)))
         else:
@@ -231,13 +237,25 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         enabled = self.widget_data[1].layout().itemAt(1).widget().isChecked()
         if self.light_type != "directionalLight":
             self.light.enabled.set(enabled)
+            attr = "enabled"
         else:
             self.light.visibility.set(enabled)
+            attr = "visibility"
+
+        current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+        if current_rl != "defaultRenderLayer":
+            cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.light), attr))
 
     def set_invisible(self):
         if self.light_type != "directionalLight":
             invisible = self.widget_data[10].layout().itemAt(1).widget().isChecked()
             self.light.invisible.set(invisible)
+
+            current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
+
+            if current_rl != "defaultRenderLayer":
+                cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.light), "invisible"))
 
 
 class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
@@ -424,59 +442,68 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             self.prev_attr_value = item.text(column)
             self.editItem(item, column)
 
-    def update_attribute(self, item, column, value=None):
+            print self.prev_attr_value
+
+    def update_attribute(self, item, column):
         log.info("updating_attribute")
 
-        if item.text(3) == "":
-            return
-        if self.prev_attr_value is None:
-            return
+        value = item.text(column)
 
         attribute = self.header_item.text(column).lower().replace(" ", "")
 
-        if value is None:
-            value = item.text(column)
-        else:
-            value = value
+        if attribute == "":
+            return
+
+        self.blockSignals(True)
 
         if attribute != "name" and attribute != "lightselectname":
             attr = attribute
-            value = float(value)
+
+            try:
+                value = float(value)
+                new_value = value
+            except Exception:
+                item.setText(column, "{:.3f}".format(getattr(item.light_shape, attr).get()))
+                self.blockSignals(False)
+                return
 
             if attribute == "exposure":
                 attr = "intensity"
-                value = math.pow(2, value)
+                new_value = math.pow(2, value)
 
             elif attribute == "angle":
                 attr = "lightAngle"
-                item.setText(column, "{:.3f}".format(value))
 
             elif attribute == "temperature":
                 color_btn_widget = self.itemWidget(item, 5).layout().itemAt(1).widget()
                 color = convert_K_to_RGB(int(value))
                 color_btn_widget.set_button_color(color, 1)
 
-            elif attribute in ['directional']:
-                item.setText(column, "{:.3f}".format(value))
-
-            getattr(item.light, attr).set(float(value))
+            getattr(item.light_shape, attr).set(float(new_value))
 
             current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
 
-            if current_rl != "defaultRenderLayer" and (float(self.prev_attr_value) != float(value)):
-                cmds.editRenderLayerAdjustment("{0}.{1}".format(str(item.light), attr))
+            if current_rl != "defaultRenderLayer":
+                cmds.editRenderLayerAdjustment("{0}.{1}".format(str(item.light_shape), attr))
 
-            item.setText(column, str(getattr(item.light, attr).get()))
+            if attribute == "exposure":
+                item.setText(column, "{:.2f}".format(value))
+
+            elif attr != "temperature":
+                item.setText(column, "{:.3f}".format(getattr(item.light_shape, attr).get()))
+
+            else:
+                item.setText(column, "{}".format(int(getattr(item.light_shape, attr).get())))
 
         # Needs to go here
         if attribute == "name":
             try:
                 item.pm_node.rename(value)
                 item.setText(column, str(item.pm_node))
-            except Exception as e:
-                self.log_event.emit("error", e)
+            except Exception:
                 item.setText(column, str(item.pm_node))
-                return
+
+        self.blockSignals(False)
 
     def can_edit_column(self, item, column):
         item_type = item.item_type
@@ -527,6 +554,8 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         return new_item
 
     def show_context_menu(self, event_position):
+        self.use_temp_action.blockSignals(True)
+
         context_menu = QtWidgets.QMenu(self)
 
         self.current_item = self.itemAt(event_position)
@@ -576,6 +605,8 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
                 if has_tex:
                     context_menu.addAction(self.delete_tex_action)
 
+        self.use_temp_action.blockSignals(False)
+
         context_menu.exec_(self.mapToGlobal(event_position))
 
     def create_connections(self):
@@ -596,7 +627,10 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         if len(pm.ls(sl=1)) > 1:
             return
 
-        if pm.ls(sl=1)[0].nodeType() != "VRayRenderElementSet":
+        try:
+            if pm.ls(sl=1)[0].nodeType() != "VRayRenderElementSet":
+                return
+        except Exception:
             return
 
         ls = pm.ls(sl=1)[0]
@@ -629,6 +663,11 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         new_temp = not self.current_item.pm_node.colorMode.get()
 
         self.current_item.pm_node.colorMode.set(new_temp)
+
+        if new_temp:
+            color_btn_widget = self.itemWidget(self.current_item, 5).layout().itemAt(1).widget()
+            color = convert_K_to_RGB(int(self.current_item.pm_node.temperature.get()))
+            color_btn_widget.set_button_color(color, 1)
 
         current_rl = cmds.editRenderLayerGlobals(q=True, crl=True)
 
