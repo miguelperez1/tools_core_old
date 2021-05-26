@@ -133,6 +133,8 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
         self.create_widgets()
 
+        self.refresh_attrs()
+
         for col in range(10):
             if col == 3:
                 continue
@@ -158,27 +160,27 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
         self.widget_data[2] = light_icon
 
         color_cw = QtWidgets.QWidget()
-        color_widget = MWidgets.ColorPickerTreeWidgetItemWidget(120, self.size * .8, self.light, self)
+        self.color_widget = MWidgets.ColorPickerTreeWidgetItemWidget(120, self.size * .8, self.light, self)
         color_layout = QtWidgets.QHBoxLayout(color_cw)
         color_layout.addStretch()
-        color_layout.addWidget(color_widget)
+        color_layout.addWidget(self.color_widget)
         color_layout.addStretch()
         self.widget_data[5] = color_cw
 
         invisible_cw = QtWidgets.QWidget()
-        invisible_cb = QtWidgets.QCheckBox()
-        invisible_cb.stateChanged.connect(self.set_invisible)
+        self.invisible_cb = QtWidgets.QCheckBox()
+        self.invisible_cb.stateChanged.connect(self.set_invisible)
         invisible_layout = QtWidgets.QHBoxLayout(invisible_cw)
         invisible_layout.addStretch()
-        invisible_layout.addWidget(invisible_cb)
+        invisible_layout.addWidget(self.invisible_cb)
         invisible_layout.addStretch()
 
         tex_img_btn_cw = QtWidgets.QWidget()
-        tex_img_btn = MWidgets.ImagePushButton(self.size * 1.25, self.size * 1.25)
-        tex_img_btn.set_image(constants.ICONS['connection_in'], self.size * 1.5)
+        self.tex_img_btn = MWidgets.ImagePushButton(self.size * 1.25, self.size * 1.25)
+        self.tex_img_btn.set_image(constants.ICONS['connection_in'], self.size * 1.5)
         tex_img_btn_layout = QtWidgets.QHBoxLayout(tex_img_btn_cw)
         tex_img_btn_layout.addStretch()
-        tex_img_btn_layout.addWidget(tex_img_btn)
+        tex_img_btn_layout.addWidget(self.tex_img_btn)
         tex_img_btn_layout.addStretch()
 
         for connection in pm.listConnections(self.light_shape, c=1):
@@ -188,48 +190,6 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
         if self.light_type != "directionalLight":
             self.widget_data[10] = invisible_cw
-
-        # Initialize widget values
-
-        if self.light_type != "directionalLight":
-            enabled_cb.setChecked(self.light.enabled.get())
-        else:
-            enabled_cb.setChecked(self.light.visibility.get())
-
-        self.setText(3, str(self.light))
-
-        exposure = math.log(self.light.intensity.get(), 2)
-        self.setText(4, "{:.2f}".format(exposure))
-
-        color = self.light.color.get()
-        color_widget.set_button_color(color)
-
-        if self.light_type != "directionalLight":
-            if self.light.colorMode.get():
-                temp = self.light.temperature.get()
-                color = convert_K_to_RGB(int(temp))
-                color_widget.set_button_color(color, 1)
-
-        if self.light_type != "directionalLight":
-            temp = self.light.temperature.get()
-            self.setText(6, str(int(temp)))
-        else:
-            pass
-            # self.setText(6, "6500")
-
-        if self.light_type == "VRayLightRectShape":
-            directional = self.light.directional.get()
-            self.setText(8, "{:.3f}".format(directional))
-
-        if self.light_type == "directionalLight":
-            angle = self.light.lightAngle.get()
-            self.setText(9, "{:.3f}".format(angle))
-
-        if self.light_type != "directionalLight":
-            invisible = self.light.invisible.get()
-            invisible_cb.setChecked(invisible)
-
-        self.setSizeHint(0, QtCore.QSize(35, 35))
 
         self.properties_widget = PropertiesLightConsoleTreeLightItem(self.light)
 
@@ -256,6 +216,50 @@ class LightConsoleTreeLightItem(QtWidgets.QTreeWidgetItem):
 
             if current_rl != "defaultRenderLayer":
                 cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.light), "invisible"))
+
+    def refresh_attrs(self):
+        # enabled
+        if self.light_type != "directionalLight":
+            enabled = self.light.enabled.get()
+        else:
+            enabled = self.light.visibility.get()
+        self.widget_data[1].layout().itemAt(1).widget().setChecked(enabled)
+
+        # name
+        self.setText(3, str(self.light))
+
+        # exposure
+        exposure = math.log(self.light.intensity.get(), 2)
+        self.setText(4, "{:.2f}".format(exposure))
+
+        # color
+        color = self.light.color.get()
+        self.color_widget.set_button_color(color)
+
+        # temperature
+        if self.light_type != "directionalLight":
+            temp = self.light.temperature.get()
+
+            if self.light.colorMode.get():
+                color = convert_K_to_RGB(int(temp))
+                self.color_widget.set_button_color(color, 1)
+
+            self.setText(6, str(int(temp)))
+
+        # directional
+        if self.light_type == "VRayLightRectShape":
+            directional = self.light.directional.get()
+            self.setText(8, "{:.3f}".format(directional))
+
+        # angle
+        if self.light_type == "directionalLight":
+            angle = self.light.lightAngle.get()
+            self.setText(9, "{:.3f}".format(angle))
+
+        # invisible
+        if self.light_type != "directionalLight":
+            invisible = self.light.invisible.get()
+            self.invisible_cb.setChecked(invisible)
 
 
 class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
@@ -379,6 +383,9 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             self.dragged_item.create_widgets()
             self.dragged_item.setSizeHint(2, QtCore.QSize(60, 60))
 
+            if not self.dragged_item.is_group:
+                self.dragged_item.refresh_attrs()
+
             for column, widget in self.dragged_item.widget_data.items():
                 self.setItemWidget(self.dragged_item, column, widget)
 
@@ -441,8 +448,6 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
         if self.can_edit_column(item, column):
             self.prev_attr_value = item.text(column)
             self.editItem(item, column)
-
-            print self.prev_attr_value
 
     def update_attribute(self, item, column):
         log.info("updating_attribute")
@@ -740,6 +745,13 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
                         for column, widget in n.widget_data.items():
                             self.setItemWidget(n, column, widget)
 
+                        if not n.is_group:
+                            n.refresh_attrs()
+
+    def refresh_attrs(self):
+        for light_item in self.light_items:
+            light_item.refresh_attrs()
+
 
 class ConsoleWidget(QtWidgets.QWidget):
     log_event = QtCore.Signal(str, str)
@@ -788,3 +800,8 @@ class ConsoleWidget(QtWidgets.QWidget):
 
         self.log_event.emit("result", "Created " + light)
         pass
+
+    def refresh_attrs(self):
+        self.console_tw.blockSignals(True)
+        self.console_tw.refresh_attrs()
+        self.console_tw.blockSignals(False)

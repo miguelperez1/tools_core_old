@@ -14,6 +14,8 @@ from maya_core.asset_manager.asset_browser import AssetBrowser
 from maya_core.lighting_console import Widgets
 from maya_core.lighting_console import constants
 
+from maya_core.common_tools import logger
+
 reload(Widgets)
 reload(MWidgets)
 reload(AssetBrowser)
@@ -26,6 +28,9 @@ def maya_main_window():
     """
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
+
+
+log = logger.Logger()
 
 
 class LightingConsole(QtWidgets.QMainWindow):
@@ -186,7 +191,9 @@ class LightingConsole(QtWidgets.QMainWindow):
         # self.sets_widget.update_properties.connect(self.push_log)
 
         self.console_widget.properties_refresh_attr.connect(self.properties_refresh_attrs)
+
         self.render_layers_widget.properties_refresh_attr.connect(self.properties_refresh_attrs)
+        self.render_layers_widget.properties_refresh_attr.connect(self.console_widget.refresh_attrs)
 
         self.tool_buttons_widget.light_created.connect(self.console_widget.create_light)
         self.asset_browser_widget.light_created.connect(self.console_widget.create_light)
@@ -195,6 +202,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.properties_widget.set_properties(properties_widget)
 
     def properties_refresh_attrs(self):
+        log.info("properties_refresh_attrs")
         if hasattr(self.properties_widget, "properties_widget"):
             self.properties_widget.properties_widget.refresh_attr()
 

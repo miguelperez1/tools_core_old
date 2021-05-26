@@ -156,6 +156,8 @@ class SetsWidget(QtWidgets.QWidget):
 
         if self.current_set_member_item is not None:
             about_action = QtWidgets.QAction(self.current_set_member_item.text(0))
+            about_action.triggered.connect(lambda: pm.select(self.current_set_member_item.text(0)))
+
             contextMenu.addAction(about_action)
             contextMenu.addSeparator()
             contextMenu.addAction(self.remove_from_set_action)
