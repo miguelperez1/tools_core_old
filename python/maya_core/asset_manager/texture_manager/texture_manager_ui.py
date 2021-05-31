@@ -242,6 +242,7 @@ class TextureManagerUI(QtWidgets.QMainWindow):
             cmds.hyperShade(shaderNetworksSelectMaterialNodes=1)
             material_selection = cmds.ls(sl=1)
             for mat in material_selection:
+
                 connections = cmds.listConnections(mat)
 
                 textures_tmp = []
@@ -256,6 +257,9 @@ class TextureManagerUI(QtWidgets.QMainWindow):
 
         for mat, textures in self.mat_data.items():
             mat_node = pm.PyNode(mat)
+
+            if mat_node.nodeType() not in ['VRayMtl', 'VRayMtl2Sided']:
+                continue
 
             mat_item = PMWidgetItem(mat_node)
             mat_item.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.DontShowIndicatorWhenChildless)

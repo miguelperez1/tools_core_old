@@ -317,7 +317,8 @@ class LightConsoleTreeGroupItem(QtWidgets.QTreeWidgetItem):
         enabled_cb.setChecked(self.group.visibility.get())
 
     def set_enabled(self):
-        enabled = self.widget_data[1].layout().itemAt(1).widget().isChecked()
+        enabled_cb = self.widget_data[1].layout().itemAt(1).widget()
+        enabled = enabled_cb.isChecked()
 
         self.group.visibility.set(enabled)
 

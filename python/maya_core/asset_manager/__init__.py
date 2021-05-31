@@ -1,4 +1,5 @@
 import os
+import json
 import operator
 
 from maya_core.common_tools import logger
@@ -52,6 +53,18 @@ def build_asset_library(debug=False):
                         if subdir.endswith(".png"):
                             preview = os.path.join(dir, subdir)
 
+                    asset_data_json_path = os.path.join(library_path, "{}_root".format(asset), "data.json")
+
+                    if not os.path.isfile(asset_data_json_path):
+                        data = {
+                            "name": asset,
+                            "preview": preview,
+                            "tags": ""
+                        }
+
+                        with open(asset_data_json_path, "w") as file:
+                            json.dump(data, file, indent=4, sort_keys=True)
+
                     library_yml.write("{0}: {1}\n".format(asset, preview))
 
                     log.info("Writing [{}] asset".format(asset))
@@ -59,7 +72,8 @@ def build_asset_library(debug=False):
                     written = True
         else:
             for path in os.listdir(library_path):
-                if path.endswith(".exr") or path.endswith(".hdr") or path.endswith(".vdb") or path.endswith(".tif") or path.endswith(".tiff"):
+                if path.endswith(".exr") or path.endswith(".hdr") or path.endswith(".vdb") or path.endswith(
+                        ".tif") or path.endswith(".tiff"):
                     asset = path[:-4]
 
                     preview_path = library_path + "\\thumbnails\\{0}_preview.png".format(asset)

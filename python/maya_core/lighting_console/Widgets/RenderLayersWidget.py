@@ -245,9 +245,6 @@ class RenderLayersWidget(QtWidgets.QWidget):
         renderlayers = sorted(cmds.ls(type='renderLayer'), reverse=True,
                               key=lambda r: cmds.getAttr(r + ".displayOrder"))
 
-        renderlayers.remove("defaultRenderLayer")
-        renderlayers.append("defaultRenderLayer")
-
         rl_item_data = {}
         for render_layer in renderlayers:
             render_layer_item = QtWidgets.QTreeWidgetItem()

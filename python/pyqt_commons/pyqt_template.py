@@ -55,9 +55,8 @@ class ExampleDialog(QtWidgets.QMainWindow):
 
 def main():
     try:
-        dialog.close()
-        dialog.deleteLater()
-    except:
+        cmds.deleteUI("ExampleDialog")
+    except Exception:
         pass
 
     dialog = ExampleDialog()
