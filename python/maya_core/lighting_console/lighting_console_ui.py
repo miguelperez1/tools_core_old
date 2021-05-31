@@ -70,6 +70,9 @@ class LightingConsole(QtWidgets.QMainWindow):
         # Render settings
         self.render_settings_widget = Widgets.RenderSettingsWidget.RenderSettingsWidget()
 
+        # Viewport panel
+        self.viewport_widget = Widgets.ViewportPanelWidget.ViewportPanelWidget()
+
         # Tool Buttons
         self.tool_buttons_widget = Widgets.ToolButtonsWidget.ToolButtonsWidget()
 
@@ -100,14 +103,15 @@ class LightingConsole(QtWidgets.QMainWindow):
         row_width = self.res_x * .95
         row_height = self.res_y * .875
 
-        col1_width = row_width * .15
-        col2_width = row_width * .65
-        col3_width = row_width * .15
+        col1_width = row_width * .185
+        col2_width = row_width * .6
+        col3_width = row_width * .1
 
         self.tool_buttons_widget.setFixedHeight(self.res_y * .05)
 
-        self.render_layers_widget.setFixedSize(col1_width, row_height * .225)
-        self.modifiers_widget.setFixedSize(col1_width, row_height * .725)
+        self.render_layers_widget.setFixedSize(col1_width, row_height * .175)
+        self.viewport_widget.setFixedSize(col1_width, row_height * .25)
+        self.modifiers_widget.setFixedWidth(col1_width)
 
         self.console_widget.setFixedSize(col2_width, row_height * .575)
         self.sets_widget.setFixedSize(col2_width * .333, row_height * .375)
@@ -121,6 +125,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.setCentralWidget(central_widget)
 
         main_layout = QtWidgets.QVBoxLayout(central_widget)
+        main_layout.setObjectName("LightingConsoleLayout")
         main_layout.setSpacing(0)
 
         row_0_layout = QtWidgets.QHBoxLayout()
@@ -135,6 +140,8 @@ class LightingConsole(QtWidgets.QMainWindow):
         row1_col1_layout = QtWidgets.QVBoxLayout()
         row1_col1_layout.setSpacing(5)
         row1_col1_layout.addWidget(self.render_layers_widget)
+        row1_col1_layout.addWidget(MWidgets.QHLine())
+        row1_col1_layout.addWidget(self.viewport_widget)
         row1_col1_layout.addWidget(MWidgets.QHLine())
         row1_col1_layout.addWidget(self.modifiers_widget)
 

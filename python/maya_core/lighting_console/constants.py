@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 SCALE = 1
 RES_X = 2560 * SCALE
-RES_Y = 1320 * SCALE
+RES_Y = 1440 * SCALE
 GLOBAL_SPACING = 7
 
 ICONS = {

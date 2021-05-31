@@ -7,6 +7,7 @@ from maya_core.lighting_console.Widgets import RenderLayersWidget
 from maya_core.lighting_console.Widgets import RenderSettingsWidget
 from maya_core.lighting_console.Widgets import SetsWidget
 from maya_core.lighting_console.Widgets import ToolButtonsWidget
+from maya_core.lighting_console.Widgets import ViewportPanelWidget
 
 reload(AOVsWidget)
 reload(ConsoleWidget)
@@ -17,3 +18,4 @@ reload(RenderLayersWidget)
 reload(RenderSettingsWidget)
 reload(SetsWidget)
 reload(ToolButtonsWidget)
+reload(ViewportPanelWidget)
