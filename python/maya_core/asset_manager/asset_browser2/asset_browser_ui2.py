@@ -57,6 +57,7 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
         self.current_library = None
+        self.current_tag = None
 
         self.create_actions()
         self.create_widgets()
@@ -160,6 +161,7 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
         main_layout.addWidget(self.log_widget)
 
     def create_connections(self):
+        self.search_le.textChanged.connect(self.filter_by_search)
         self.filter_tw.currentItemChanged.connect(self.refresh_assets)
         self.assets_tw.currentItemChanged.connect(self.refresh_properties)
         self.prop_tags_save_btn.clicked.connect(self.save_tags)
@@ -254,7 +256,7 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
             asset_item = QtWidgets.QTreeWidgetItem()
             asset_item.setText(1, asset)
             asset_item.setSizeHint(0, QtCore.QSize(asset_item_size, asset_item_size))
-            asset_item.setData(0, QtCore.Qt.UserRole, asset_path)
+            asset_item.setData(0, QtCore.Qt.UserRole, asset_json_path)
 
             self.assets_tw.addTopLevelItem(asset_item)
             self.assets_tw.setItemWidget(asset_item, 0, icon_widget)
@@ -447,6 +449,26 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
     def update_log(self, message_type, message):
         getattr(self.log_widget, message_type)(message)
+
+    def filter_by_search(self):
+        search_filter = self.search_le.text().lower()
+
+        for i in range(self.assets_tw.topLevelItemCount()):
+            item = self.assets_tw.topLevelItem(i)
+            asset_json_path = item.data(0, QtCore.Qt.UserRole)
+
+            json_file = open(asset_json_path, "r")
+            asset_data = json.load(json_file)
+            json_file.close()
+
+            if search_filter.startswith("tag:"):
+                if not re.search(self.search_le.text().split("tag:")[-1], asset_data["tags"]):
+                    item.setHidden(True)
+
+            elif not re.search(self.search_le.text(), item.text(1).lower()):
+                item.setHidden(True)
+            else:
+                item.setHidden(False)
 
 
 def main():
