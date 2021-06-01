@@ -3,6 +3,7 @@ import re
 import subprocess
 from shutil import copyfile
 from collections import OrderedDict, defaultdict
+import json
 
 from PySide2 import QtCore
 from PySide2 import QtWidgets
@@ -68,12 +69,13 @@ class RecursiveNodeSearch(object):
 
 
 class AssetPublisher(object):
-    def __init__(self, asset_name, asset_type, selection=False, preview_image=None, create_proxy=False):
+    def __init__(self, asset_name, asset_type, tags="", selection=False, preview_image=None, create_proxy=False):
         self.name = asset_name
         self.type = asset_type
         self.selection = selection
         self.preview_image = preview_image
         self.proxy = create_proxy
+        self.tags = tags
 
         self.asset_root_path = 'F:\\share\\assets\\libraries\\{0}\\{1}_root'.format(self.type, self.name)
         self.asset = asset.Asset(path=self.asset_root_path)
@@ -108,8 +110,8 @@ class AssetPublisher(object):
         # Preview image
         if self.preview_image is not None and self.preview_image != '':
             file_ext = self.preview_image.split('.')[-1]
-            preview_dst = self.asset_root_path + '\\{0}_preview.{1}'.format(self.name, file_ext)
-            copyfile(self.preview_image, preview_dst)
+            self.preview_dst = self.asset_root_path + '\\{0}_preview.{1}'.format(self.name, file_ext)
+            copyfile(self.preview_image, self.preview_dst)
 
         if self.selection:
             pm.select(selection, r=1)
@@ -122,6 +124,20 @@ class AssetPublisher(object):
 
         if self.proxy:
             self.create_vrayproxy()
+
+        self.create_json_data()
+
+    def create_json_data(self):
+        self.json_path = os.path.join(self.asset_root_path, "data.json")
+
+        data = {
+            "name": self.name,
+            "preview": self.preview_dst,
+            "tags": self.tags
+        }
+
+        with open(self.json_path, "w") as file:
+            json.dump(data, file, indent=4, sort_keys=True)
 
     def create_vrayproxy(self):
         proxy_path = self.asset_root_path + "\\vrayproxy"
@@ -209,6 +225,9 @@ class PublishAssetWindow(QtWidgets.QDialog):
         self.asset_type_dd = QtWidgets.QComboBox()
         self.asset_type_dd.addItems(['model', 'material', 'rigs', 'plants'])
 
+        self.asset_tags_lbl = QtWidgets.QLabel("Asset Tags: ")
+        self.asset_tags_le = QtWidgets.QLineEdit()
+
         self.publish_selection_cb = QtWidgets.QCheckBox('Publish Selection')
         self.create_proxy_cb = QtWidgets.QCheckBox('Create Proxy')
 
@@ -239,10 +258,15 @@ class PublishAssetWindow(QtWidgets.QDialog):
         btn_layout.addStretch()
         btn_layout.addWidget(self.build_btn)
 
+        tags_layout = QtWidgets.QHBoxLayout()
+        tags_layout.addWidget(self.asset_tags_lbl)
+        tags_layout.addWidget(self.asset_tags_le)
+
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addLayout(name_layout)
         main_layout.addLayout(type_layout)
         main_layout.addLayout(preview_layout)
+        main_layout.addLayout(tags_layout)
         main_layout.addLayout(btn_layout)
 
     def create_connections(self):
@@ -262,8 +286,11 @@ class PublishAssetWindow(QtWidgets.QDialog):
         selection = self.publish_selection_cb.isChecked()
         proxy = self.create_proxy_cb.isChecked()
 
-        asset_publisher = AssetPublisher(self.asset_name_le.text(), self.asset_type_dd.currentText(), selection,
-                                         self.asset_preview_le.text(), proxy)
+        asset_publisher = AssetPublisher(asset_name=self.asset_name_le.text(),
+                                         asset_type=self.asset_type_dd.currentText(),
+                                         tags=self.asset_tags_le.text(),
+                                         selection=selection,
+                                         preview_image=self.asset_preview_le.text(), create_proxy=proxy)
 
         self.maya_path = asset_publisher.maya_path
 
@@ -310,7 +337,6 @@ def main():
         cmds.deleteUI("PublishAssetUI")
     except Exception:
         pass
-
 
     publish_dialog = PublishAssetWindow()
     publish_dialog.show()

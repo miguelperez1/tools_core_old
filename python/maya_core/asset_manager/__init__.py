@@ -50,7 +50,7 @@ def build_asset_library(debug=False):
 
                     preview = ""
                     for subdir in os.listdir(dir):
-                        if subdir.endswith(".png"):
+                        if subdir.endswith(".png") or subdir.endswith(".jpg"):
                             preview = os.path.join(dir, subdir)
 
                     asset_data_json_path = os.path.join(library_path, "{}_root".format(asset), "data.json")

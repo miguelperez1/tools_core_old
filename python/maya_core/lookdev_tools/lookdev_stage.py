@@ -59,10 +59,13 @@ def create_directional_light():
     transform = pm.createNode("transform", n="lookdev_directional")
     light = pm.shadingNode("directionalLight", p=transform, n="lookdev_directionalShape", asLight=True)
 
+    light.intensity.set(4)
+
     transform.scaleX.set(5)
     transform.scaleY.set(5)
     transform.scaleZ.set(5)
     transform.rotateX.set(-45)
+    transform.rotateY.set(-45)
 
     return light
 
@@ -72,7 +75,7 @@ def create_shotcam():
         return
 
     cameraName = cmds.camera()
-    camera = cmds.rename(cameraName[0], 'shotCAM')
+    camera = cmds.rename(cameraName[0], 'shotCam')
     cmds.setAttr('{}.displayGateMaskOpacity'.format(camera), 1)
     cmds.setAttr('{}.displayGateMaskColor'.format(camera), 0, 0, 0, type='double3')
     cmds.setAttr('{}.focalLength'.format(camera), 50)

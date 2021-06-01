@@ -5,12 +5,15 @@ import json
 import subprocess
 from shutil import copyfile
 import re
+import imagesize
 
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import maya.mel as mel
+import pymel.core as pm
 
 from pyqt_commons import MWidgets
 
@@ -40,6 +43,7 @@ NORMAL_LIBRARIES = ['model',
 
 class AssetBrowserWindow(QtWidgets.QMainWindow):
     push_log = QtCore.Signal(str, str)
+    light_created = QtCore.Signal(str)
 
     def __init__(self, parent=MWidgets.maya_main_window()):
         super(AssetBrowserWindow, self).__init__(parent)
@@ -86,7 +90,8 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
         # Filter TW
         self.filter_tw = QtWidgets.QTreeWidget()
-        self.filter_tw.setHeaderHidden(True)
+        header_item = QtWidgets.QTreeWidgetItem(['Libraries'])
+        self.filter_tw.setHeaderItem(header_item)
 
         self.refresh_filter_tw()
 
@@ -188,12 +193,12 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
         self.filter_tw.blockSignals(True)
         self.filter_tw.clear()
 
-        for library in NORMAL_LIBRARIES:
+        for library in LIBRARIES:
             library_path = LIBRARIES[library]
 
             library_item = QtWidgets.QTreeWidgetItem()
             library_item.setText(0, library.title())
-            library_item.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.ShowIndicator)
+            library_item.setChildIndicatorPolicy(QtWidgets.QTreeWidgetItem.DontShowIndicatorWhenChildless)
 
             self.filter_tw.addTopLevelItem(library_item)
 
@@ -230,23 +235,26 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
         for asset_data in library_data:
             asset = asset_data[0]
             preview_path = asset_data[1]
-            asset_path = os.path.join(library_path, "{}_root".format(asset))
-            asset_json_path = os.path.join(asset_path, "data.json")
 
-            json_file = open(asset_json_path, "r")
-            asset_data = json.load(json_file)
-            json_file.close()
+            if self.current_library in NORMAL_LIBRARIES:
+                asset_path = os.path.join(library_path, "{}_root".format(asset))
+                asset_json_path = os.path.join(asset_path, "data.json")
 
-            if self.current_tag:
-                if not self.current_tag.lower() in asset_data["tags"].split(","):
-                    continue
+                json_file = open(asset_json_path, "r")
+                asset_data = json.load(json_file)
+                json_file.close()
+
+                if self.current_tag:
+                    if not self.current_tag.lower() in asset_data["tags"].split(","):
+                        continue
 
             icon_widget = MWidgets.PreviewLabel()
+            icon_widget.setContentsMargins(5, 5, 5, 5)
             icon_widget.setAccessibleName(asset)
             icon_widget.setToolTip(icon_widget.accessibleName())
             icon_widget.setObjectName(preview_path)
 
-            asset_item_size = 150
+            asset_item_size = 125
 
             if os.path.isfile(preview_path):
                 icon_widget.set_image(preview_path, asset_item_size)
@@ -255,8 +263,10 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
             asset_item = QtWidgets.QTreeWidgetItem()
             asset_item.setText(1, asset)
-            asset_item.setSizeHint(0, QtCore.QSize(asset_item_size, asset_item_size))
-            asset_item.setData(0, QtCore.Qt.UserRole, asset_json_path)
+            asset_item.setSizeHint(0, QtCore.QSize(asset_item_size * 1.1, asset_item_size * 1.1))
+
+            if self.current_library in NORMAL_LIBRARIES:
+                asset_item.setData(0, QtCore.Qt.UserRole, asset_json_path)
 
             self.assets_tw.addTopLevelItem(asset_item)
             self.assets_tw.setItemWidget(asset_item, 0, icon_widget)
@@ -290,9 +300,24 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
                 if data:
                     tags = data["tags"]
                     self.prop_tags_le.setText(tags)
+                    self.prop_tags_le.setEnabled(True)
 
                     if data["preview"]:
-                        self.prop_icon.set_image(data["preview"], 300)
+                        self.prop_icon.set_image(data["preview"], 350)
+        else:
+            preview_path_tmp = os.path.join(LIBRARIES[self.current_library], "thumbnails",
+                                            "{}_preview.png".format(self.current_asset))
+
+            preview_path = preview_path_tmp.replace(".hdr", "").replace(".tif", "").replace(".tiff", "").replace(".exr",
+                                                                                                                 "")
+
+            if os.path.isfile(preview_path):
+                self.prop_icon.set_image(preview_path, 325)
+            else:
+                self.push_log.emit("warning", "Preview path {} does not exist".format(preview_path))
+
+            self.prop_tags_le.setText("Tags not enabled for lights and vbds")
+            self.prop_tags_le.setEnabled(False)
 
         self.assets_tw.blockSignals(False)
 
@@ -354,12 +379,13 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
         contextMenu.addAction(self.import_action)
 
-        contextMenu.addAction(self.reference_action)
+        if self.current_library in NORMAL_LIBRARIES:
+            contextMenu.addAction(self.reference_action)
 
-        asset_path = LIBRARIES[self.current_library] + "\\{}_root".format(self.current_asset)
+            asset_path = LIBRARIES[self.current_library] + "\\{}_root".format(self.current_asset)
 
-        if "vrayproxy" in os.listdir(asset_path):
-            contextMenu.addAction(self.import_proxy_action)
+            if "vrayproxy" in os.listdir(asset_path):
+                contextMenu.addAction(self.import_proxy_action)
 
         contextMenu.addSeparator()
 
@@ -403,7 +429,16 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
             cmds.file(maya_path, i=True)
 
-            self.push_log.emit("result", "Imported {}".format(self.current_asset))
+        elif self.current_library == "studio_lights":
+            self.import_studio_light()
+        elif self.current_library == "gobo_lights":
+            self.import_gobo_light()
+        elif self.current_library == "hdri":
+            self.import_hdr()
+        elif self.current_library == "clouds":
+            self.import_cloud()
+
+        self.push_log.emit("result", "Imported {}".format(self.current_asset))
 
     def reference_action_callback(self):
         if self.current_library in NORMAL_LIBRARIES:
@@ -455,20 +490,111 @@ class AssetBrowserWindow(QtWidgets.QMainWindow):
 
         for i in range(self.assets_tw.topLevelItemCount()):
             item = self.assets_tw.topLevelItem(i)
-            asset_json_path = item.data(0, QtCore.Qt.UserRole)
 
-            json_file = open(asset_json_path, "r")
-            asset_data = json.load(json_file)
-            json_file.close()
+            if self.current_library in NORMAL_LIBRARIES:
+                asset_json_path = item.data(0, QtCore.Qt.UserRole)
 
-            if search_filter.startswith("tag:"):
-                if not re.search(self.search_le.text().split("tag:")[-1], asset_data["tags"]):
-                    item.setHidden(True)
+                json_file = open(asset_json_path, "r")
+                asset_data = json.load(json_file)
+                json_file.close()
 
-            elif not re.search(self.search_le.text(), item.text(1).lower()):
+            # if search_filter.startswith("tag:"):
+            #     if not re.search(self.search_le.text().split("tag:")[-1], asset_data["tags"]):
+            #         item.setHidden(True)
+
+            if not re.search(self.search_le.text(), item.text(1).lower()):
                 item.setHidden(True)
             else:
                 item.setHidden(False)
+
+    def import_studio_light(self):
+        path = LIBRARIES['studio_lights'] + '\\{}'.format(self.current_asset)
+        area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
+        lgt = cmds.shadingNode('VRayLightRectShape', n=area_trans + "Shape", p=area_trans, asLight=True)
+
+        cmds.setAttr('{}.useRectTex'.format(lgt), 1)
+        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(lgt))
+        tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
+        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(lgt))
+        cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
+        cmds.setAttr('{}.intensityMult'.format(lgt), 1)
+        cmds.setAttr('{}.showTex'.format(lgt), 0)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
+
+        aspect_ratio = self.get_preview_size(path)
+
+        cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
+
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit(lgt)
+
+    def import_gobo_light(self):
+        path = LIBRARIES['gobo_lights'] + '\\{}'.format(self.current_asset)
+
+        area_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
+        lgt = cmds.shadingNode('VRayLightRectShape', n=area_trans + "Shape", p=area_trans, asLight=True)
+
+        cmds.setAttr('{}.useRectTex'.format(lgt), 1)
+        mel.eval('sets -edit -forceElement defaultLightSet {} ;'.format(lgt))
+        tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
+        cmds.connectAttr('{}.outColor'.format(tex), '{}.rectTex'.format(lgt))
+        cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
+        cmds.setAttr('{}.intensityMult'.format(lgt), 1)
+        cmds.setAttr('{}.showTex'.format(lgt), 1)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
+        cmds.setAttr('{}.directional'.format(lgt), .99)
+
+        aspect_ratio = self.get_preview_size(path)
+
+        cmds.setAttr('{}.scaleY'.format(area_trans), 1 / aspect_ratio)
+
+        uv_node = cmds.shadingNode("place2dTexture", name='{}_place2d'.format(self.current_asset[:-4]), asUtility=True)
+        cmds.connectAttr('{}.outUV'.format(uv_node), '{}.uvCoord'.format(tex))
+
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit(lgt)
+
+    def import_hdr(self):
+        path = LIBRARIES['hdri'] + '\\{}'.format(self.current_asset)
+
+        dome_trans = cmds.createNode('transform', n='l_{}'.format(self.current_asset[:-4]))
+        lgt = cmds.shadingNode('VRayLightDomeShape', n=dome_trans + "Shape", p=dome_trans, asLight=True)
+        mel.eval('sets -edit -forceElement  defaultLightSet {} ;'.format(lgt))
+
+        cmds.setAttr('{}.useDomeTex'.format(lgt), 1)
+        cmds.setAttr('{}.invisible'.format(lgt), 1)
+        cmds.setAttr('{}.viewportTexEnable'.format(lgt), 0)
+
+        tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
+        cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')
+
+        cc_node = cmds.createNode("colorCorrect")
+        vray_place_tex = cmds.createNode("VRayPlaceEnvTex")
+        cmds.setAttr("{}.useTransform".format(vray_place_tex), 1)
+        cmds.setAttr("{}.mappingType".format(vray_place_tex), 2)
+        uv_node = cmds.shadingNode("place2dTexture", name='{}_place2d'.format(self.current_asset), asUtility=True)
+
+        cmds.connectAttr("{}.worldMatrix".format(dome_trans), "{}.transform".format(vray_place_tex))
+        cmds.connectAttr("{}.uvCoord".format(uv_node), "{}.outUV".format(vray_place_tex))
+        cmds.connectAttr("{}.outUV".format(vray_place_tex), "{}.uvCoord".format(tex))
+
+        cmds.connectAttr("{}.outColor".format(tex), "{}.inColor".format(cc_node))
+        cmds.connectAttr('{}.outColor'.format(cc_node), '{}.domeTex'.format(lgt))
+
+        light_shape = cmds.listRelatives(lgt, shapes=True)[0]
+
+        self.light_created.emit(lgt)
+
+    def get_preview_size(self, preview_path):
+        asset_image_path = preview_path
+        image_size = imagesize.get(asset_image_path)
+        aspect_ratio = float(float(image_size[0]) / float(image_size[1]))
+
+        return aspect_ratio
 
 
 def main():
