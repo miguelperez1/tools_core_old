@@ -339,6 +339,7 @@ class AssetBrowser(QtWidgets.QWidget):
         cmds.setAttr('{}.useDomeTex'.format(lgt), 1)
         cmds.setAttr('{}.invisible'.format(lgt), 1)
         cmds.setAttr('{}.viewportTexEnable'.format(lgt), 0)
+        cmds.setAttr('{}.multiplyByTheLightColor'.format(lgt), 1)
 
         tex = cmds.shadingNode('file', asTexture=True, isColorManaged=True)
         cmds.setAttr('{}.fileTextureName'.format(tex), path, type='string')

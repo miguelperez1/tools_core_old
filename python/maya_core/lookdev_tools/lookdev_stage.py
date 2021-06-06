@@ -8,7 +8,7 @@ def import_hdr():
     dome_trans = pm.createNode("transform", n="lookdev_hdr")
     dome_light = pm.shadingNode("VRayLightDomeShape", p=dome_trans, n="lookdev_hdrShape", asLight=True)
 
-    dome_light.intensity.set(5)
+    dome_light.intensity.set(2)
     dome_light.useDomeTex.set(1)
     dome_light.multiplyByTheLightColor.set(1)
     dome_light.invisible.set(1)
@@ -40,8 +40,8 @@ def import_hdr():
 def set_render_settings():
     vray_settings = pm.PyNode("vraySettings")
 
-    x = 1024
-    y = 1024
+    x = 512
+    y = 512
 
     vray_settings.width.set(y)
     vray_settings.height.set(y)
@@ -59,7 +59,7 @@ def create_directional_light():
     transform = pm.createNode("transform", n="lookdev_directional")
     light = pm.shadingNode("directionalLight", p=transform, n="lookdev_directionalShape", asLight=True)
 
-    light.intensity.set(4)
+    light.intensity.set(2)
 
     transform.scaleX.set(5)
     transform.scaleY.set(5)
