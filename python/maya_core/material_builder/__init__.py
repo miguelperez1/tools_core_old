@@ -6,15 +6,15 @@ from maya_core.common_tools import logger
 log = logger.Logger()
 
 
-def build_vraymtl(asset_data, debug=False):
+def build_vraymtl(material_data, debug=False):
     log.status = debug
 
     errors = []
-    if not asset_data.has_key("name"):
+    if not material_data.has_key("name"):
         errors.append("asset data has no name key")
-    if not asset_data.has_key("assign"):
+    if not material_data.has_key("assign"):
         errors.append("asset data has no assign key")
-    if not asset_data.has_key("use_rough"):
+    if not material_data.has_key("use_rough"):
         errors.append("asset data has no use_rough key")
 
     if len(errors) > 0:
@@ -24,7 +24,7 @@ def build_vraymtl(asset_data, debug=False):
         return
 
     selected = cmds.ls(sl=True)
-    node = asset_data['name']
+    node = material_data['name']
 
     shader = cmds.shadingNode('VRayMtl', name="%s_mat" % node, asShader=True)
     log.info("Created " + shader)
@@ -35,9 +35,9 @@ def build_vraymtl(asset_data, debug=False):
     cmds.connectAttr('{}.outColor'.format(shader), '{}.surfaceShader'.format(shading_group))
 
     file_nodes = []
-    for key, value in asset_data.items():
-        if (key.endswith('_tex') and value != "") or (key.endswith('_tex') and asset_data['create_empty']):
-            tex = cmds.shadingNode('file', name='{0}_{1}'.format(asset_data['name'], key), asTexture=True,
+    for key, value in material_data.items():
+        if (key.endswith('_tex') and value != "") or (key.endswith('_tex') and material_data['create_empty']):
+            tex = cmds.shadingNode('file', name='{0}_{1}'.format(material_data['name'], key), asTexture=True,
                                    isColorManaged=True)
 
             log.info("Created " + tex)
@@ -79,7 +79,7 @@ def build_vraymtl(asset_data, debug=False):
                 cmds.setAttr('{}.colorSpace'.format(tex), 'Raw', type='string')
                 cmds.connectAttr('{}.outColor.outColorR'.format(cc_node), '{}.reflectionGlossiness'.format(shader))
 
-                if asset_data['use_rough']:
+                if material_data['use_rough']:
                     cmds.setAttr("{}.useRoughness".format(shader), 1)
 
             # opacity
@@ -110,7 +110,7 @@ def build_vraymtl(asset_data, debug=False):
     for texture in file_nodes:
         cmds.connectAttr('{}.outUV'.format(uv_node), '{}.uvCoord'.format(texture))
 
-    log.result(message + "successfully")
+    log.result(message + " successfully")
 
     return (shader, shading_group)
 

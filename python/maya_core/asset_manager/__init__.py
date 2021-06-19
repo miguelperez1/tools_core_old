@@ -3,7 +3,6 @@ import json
 import operator
 
 from maya_core.common_tools import logger
-from maya_core.common_tools import yaml_reader
 
 from collections import OrderedDict, defaultdict
 
@@ -34,7 +33,6 @@ def build_asset_library(debug=False):
     written = False
 
     for library, library_path in LIBRARIES.items():
-        log.status = debug
         library_yml_path = library_path + "\\library.yml"
 
         if os.path.isfile(library_yml_path):
@@ -67,7 +65,7 @@ def build_asset_library(debug=False):
 
                     library_yml.write("{0}: {1}\n".format(asset, preview))
 
-                    log.info("Writing [{}] asset".format(asset))
+                    log.debug("Writing [{}] asset".format(asset))
 
                     written = True
         else:
@@ -83,13 +81,11 @@ def build_asset_library(debug=False):
                     else:
                         library_yml.write("{0}: {1}\n".format(path, preview_path))
 
-                    log.info("Writing [{}] asset".format(asset))
+                    log.debug("Writing [{}] asset".format(asset))
 
                     written = True
 
-        log.status = True
         log.result("Finished writing [{}] library".format(library))
 
     if written:
-        log.status = True
         log.result("Library builds complete")

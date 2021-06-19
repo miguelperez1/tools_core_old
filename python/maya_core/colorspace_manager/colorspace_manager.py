@@ -1,33 +1,35 @@
 import maya.cmds as cmds
+import pymel.core as pm
 
 import re
 
 
 def to_aces():
-    files = cmds.ls(type='file')
+    files = pm.ls(type='file')
 
     utility_srgb_texture = ['specular', 'diffuse', 'albedo', 'color', 'basecolor']
     utility_raw = ['gloss', 'roughness', 'normal', 'displacement', 'opacity', 'metal', 'height']
     utility_linear_texture = ['hdr']
 
     for file_node in files:
-        path = cmds.getAttr('{}.fileTextureName'.format(file_node))
-        cmds.setAttr('{}.ignoreColorSpaceFileRules'.format(file_node), 1)
+        path = file_node.fileTextureName.get()
+
+        file_node.ignoreColorSpaceFileRules.set(1)
+
         for texture_type in utility_srgb_texture:
             if re.search((texture_type), path):
                 print('Utility_SRGB_Texture: {}'.format(path))
-                cmds.setAttr('{}.colorSpace'.format(file_node), 'Utility - sRGB - Texture', type='string')
+                file_node.colorSpace.set('Utility - sRGB - Texture')
 
         for texture_type in utility_raw:
             if re.search(texture_type, path):
                 print('Utility_raw: {}'.format(path))
-                cmds.setAttr('{}.colorSpace'.format(file_node), 'Utility - Raw', type='string')
+                file_node.colorSpace.set('Utility - Raw')
 
         for texture_type in utility_linear_texture:
             if re.search(texture_type, path):
                 print('Utility_linear: {}'.format(path))
-                cmds.setAttr('{}.colorSpace'.format(file_node), 'Utility - Linear - sRGB', type='string')
-
+                file_node.colorSpace.set('Utility - Linear - sRGB')
 
 def to_srgb():
     files = cmds.ls(type='file')

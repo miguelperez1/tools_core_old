@@ -10,6 +10,7 @@ import pymel.core as pm
 from maya_core.common_tools.logger import Logger
 
 log = Logger()
+log.status = True
 
 
 class RecursiveNodeSearch(object):
@@ -90,7 +91,7 @@ def publish_textures(asset, mat_data):
         for tex in textures:
             src_path = tex.fileTextureName.get().replace("/", "\\")
             tex_name = src_path.split("\\")[-1]
-            new_path = os.path.join(asset.textures_path, tex_name)
+            new_path = os.path.join(asset.textures_dir, tex_name)
 
             unique_tex_new_path[tex] = (src_path, new_path)
 

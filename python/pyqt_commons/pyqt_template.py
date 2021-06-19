@@ -35,20 +35,6 @@ class ExampleDialog(QtWidgets.QMainWindow):
 
         main_layout = QtWidgets.QVBoxLayout(central_widget)
 
-    def create_menu(self):
-        self.menu_bar = QtWidgets.QMenuBar(self)
-        self.setMenuBar(self.menu_bar)
-
-        file_menu = QtWidgets.QMenu("File", self)
-        edit_menu = QtWidgets.QMenu("Edit", self)
-        tools_menu = QtWidgets.QMenu("Tools", self)
-        help_menu = QtWidgets.QMenu("Help", self)
-
-        self.menu_bar.addMenu(file_menu)
-        self.menu_bar.addMenu(edit_menu)
-        self.menu_bar.addMenu(tools_menu)
-        self.menu_bar.addMenu(help_menu)
-
     def create_connections(self):
         pass
 

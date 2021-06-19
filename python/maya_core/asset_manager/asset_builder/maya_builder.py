@@ -1,120 +1,194 @@
+import os
 import sys
+import json
+from shutil import copyfile
+from maya_core.asset_manager.asset import Asset
+import shutil
+
 import maya.standalone
 
 maya.standalone.initialize()
 
+import pymel.core as pm
 import maya.cmds as cmds
 import maya.mel as mel
 
-from maya_core.common_tools import yaml_reader
 from maya_core import material_builder
+from maya_core.asset_manager import texture_manager
 
-asset_data = {}
+from maya_core.common_tools import logger
 
-
-# TO DO
-# Add translucency
-# Move pivot to bottom of geo and move geo to origin
-
-def normalize_scale(size, object_b):
-    b_bbox = cmds.exactWorldBoundingBox(object_b)
-
-    b_y_size = b_bbox[4] - b_bbox[1]
-
-    ratio = size / b_y_size
-
-    b_scale_x = cmds.getAttr('{}.scaleX'.format(object_b))
-    b_scale_y = cmds.getAttr('{}.scaleY'.format(object_b))
-    b_scale_z = cmds.getAttr('{}.scaleZ'.format(object_b))
-
-    cmds.setAttr('{}.scaleX'.format(object_b), (b_scale_x * ratio))
-    cmds.setAttr('{}.scaleY'.format(object_b), (b_scale_y * ratio))
-    cmds.setAttr('{}.scaleZ'.format(object_b), (b_scale_z * ratio))
-    cmds.makeIdentity(object_b, apply=True, t=1, r=1, s=1, n=0)
+log = logger.Logger()
+log.status = True
 
 
-def move_pivot_to_bottom(obj):
-    bbox = cmds.exactWorldBoundingBox(obj)
-    cmds.xform(obj, ws=True, p=True, cp=True)
-    center_pos = cmds.xform(obj, q=True, ws=True, sp=True)
-    cmds.xform(obj, ws=True, piv=(center_pos[0], bbox[1], center_pos[2]))
+class RecursiveNodeSearch(object):
+    def __init__(self):
+        self.filtered_nodes = []
+
+    def _traverse(self, node, children):
+        try:
+            n = pm.PyNode(node)
+            if n.nodeType() == self.node_type:
+                self.filtered_nodes.append(n)
+        except Exception:
+            pass
+
+        connections = cmds.listConnections(
+            node,
+            source=True,
+            destination=False,
+            skipConversionNodes=True) or {}
+
+        for child in connections:
+            children[child] = {}
+
+    def get_nodes(self, node, children):
+        self._traverse(node, children)
+
+        for child in children:
+            try:
+                n = pm.PyNode(child)
+                if n.nodeType() == self.node_type:
+                    self.filtered_nodes.append(n)
+            except Exception:
+                pass
+
+            self._traverse(child, children[child])
+
+    def search_nodes(self, node, nodeType=None):
+        self.node_type = nodeType
+        children = {}
+        self.get_nodes(node, children)
+
+        return (children, self.filtered_nodes)
 
 
-def import_asset():
-    if asset_data['model'].endswith('.obj'):
-        cmds.file(asset_data['model'], i=True)
-    elif asset_data['model'].endswith('.fbx'):
-        mel.eval('loadPlugin fbxmaya')
-        file_name = asset_data['model'].replace("\\", "/")
-        mel.eval('FBXImport -f "{}"'.format(file_name))
+def build_maya(asset_data):
+    asset = Asset(asset_data["name"], asset_data["type"])
 
+    log.debug("Staring build_maya process")
 
-def build_pxrsurface():
-    pass
+    # Rename File
 
+    cmds.file(rename=asset.maya_file_path)
 
-def build_pxrdisney():
-    pass
+    # Build Maya File
+    #   Import Mesh
+    if asset_data["type"] == "model":
+        source_mesh = asset_data["mesh"].replace("/", "\\")
 
+        log.debug("Importing {}".format(source_mesh))
 
-def build_material():
-    if asset_data['material_type'] == 'VRayMtl':
-        return material_builder.build_vraymtl()
-    elif asset_data['material_type'] == 'PxrSurface':
-        return build_pxrsurface()
-    elif asset_data['material_type'] == 'PxrDisney':
-        return build_pxrdisney()
-    elif asset_data['material_type'] == 'None':
-        return None
-    else:
-        return None
+        cmds.file(source_mesh, i=True)
 
+        cmds.select(cmds.listRelatives(cmds.ls(geometry=True), p=True, path=True), r=True)
 
-def build_maya():
-    # rename/init file
-    cmds.file(rename=asset_data['maya_path'])
+        model = cmds.ls(sl=1)[0]
 
-    # import model
-    if asset_data['type'] == 'model':
-        import_asset()
+        # Copy Mesh
+        dst_mesh = os.path.join(asset.mesh_dir, source_mesh.split("\\")[-1])
 
-    cmds.select(cmds.listRelatives(cmds.ls(geometry=True), p=True, path=True), r=True)
-    selected = cmds.ls(sl=True)
-    selection = cmds.ls(selection=True)
-    shapes = cmds.listRelatives(selection, s=True)
+        log.debug("Copying mesh")
 
-    material = build_material()
+        copyfile(source_mesh, dst_mesh)
 
-    if asset_data['type'] == 'model':
-        for node in selected:
-            if material is not None:
-                cmds.sets(node, e=True, forceElement=material[-1])
-            normalize_scale(float(asset_data['scale']), node)
+        if os.path.isfile(dst_mesh):
+            log.debug("Copied {}".format(dst_mesh))
 
-    for obj in cmds.ls(sl=True, type="transform"):
-        move_pivot_to_bottom(obj)
+    # Create Material
+    # TODO Publish textures
+    log.debug("Creating Material")
 
-        if asset_data['displacement_tex'] is not None:
-            for shape in shapes:
-                cmds.vray("addAttributesFromGroup", shape, "vray_subdivision", 1)
-                cmds.vray("addAttributesFromGroup", shape, "vray_subquality", 1)
-                cmds.vray("addAttributesFromGroup", shape, "vray_displacement", 1)
-                cmds.setAttr('{}.vrayEdgeLength'.format(shape), 2)
-                cmds.setAttr('{}.vrayMaxSubdivs'.format(shape), 256)
-                cmds.setAttr('{}.vrayDisplacementKeepContinuity'.format(shape), 1)
-                cmds.setAttr('{}.vray2dDisplacementTightBounds'.format(shape), 1)
-                cmds.setAttr('{}.vrayDisplacementType'.format(shape), 0)
-                cmds.setAttr('{}.vrayDisplacementAmount'.format(shape), 0.005)
+    material = None
 
-        for node in selected:
-            cmds.rename(node, asset_data['name'])
+    if asset_data["material"]["mat_type"] == "VRayMtl":
+        material = material_builder.build_vraymtl(asset_data["material"])
 
-    # save
-    cmds.file(save=True, type='mayaAscii')
+    elif asset_data["material"]["mat_type"] == "VRayMtl2Sided":
+        face_material = material_builder.build_vraymtl(asset_data["material"])
+        material = material_builder.build_vray2sidedmtl(asset_data["material"]["name"], face_material, face_material)
+
+    log.debug("Created {}".format(material))
+
+    if asset_data["type"] == "model":
+        if material:
+            log.debug("Assigning {0} to {1}".format(material[-1], str(model)))
+            cmds.sets(model, e=True, forceElement=material[-1])
+
+    search = RecursiveNodeSearch()
+
+    connections = cmds.listConnections(material[0])
+    textures_tmp = []
+
+    for c in connections:
+        nodes = search.search_nodes(c, "file")
+        textures_tmp.extend(nodes[1])
+
+    textures = sorted(list(set(textures_tmp)))
+
+    mat_data = {
+        material[0]: textures
+    }
+
+    texture_manager.publish_textures(asset, mat_data)
+
+    pm.rename(model, asset.name)
+
+    log.debug("Saving maya file...")
+
+    cmds.file(save=True, type="mayaAscii")
+
+    if os.path.isfile(asset.maya_file_path):
+        log.debug("Maya Built Successfully")
+
+    # TODO Create Proxy
+    if not asset_data["has_proxy"]:
+        return
+
+    proxy_path = asset.proxy_dir
+    proxy_maya_path = proxy_path + "\\{0}_vrayproxy.ma".format(asset.name)
+
+    pm.select(asset.name)
+
+    cmds.select(clear=True)
+    pm.select(asset.name)
+
+    # export proxy
+    cmds.vrayCreateProxy(exportType=1, previewFaces=17500, dir=proxy_path, fname=asset.name + ".vrmesh",
+                         overwrite=True,
+                         previewType="clustering", makeBackup=True, ignoreHiddenObjects=False, vertexColorsOn=True,
+                         exportHierarchy=True, includeTransformation=True)
+
+    # deslect everything
+    cmds.select(clear=True)
+
+    # create vray_proxy nodes
+    vrmesh = asset.name + "_vrmesh"
+    vraymeshmtl = vrmesh + "_vraymeshmtl"
+    vrproxy_path = proxy_path + "\\{}.vrmesh".format(asset.name)
+
+    cmds.vrayCreateProxy(createProxyNode=True, node=vrmesh, existing=True,
+                         dir=vrproxy_path, geomToLoad=3, newProxyNode=False)
+
+    # assign shader
+
+    cmds.connectAttr("{}.outColor".format(material[0]), "{}.shaders[0]".format(vraymeshmtl))
+
+    # select vray_proxy
+    cmds.select(clear=True)
+
+    # save selection as new maya file
+    pm.select(vrmesh, r=1)
+    pm.exportSelected(proxy_maya_path, type="mayaAscii", channels=True, force=True)
 
 
 if __name__ == '__main__':
     mel.eval('loadPlugin vrayformaya')
-    tmp_asset_data = yaml_reader.read_yaml(sys.argv[1])
-    asset_data = tmp_asset_data.get(tmp_asset_data.keys()[0])
-    build_maya()
+    mel.eval('loadPlugin fbxmaya')
+
+    json_file = open(sys.argv[1], "r")
+    asset_data = json.load(json_file)
+    json_file.close()
+
+    build_maya(asset_data)

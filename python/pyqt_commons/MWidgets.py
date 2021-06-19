@@ -68,6 +68,26 @@ class ScrollAreaWidget(QtWidgets.QWidget):
         self.scroll.takeWidget()
 
 
+class LabeledLineEdit(QtWidgets.QWidget):
+    def __init__(self, label):
+        super(LabeledLineEdit, self).__init__()
+
+        self.label = label
+        self.lbl_widget = QtWidgets.QLabel(self.label)
+        self.le_widget = QtWidgets.QLineEdit()
+
+        self.main_layout = QtWidgets.QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.addWidget(self.lbl_widget)
+        self.main_layout.addWidget(self.le_widget)
+
+    def text(self):
+        return self.le_widget.text()
+
+    def setText(self, text):
+        self.le_widget.setText(text)
+
+
 class ImagePushButton(QtWidgets.QPushButton):
     def __init__(self, size_x, size_y):
         super(ImagePushButton, self).__init__()

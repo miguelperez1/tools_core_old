@@ -7,7 +7,7 @@ reload(MWidgets)
 
 class Logger(object):
     def __init__(self):
-        self.status = True
+        self.status = False
 
     def info(self, message):
         out_message = None
@@ -32,6 +32,12 @@ class Logger(object):
         out_message = "# Result:  " + ("-" * 15) + "  " + message
         print(out_message)
         return out_message
+
+    def debug(self, message):
+        if self.status:
+            out_message = "# Debug:  " + ("-" * 15) + "  " + message
+            print(out_message)
+            return out_message
 
 
 class LogWidget(QtWidgets.QLineEdit):
