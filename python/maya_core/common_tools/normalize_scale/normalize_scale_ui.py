@@ -1,0 +1,76 @@
+from PySide2 import QtCore
+from PySide2 import QtWidgets
+from PySide2 import QtGui
+
+import maya.cmds as cmds
+
+from pyqt_commons import MWidgets
+from maya_core.common_tools.normalize_scale import normalize_scale
+
+class NormalizeScaleUI(QtWidgets.QMainWindow):
+    def __init__(self, parent=MWidgets.maya_main_window()):
+        super(NormalizeScaleUI, self).__init__(parent)
+
+        self.setWindowTitle("Normalize Scale")
+        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+
+        self.setObjectName("NormalizeScaleUI")
+        self.setMinimumSize(400, 70)
+
+        self.prefs_directory = cmds.internalVar(userPrefDir=True)
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.scale_lbl = QtWidgets.QLabel("Scale: ")
+        self.scale_le = QtWidgets.QLineEdit()
+
+        self.ok_btn = QtWidgets.QPushButton("Scale")
+
+    def create_layout(self):
+        central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        main_layout = QtWidgets.QVBoxLayout(central_widget)
+
+        scale_layout = QtWidgets.QHBoxLayout()
+        scale_layout.addWidget(self.scale_lbl)
+        scale_layout.addWidget(self.scale_le)
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addStretch()
+        btn_layout.addWidget(self.ok_btn)
+
+        main_layout.addLayout(scale_layout)
+        main_layout.addLayout(btn_layout)
+
+    def create_connections(self):
+        self.ok_btn.clicked.connect(self.normalize_scale)
+
+    def normalize_scale(self):
+        selection = cmds.selectedNodes()
+
+        for obj in selection:
+            normalize_scale.normalize_scale(float(self.scale_le.text()), obj)
+
+        self.close()
+
+
+def main():
+    try:
+        cmds.deleteUI("NormalizeScaleUI")
+    except Exception:
+        pass
+
+    dialog = NormalizeScaleUI()
+    dialog.show()
+
+
+if __name__ == "__main__":
+    main()

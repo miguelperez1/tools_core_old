@@ -79,6 +79,8 @@ class LabeledLineEdit(QtWidgets.QWidget):
         self.main_layout = QtWidgets.QHBoxLayout(self)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.addWidget(self.lbl_widget)
+        self.main_layout.addSpacing(5)
+
         self.main_layout.addWidget(self.le_widget)
 
     def text(self):
@@ -86,6 +88,43 @@ class LabeledLineEdit(QtWidgets.QWidget):
 
     def setText(self, text):
         self.le_widget.setText(text)
+
+
+class FileBrowseWidget(QtWidgets.QWidget):
+    def __init__(self, label, size=(30, 30), justify='left', starting_dir=None):
+        super(FileBrowseWidget, self).__init__()
+
+        self.label = label
+        self.size = size
+
+        self.lble_widget = LabeledLineEdit(self.label)
+
+        if justify == 'right':
+            self.lble_widget.lbl_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
+        self.fb_btn = QtWidgets.QPushButton()
+        file_browse_icon = QtGui.QIcon(':fileOpen.png')
+        self.fb_btn.setIcon(file_browse_icon)
+
+        self.fb_btn.clicked.connect(self.browse_file)
+
+        self.main_layout = QtWidgets.QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+
+        self.main_layout.addWidget(self.lble_widget)
+        self.main_layout.addWidget(self.fb_btn)
+
+    def setText(self, text):
+        self.lble_widget.le_widget.setText(text)
+
+    def text(self):
+        return self.lble_widget.le_widget.text()
+
+    def browse_file(self):
+        file_name = QtWidgets.QFileDialog.getOpenFileName(self, '')[0]
+
+        if file_name:
+            self.setText(file_name)
 
 
 class ImagePushButton(QtWidgets.QPushButton):

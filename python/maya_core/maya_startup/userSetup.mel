@@ -1,1 +1,0 @@
-evalDeferred("python(\"import maya_core.maya_startup.userSetup\")");
