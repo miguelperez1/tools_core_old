@@ -138,6 +138,14 @@ def build_megascan_materials():
     materials_library = r"F:\share\assets\quixel\Downloaded\surface"
     assets = {}
 
+    assets_to_build = 0
+    for dir in os.listdir(materials_library):
+        for subdir in os.listdir(os.path.join(materials_library, dir)):
+            if subdir.endswith(".json"):
+                assets_to_build += 1
+
+    print "Assets to build: {}".format(assets_to_build)
+
     for dir in os.listdir(materials_library):
         asset_data = {
             'name': '',
@@ -149,9 +157,11 @@ def build_megascan_materials():
 
         source_path = os.path.join(materials_library, dir)
 
+        found_jason = False
         for subdir in os.listdir(os.path.join(materials_library, dir)):
             if subdir.endswith(".json"):
                 asset_json = os.path.join(materials_library, dir, subdir)
+                found_jason = True
             elif subdir.endswith(".exr"):
                 asset_id = subdir.split("_")[0]
             if subdir.endswith("view.png"):
@@ -168,9 +178,6 @@ def build_megascan_materials():
             ".", "_").lower() + "_var{}".format(var_num)
 
         current_assets = [d['asset_name'] for d in get_library_data('material')['assets']]
-
-        if asset_name in current_assets:
-            continue
 
         while asset_name in assets.keys():
             var_num = int(asset_name.split("var")[-1]) + 1
@@ -192,6 +199,10 @@ def build_megascan_materials():
 
         if os.path.isfile(os.path.join(libraries['material'], asset_name, 'maya', '{}.ma'.format(asset_name))):
             print "Built {} successfully".format(asset_name)
+            assets_to_build -= 1
+            print "Remaining assets to build: {}".format(assets_to_build)
+
+            build_library_jsons()
 
 
 def build_megascan_models(new=1):
@@ -201,8 +212,15 @@ def build_megascan_models(new=1):
 
     assets = {}
 
+    assets_to_build = 0
     for dir in os.listdir(megascans_library):
+        for subdir in os.listdir(os.path.join(megascans_library, dir)):
+            if subdir.endswith(".json"):
+                assets_to_build += 1
 
+    print "Assets to build: {}".format(assets_to_build)
+
+    for dir in os.listdir(megascans_library):
         for subdir in os.listdir(os.path.join(megascans_library, dir)):
             asset_data = {
                 'name': '',
@@ -267,6 +285,10 @@ def build_megascan_models(new=1):
 
                 if os.path.isfile(os.path.join(libraries['model'], asset_name, 'maya', '{}.ma'.format(asset_name))):
                     print "Built {} successfully".format(asset_name)
+                    assets_to_build -= 1
+                    print "Remaining assets to build: {}".format(assets_to_build)
+
+                    build_library_jsons()
 
 
 def get_megascan_material(path, asset_name, asset_id):
@@ -382,7 +404,7 @@ def get_library_data(library):
 
 if __name__ == '__main__':
     delete_existing_megascans()
+    build_library_jsons()
     build_megascan_models()
-
     build_megascan_materials()
     build_library_jsons()

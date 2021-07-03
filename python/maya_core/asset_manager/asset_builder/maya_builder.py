@@ -104,7 +104,7 @@ def build_maya(asset_data):
         pm.select(vrmesh, r=1)
 
         if material[-1]:
-            pm.select(str(vrmesh_vrdisp), add=True, r=1)
+            pm.select(str(vrmesh_vrdisp), add=True, r=1, ne=1)
 
         pm.exportSelected(proxy_maya_path, type="mayaAscii", channels=True, force=True)
 

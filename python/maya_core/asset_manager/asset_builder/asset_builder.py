@@ -64,6 +64,7 @@ class AssetBuilder(object):
         self.create_asset_json()
         self.build_maya()
 
+
     def create_directories(self):
         os.mkdir(self.asset_root)
         os.mkdir(os.path.join(self.asset_root, "build_log"))
@@ -121,8 +122,10 @@ class AssetBuilder(object):
     def copy_preview(self):
         if 'preview' in self.asset_data.keys() and self.asset_data['preview']:
             src_preview = self.asset_data['preview']
-            dst_preview = os.path.join(self.asset_root,
-                                       "{}_preview.png".format(src_preview.split("\\")[-1].split(".")[0]))
+            preview_name = "{0}_preview.png".format(self.name)
+            dst_preview = os.path.join(self.asset_root, preview_name)
+
+            self.publish_data['preview'] = dst_preview
 
             copyfile(src_preview, dst_preview)
 

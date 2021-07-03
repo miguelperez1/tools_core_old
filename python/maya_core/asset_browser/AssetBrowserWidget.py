@@ -12,11 +12,12 @@ from pyqt_commons import MWidgets
 from maya_core.asset_manager.library_utils import library_utils
 from maya_core.asset_manager.library_utils import constants
 from maya_core.lighting.lighting_utils import lighting_utils
+from maya_core.lookdev.material_utils import material_utils
 
 reload(library_utils)
 reload(lighting_utils)
 
-LIBRARIES = constants.libraries
+libraries = constants.libraries
 
 
 class AssetBrowserWidget(QtWidgets.QWidget):
@@ -45,10 +46,11 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         # Common Actions
         self.import_action = QtWidgets.QAction("Import", self)
         self.reference_action = QtWidgets.QAction("Reference", self)
-        self.import_proxy_action = QtWidgets.QAction("Import VRay Proxy", self)
+        self.import_vrayproxy_action = QtWidgets.QAction("Import VRay Proxy", self)
 
         # Material Actions
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
+        self.build_material_action = QtWidgets.QAction("Build Material")
 
     def create_widgets(self):
         self.search_lble = MWidgets.LabeledLineEdit('Search')
@@ -177,6 +179,8 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.assets_tw.itemSelectionChanged.connect(self.update_current_asset)
 
         self.import_action.triggered.connect(self.import_action_callback)
+        self.import_vrayproxy_action.triggered.connect(self.import_vrayproxy_action_callback)
+        self.build_material_action.triggered.connect(self.build_material_action_callback)
 
     def update_current_asset(self):
         if self.assets_tw.selectedItems():
@@ -199,6 +203,9 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
         contextMenu.addSeparator()
 
+        if self.current_library in ['model', 'material', 'rigs', 'plants']:
+            contextMenu.addAction(self.open_action_callback())
+
         contextMenu.addAction(self.import_action)
 
         if self.current_library in ['model', 'material', 'rigs', 'plants']:
@@ -207,7 +214,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             asset_path = os.path.join(library_utils.libraries[self.current_library], asset)
 
             if "vrayproxy" in os.listdir(asset_path):
-                contextMenu.addAction(self.import_proxy_action)
+                contextMenu.addAction(self.import_vrayproxy_action)
 
         contextMenu.addSeparator()
 
@@ -216,9 +223,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
         contextMenu.addSeparator()
 
-        contextMenu.addAction(self.open_action)
-        contextMenu.addAction(self.replace_preview_action)
-        contextMenu.addAction(self.open_preview_action)
         contextMenu.addAction(self.open_root_action)
 
         action = contextMenu.exec_(self.assets_tw.mapToGlobal(eventPosition))
@@ -234,3 +238,16 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             lighting_utils.create_gobo(self.current_asset, self.current_asset_data['import_file'])
         elif self.current_library in ['material', 'model', 'rigs', 'plants']:
             cmds.file(self.current_asset_data['import_file'], i=True)
+
+    def import_vrayproxy_action_callback(self):
+        cmds.file(os.path.join(libraries['model'], self.current_asset, "vrayproxy", "{}_vrayproxy.ma".format(self.current_asset)), i=True)
+
+    def open_action_callback(self):
+        os.startfile(self.current_asset_data['import_file'])
+
+    def build_material_action_callback(self):
+        if 'material_data' in  self.current_asset_data.keys():
+            material_data = self.current_asset_data['material_data']
+
+            if material_data:
+                material_utils.build_material(material_data)
