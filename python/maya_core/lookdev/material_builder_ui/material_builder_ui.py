@@ -3,6 +3,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import pymel.core as pm
 
 from pyqt_commons import MWidgets
 from maya_core.lookdev.material_builder_ui import MaterialBuilderWidget
@@ -33,6 +34,7 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
 
     def create_widgets(self):
         self.material_builder_widget = MaterialBuilderWidget.MaterialBuilderWidget(self.width(), self.height())
+        self.assign_cb = QtWidgets.QCheckBox("Assign")
 
         self.build_btn = QtWidgets.QPushButton("Build")
         self.cancel_btn = QtWidgets.QPushButton("Cancel")
@@ -47,6 +49,7 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
         main_layout.addWidget(self.material_builder_widget)
 
         btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.addWidget(self.assign_cb)
         btn_layout.addStretch()
         btn_layout.addWidget(self.build_btn)
         btn_layout.addWidget(self.cancel_btn)
@@ -61,8 +64,19 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
         material_data = self.material_builder_widget.get_material_data()
 
         if material_data['name']:
+            selection = pm.ls(sl=1)
             material = material_utils.build_material(material_data)
-            print material
+
+            if self.assign_cb.isChecked():
+                for sel in selection:
+                    try:
+                        print material[1]
+                        pm.sets(material[1], edit=True, forceElement=sel)
+
+                        if material[-1] and pm.nodeType(material[-1]) == "VRayDisplacement":
+                            cmds.sets(str(sel), edit=True, add=str(material[-1]))
+                    except:
+                        pass
 
 
 def main():

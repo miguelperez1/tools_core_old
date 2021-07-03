@@ -1,0 +1,53 @@
+from PySide2 import QtCore
+from PySide2 import QtWidgets
+from PySide2 import QtGui
+
+import maya.cmds as cmds
+
+from pyqt_commons import MWidgets
+
+
+class LookdevToolkitUI(QtWidgets.QMainWindow):
+    def __init__(self, parent=MWidgets.maya_main_window()):
+        super(LookdevToolkitUI, self).__init__(parent)
+
+        self.setWindowTitle("Lookdev Toolkit")
+        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+
+        self.setObjectName("LookdevToolkitUI")
+
+        self.prefs_directory = cmds.internalVar(userPrefDir=True)
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        pass
+
+    def create_layout(self):
+        central_widget = QtWidgets.QWidget(self)
+        self.setCentralWidget(central_widget)
+
+        main_layout = QtWidgets.QVBoxLayout(central_widget)
+
+    def create_connections(self):
+        pass
+
+
+def main():
+    try:
+        cmds.deleteUI("LookdevToolkitUI")
+    except Exception:
+        pass
+
+    dialog = LookdevToolkitUI()
+    dialog.show()
+
+
+if __name__ == "__main__":
+    main()

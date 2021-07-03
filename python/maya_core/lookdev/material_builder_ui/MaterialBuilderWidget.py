@@ -110,8 +110,6 @@ class MaterialBuilderWidget(QtWidgets.QWidget):
 
         material_data['textures'] = textures
 
-        print material_data
-
         return material_data
 
 
