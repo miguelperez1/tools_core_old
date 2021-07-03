@@ -2,6 +2,10 @@ import os
 import json
 from collections import OrderedDict
 import shutil
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 from maya_core.asset_manager.asset_builder import asset_builder
 from maya_core.asset_manager.library_utils import constants

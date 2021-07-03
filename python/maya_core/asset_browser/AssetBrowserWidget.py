@@ -2,6 +2,7 @@ import os
 import re
 from collections import OrderedDict
 import subprocess
+import logging
 
 from PySide2 import QtCore
 from PySide2 import QtWidgets
@@ -20,6 +21,8 @@ reload(library_utils)
 reload(lighting_utils)
 
 libraries = constants.libraries
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 class AssetBrowserWidget(QtWidgets.QWidget):
@@ -27,7 +30,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         super(AssetBrowserWidget, self).__init__()
         self.setObjectName("AssetBrowserUI")
         self.size = (width, height)
-        self.use_tags_widget = use_tags_widget
 
         self.setMinimumSize(width, height)
 
@@ -139,6 +141,8 @@ class AssetBrowserWidget(QtWidgets.QWidget):
                 self.asset_item_widgets.append(asset_item)
 
     def refresh_asset_items(self):
+        logger.debug("Refreshing asset items")
+
         if not self.libraries_tw.selectedItems():
             return
 
@@ -244,6 +248,9 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         action = contextMenu.exec_(self.assets_tw.mapToGlobal(eventPosition))
 
     def import_action_callback(self):
+        logger.info("Importing %s", self.current_asset)
+        logger.debug("Import file %s", self.current_asset_data['import_file'])
+
         if self.current_library == "studiolights":
             lighting_utils.create_vray_light("VRayLightRectShape", name=self.current_asset,
                                              texture=self.current_asset_data['import_file'])
@@ -258,6 +265,9 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             material_utils.create_texture(self.current_asset, self.current_asset_data['import_file'])
 
     def import_vrayproxy_action_callback(self):
+        logger.info("Importing vrayproxy for %s", self.current_asset)
+        logger.debug("Import file %s", self.current_asset_data['import_file'])
+
         cmds.file(os.path.join(libraries['model'], self.current_asset, "vrayproxy",
                                "{}_vrayproxy.ma".format(self.current_asset)), i=True)
 
@@ -271,18 +281,22 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             subprocess.Popen('explorer "{}"'.format(libraries[self.current_library]))
 
     def build_material_action_callback(self):
+        logger.info("Building material: %s", self.current_asset)
+        logger.debug(self.current_asset_data['material_data'])
+
         material_data = self.current_asset_data['material_data']
 
         if material_data:
             material_utils.build_material(material_data)
 
     def build_and_assign_material_action_callback(self):
+        logger.info("Building material: %s", self.current_asset)
+        logger.debug(self.current_asset_data['material_data'])
+
         material_data = self.current_asset_data['material_data']
 
         if material_data:
             selection = pm.ls(sl=1)
-            print selection
-            # return
 
             material = material_utils.build_material(material_data)
 
@@ -293,4 +307,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
                     cmds.sets(str(sel), edit=True, add=str(material[-1]))
 
     def create_card_action_callback(self):
+        logger.info("Creating card: %s", self.current_asset)
+
         lighting_utils.create_card(self.current_asset, self.current_asset_data['import_file'])
