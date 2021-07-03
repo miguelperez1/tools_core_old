@@ -27,7 +27,11 @@ def rename_root_folders():
 
 
 def build_library_jsons():
+
+    # library_datas = [get_library_data(library) for library in libraries.keys()]
+
     delete_library_datas()
+
 
     for library, path in libraries.items():
         if library == "root":
@@ -69,7 +73,8 @@ def build_library_jsons():
                     'asset_type': library,
                     'asset_preview': '',
                     'tags': '',
-                    'import_file': ''
+                    'import_file': None,
+                    'material_data': None
                 }
 
                 preview_path = os.path.join(asset_path, "{}_preview.png".format(asset))
@@ -89,13 +94,15 @@ def build_library_jsons():
                         json.dump(asset_data, f, indent=4, sort_keys=True)
                 else:
                     json_file = open(asset_json_path, "r")
-                    tags_data = json.load(json_file)
+                    asset_root_data = json.load(json_file)
                     json_file.close()
 
-                    if 'tags' in tags_data.keys():
-                        t = tags_data['tags'].split(",")
-                        asset_data["tags"] = tags_data["tags"]
+                    if 'tags' in asset_root_data.keys():
+                        t = asset_root_data['tags'].split(",")
+                        asset_data["tags"] = asset_root_data["tags"]
                         tags.extend(t)
+                    if 'material_data' in asset_root_data.keys():
+                        asset_data["material_data"] = asset_root_data["material_data"]
 
                 assets.append(asset_data)
 
@@ -402,9 +409,26 @@ def get_library_data(library):
         return None
 
 
+def rename():
+    maps_path = r"F:\share\assets\stock_footage\images\src\png_clouds\png_clouds"
+
+    i = 0
+    for dir in os.listdir(maps_path):
+        source_path = os.path.join(maps_path, dir)
+        if os.path.isfile(source_path):
+            if source_path.split(".")[-1] in ['exr', 'png', 'jpg', 'tiff', 'tif', 'jpeg']:
+                dst_path = os.path.join(maps_path, "cloud_{:03d}".format(i) + ".{}".format(source_path.split(".")[-1]))
+                try:
+                    os.rename(source_path, dst_path)
+                    i += 1
+                except:
+                    pass
+
+
 if __name__ == '__main__':
-    delete_existing_megascans()
+    # delete_existing_megascans()
+    # rename()
     build_library_jsons()
-    build_megascan_models()
-    build_megascan_materials()
-    build_library_jsons()
+    # build_megascan_models()
+    # build_megascan_materials()
+    # build_library_jsons()

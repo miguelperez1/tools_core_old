@@ -1,12 +1,14 @@
 import os
 import re
 from collections import OrderedDict
+import subprocess
 
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import pymel.core as pm
 
 from pyqt_commons import MWidgets
 from maya_core.asset_manager.library_utils import library_utils
@@ -40,8 +42,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         # Default Actions
         self.open_action = QtWidgets.QAction("Open", self)
         self.open_root_action = QtWidgets.QAction("Open in Explorer", self)
-        self.open_preview_action = QtWidgets.QAction("Open Preview", self)
-        self.replace_preview_action = QtWidgets.QAction('Replace Preview', self)
 
         # Common Actions
         self.import_action = QtWidgets.QAction("Import", self)
@@ -51,6 +51,10 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         # Material Actions
         self.material_import_assign_action = QtWidgets.QAction('Import and assign to selected', self)
         self.build_material_action = QtWidgets.QAction("Build Material")
+        self.build_and_assign_material_action = QtWidgets.QAction("Build and Assign Material")
+
+        # Texture Actions
+        self.create_card_action = QtWidgets.QAction("Create Card")
 
     def create_widgets(self):
         self.search_lble = MWidgets.LabeledLineEdit('Search')
@@ -62,7 +66,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.libraries_tw.setAlternatingRowColors(True)
         self.libraries_tw.setMaximumWidth(self.width() * .2)
 
-        for library in sorted(LIBRARIES.keys()):
+        for library in sorted(libraries.keys()):
             if library == 'root':
                 continue
 
@@ -83,7 +87,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             self.libraries_tw.addTopLevelItem(library_item)
 
         self.assets_tw = QtWidgets.QTreeWidget()
-        header_item = QtWidgets.QTreeWidgetItem(['Preview', 'Asset'])
+        header_item = QtWidgets.QTreeWidgetItem(['Preview', 'Asset', 'Tags'])
         self.assets_tw.setHeaderItem(header_item)
         self.assets_tw.setMinimumWidth(self.width() * .8)
         self.assets_tw.setColumnWidth(0, 200)
@@ -93,7 +97,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
     def create_asset_item_widgets(self):
         self.asset_item_widgets = []
-        for library in LIBRARIES.keys():
+        for library in libraries.keys():
             library_data = library_utils.get_library_data(library)
 
             if not library_data:
@@ -120,9 +124,12 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
                 if 'import_file' in asset_data.keys():
                     new_asset_data['import_file'] = asset_data['import_file']
+                if 'material_data' in asset_data.keys():
+                    new_asset_data['material_data'] = asset_data['material_data']
 
                 asset_item = QtWidgets.QTreeWidgetItem()
                 asset_item.setText(1, asset)
+                asset_item.setText(2, tags)
                 asset_item.setData(0, QtCore.Qt.UserRole, new_asset_data)
 
                 self.assets_tw.addTopLevelItem(asset_item)
@@ -178,9 +185,12 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.assets_tw.customContextMenuRequested.connect(self.show_asset_context_menu)
         self.assets_tw.itemSelectionChanged.connect(self.update_current_asset)
 
+        self.open_root_action.triggered.connect(self.open_root_action_callback)
         self.import_action.triggered.connect(self.import_action_callback)
         self.import_vrayproxy_action.triggered.connect(self.import_vrayproxy_action_callback)
         self.build_material_action.triggered.connect(self.build_material_action_callback)
+        self.build_and_assign_material_action.triggered.connect(self.build_and_assign_material_action_callback)
+        self.create_card_action.triggered.connect(self.create_card_action_callback)
 
     def update_current_asset(self):
         if self.assets_tw.selectedItems():
@@ -204,7 +214,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         contextMenu.addSeparator()
 
         if self.current_library in ['model', 'material', 'rigs', 'plants']:
-            contextMenu.addAction(self.open_action_callback())
+            contextMenu.addAction(self.open_action)
 
         contextMenu.addAction(self.import_action)
 
@@ -219,7 +229,13 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         contextMenu.addSeparator()
 
         if self.current_library == "material":
-            contextMenu.addAction(self.material_import_assign_action)
+            contextMenu.addAction(self.build_material_action)
+            contextMenu.addAction(self.build_and_assign_material_action)
+            # contextMenu.addAction(self.material_import_assign_action)
+
+        if self.current_library == 'texture':
+            contextMenu.addSeparator()
+            contextMenu.addAction(self.create_card_action)
 
         contextMenu.addSeparator()
 
@@ -238,16 +254,43 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             lighting_utils.create_gobo(self.current_asset, self.current_asset_data['import_file'])
         elif self.current_library in ['material', 'model', 'rigs', 'plants']:
             cmds.file(self.current_asset_data['import_file'], i=True)
+        elif self.current_library == "texture":
+            material_utils.create_texture(self.current_asset, self.current_asset_data['import_file'])
 
     def import_vrayproxy_action_callback(self):
-        cmds.file(os.path.join(libraries['model'], self.current_asset, "vrayproxy", "{}_vrayproxy.ma".format(self.current_asset)), i=True)
+        cmds.file(os.path.join(libraries['model'], self.current_asset, "vrayproxy",
+                               "{}_vrayproxy.ma".format(self.current_asset)), i=True)
 
     def open_action_callback(self):
         os.startfile(self.current_asset_data['import_file'])
 
-    def build_material_action_callback(self):
-        if 'material_data' in  self.current_asset_data.keys():
-            material_data = self.current_asset_data['material_data']
+    def open_root_action_callback(self):
+        if self.current_library in ['material', 'model', 'rigs', 'plants']:
+            subprocess.Popen('explorer "{}"'.format(os.path.join(libraries[self.current_library], self.current_asset)))
+        else:
+            subprocess.Popen('explorer "{}"'.format(libraries[self.current_library]))
 
-            if material_data:
-                material_utils.build_material(material_data)
+    def build_material_action_callback(self):
+        material_data = self.current_asset_data['material_data']
+
+        if material_data:
+            material_utils.build_material(material_data)
+
+    def build_and_assign_material_action_callback(self):
+        material_data = self.current_asset_data['material_data']
+
+        if material_data:
+            selection = pm.ls(sl=1)
+            print selection
+            # return
+
+            material = material_utils.build_material(material_data)
+
+            for sel in selection:
+                pm.sets(material[1], edit=True, forceElement=sel)
+
+                if material[-1]:
+                    cmds.sets(str(sel), edit=True, add=str(material[-1]))
+
+    def create_card_action_callback(self):
+        lighting_utils.create_card(self.current_asset, self.current_asset_data['import_file'])

@@ -8,4 +8,5 @@ libraries = {
     'plants': r"F:\share\assets\libraries\plants",
     'rigs': r"F:\share\assets\libraries\rigs",
     'studiolights': r"F:\share\assets\libraries\studiolights",
+    'texture': r"F:\share\assets\libraries\texture",
 }

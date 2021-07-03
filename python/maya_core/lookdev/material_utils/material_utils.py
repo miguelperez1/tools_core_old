@@ -33,6 +33,7 @@ DEFAULT_CONNECTIONS = {
     }
 }
 
+
 # Example material_data
 # material_data = {
 #     'name': name,
@@ -59,6 +60,9 @@ class MaterialBuilder(object):
                                             noSurfaceShader=True))
 
         pm.connectAttr(shader.outColor, shading_group.surfaceShader)
+
+        if 'textures' not in self.material_data.keys():
+            return shader, shading_group
 
         uv_node = pm.shadingNode("place2dTexture", asUtility=True)
         uv_node.rename(self.name + "_UV")
@@ -92,8 +96,18 @@ class MaterialBuilder(object):
         return shader, shading_group, displacement
 
     def build_VRayMtl2Sided(self):
-        print "build_VRayMtl2Sided"
-        return None
+        shader = pm.PyNode(cmds.shadingNode('VRayMtl2Sided', name=self.name + "_2sided_mat", asShader=True))
+        shading_group = pm.PyNode(cmds.sets(name=str(shader).replace("_mat", "") + "_2sided_sg", empty=True, renderable=True,
+                                            noSurfaceShader=True))
+
+        pm.connectAttr(shader.outColor, shading_group.surfaceShader)
+
+        vray_mtl = self.build_VRayMtl()
+
+        pm.connectAttr(vray_mtl[0].outColor, shader.frontMaterial)
+        pm.connectAttr(vray_mtl[0].outColor, shader.backMaterial)
+
+        return shader, shading_group, vray_mtl
 
     def build_VRayBlendMtl(self):
         print "build_VRayBlendMtl"
@@ -143,6 +157,7 @@ def create_cc_node(source_node):
 
     # Connect file to cc
     pm.connectAttr(source_node.outColor, cc_node.inColor)
+    pm.connectAttr(source_node.outAlpha, cc_node.inAlpha)
 
     # Connect gamma attributes
     pm.connectAttr(cc_node.colGammaX, cc_node.colGammaY)
