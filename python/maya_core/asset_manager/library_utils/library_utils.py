@@ -4,7 +4,7 @@ from collections import OrderedDict
 import shutil
 import logging
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger("__name__")
 logger.setLevel(10)
 
 from maya_core.asset_manager.asset_builder import asset_builder
@@ -31,11 +31,9 @@ def rename_root_folders():
 
 
 def build_library_jsons():
-
     # library_datas = [get_library_data(library) for library in libraries.keys()]
 
     delete_library_datas()
-
 
     for library, path in libraries.items():
         if library == "root":
@@ -131,6 +129,7 @@ def fix_roots():
 
             # Read in the file
             with open(maya_file, 'r') as file:
+                logger.debug("Removing root from %s", maya_file)
                 filedata = file.read()
 
             # Replace the target string
@@ -138,6 +137,8 @@ def fix_roots():
 
             # Write the file out again
             with open(maya_file, 'w') as file:
+                logger.debug("Saving %s", maya_file)
+
                 file.write(filedata)
 
 
@@ -187,8 +188,6 @@ def build_megascan_materials():
         asset_name = asset_data["semanticTags"]["name"].replace("(", "").replace(")", "").replace("-", "_").replace(" ",
                                                                                                                     "_").replace(
             ".", "_").lower() + "_var{}".format(var_num)
-
-        current_assets = [d['asset_name'] for d in get_library_data('material')['assets']]
 
         while asset_name in assets.keys():
             var_num = int(asset_name.split("var")[-1]) + 1
@@ -356,7 +355,10 @@ def get_megascan_material(path, asset_name, asset_id):
 
 
 def delete_existing_megascans():
-    paths = [r"F:\share\assets\libraries\model", r"F:\share\assets\libraries\material"]
+    paths = [
+        # r"F:\share\assets\libraries\model",
+        r"F:\share\assets\libraries\material"
+    ]
 
     for m_path in paths:
         for dir in os.listdir(m_path):
@@ -430,9 +432,10 @@ def rename():
 
 
 if __name__ == '__main__':
+    fix_roots()
     # delete_existing_megascans()
-    # rename()
-    build_library_jsons()
-    # build_megascan_models()
-    # build_megascan_materials()
+    # # rename()
     # build_library_jsons()
+    # # build_megascan_models()
+    # build_megascan_materials()
+    # # build_library_jsons()
