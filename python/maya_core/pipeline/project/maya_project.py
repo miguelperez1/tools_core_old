@@ -31,6 +31,12 @@ def create_maya_project(project_name):
 
         set_maya_project(project_root)
 
+    asset_dir = os.path.join(project_root, "scenes", "asset")
+    seq_dir = os.path.join(project_root, "scenes", "seq")
+
+    os.mkdir(asset_dir)
+    os.mkdir(seq_dir)
+
     set_maya_project(project_root)
     cmds.workspace(s=1)
 

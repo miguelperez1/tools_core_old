@@ -5,8 +5,8 @@ import pymel.core as pm
 def add_camera_shake(camera):
     attrs_to_add = [
         'shakeFrequencyX',
-        'shakeFrequencyY',
         'shakeAmplitudeX',
+        'shakeFrequencyY',
         'shakeAmplitudeY',
     ]
     # Add attributes to camera

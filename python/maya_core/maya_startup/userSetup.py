@@ -7,11 +7,7 @@ import maya.mel as mel
 
 import maya_core
 
-# from maya_core.common_tools import logger
-# from maya_core import maya_startup
 from maya_core.pipeline.project import maya_project
-
-# log = logger.Logger()
 
 version = "1.0.2"
 
@@ -30,7 +26,11 @@ def set_render_settings():
     cmds.setAttr("vraySettings.height", 696)
     cmds.setAttr("vraySettings.aspectRatio", 1920 / 696)
     cmds.setAttr("vraySettings.pixelAspect", 1)
+    cmds.setAttr("vraySettings.rgbColorSpace", 2)
     cmds.setAttr("vraySettings.imageFormatStr", "exr (multichannel)", type="string")
+    cmds.setAttr("vraySettings.fileNamePrefix", "<Scene>.<Layer>", type="string")
+
+    mel.eval("updateRendererUI")
 
 
 def startup_maya():
@@ -57,4 +57,8 @@ def copy_user_setup():
 
 
 if __name__ == "__main__":
-    main()
+    copy_user_setup()
+    try:
+        main()
+    except:
+        pass
