@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 
 import maya.cmds as cmds
 import maya.mel as mel
@@ -9,6 +10,9 @@ from maya_core.common_tools.get_input import get_input
 
 projects_root = r"F:\share\projects"
 default_project_root = os.path.join(projects_root, "default")
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 def create_maya_project(project_name):
@@ -30,12 +34,20 @@ def create_maya_project(project_name):
     set_maya_project(project_root)
     cmds.workspace(s=1)
 
+    if os.path.exists(os.path.join(project_root, "workspace.mel")):
+        logger.info("Created %s", project_name)
+    else:
+        logger.error("Project %s not created", project_name)
+
 
 def set_maya_project(project_root):
     project_root = project_root.replace("\\", "/")
     cmds.workspace(project_root, o=1)
     cmds.workspace(dir=project_root)
     mel.eval('setProject \"' + project_root + '\"')
+
+    if get_current_project() == project_root.split("/")[-1]:
+        logger.info("Project set to %s", project_root.split("/")[-1])
 
 
 def get_current_project():

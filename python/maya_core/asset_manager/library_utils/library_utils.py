@@ -2,10 +2,10 @@ import os
 import json
 from collections import OrderedDict
 import shutil
-import logging
-
+# import logging
+#
 # logger = logging.getLogger("__name__")
-logger.setLevel(10)
+# logger.setLevel(10)
 
 from maya_core.asset_manager.asset_builder import asset_builder
 from maya_core.asset_manager.library_utils import constants
@@ -129,7 +129,7 @@ def fix_roots():
 
             # Read in the file
             with open(maya_file, 'r') as file:
-                logger.debug("Removing root from %s", maya_file)
+                # logger.debug("Removing root from %s", maya_file)
                 filedata = file.read()
 
             # Replace the target string
@@ -137,7 +137,7 @@ def fix_roots():
 
             # Write the file out again
             with open(maya_file, 'w') as file:
-                logger.debug("Saving %s", maya_file)
+                # logger.debug("Saving %s", maya_file)
 
                 file.write(filedata)
 

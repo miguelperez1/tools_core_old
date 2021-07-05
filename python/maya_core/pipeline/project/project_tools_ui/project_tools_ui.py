@@ -75,18 +75,16 @@ class ProjectToolsUI(QtWidgets.QMainWindow):
         self.create_btn.clicked.connect(self.create_btn_callback)
 
     def create_btn_callback(self):
+        self.projects_cmbx.blockSignals(True)
         if self.create_project_lble.text():
             maya_project.create_maya_project(self.create_project_lble.text())
             self.refresh_projects()
+        self.projects_cmbx.blockSignals(False)
 
     def set_project(self):
         project_root = os.path.join(projects_root, self.projects_cmbx.currentText())
-        logger.debug(project_root)
 
         maya_project.set_maya_project(project_root)
-
-        logger.debug("Project set to: %s", maya_project.get_current_project())
-        logger.debug(cmds.workspace(rd=1, q=1))
 
     def refresh_projects(self):
         self.projects_cmbx.blockSignals(True)

@@ -30,7 +30,7 @@ def set_render_settings():
     cmds.setAttr("vraySettings.height", 696)
     cmds.setAttr("vraySettings.aspectRatio", 1920 / 696)
     cmds.setAttr("vraySettings.pixelAspect", 1)
-    cmds.setAttr("vraySettings.imageFormatStr", "exr", type="string")
+    cmds.setAttr("vraySettings.imageFormatStr", "exr (multichannel)", type="string")
 
 
 def startup_maya():
