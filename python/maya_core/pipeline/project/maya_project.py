@@ -50,7 +50,10 @@ def set_maya_project(project_root):
     project_root = project_root.replace("\\", "/")
     cmds.workspace(project_root, o=1)
     cmds.workspace(dir=project_root)
+
     mel.eval('setProject \"' + project_root + '\"')
+
+    cmds.autoSave(en=1, dst=0, int=300)
 
     if get_current_project() == project_root.split("/")[-1]:
         logger.info("Project set to %s", project_root.split("/")[-1])
