@@ -4,6 +4,7 @@ from shutil import copyfile
 
 import maya.cmds as cmds
 import maya.mel as mel
+import pymel.core as pm
 
 import maya_core
 
@@ -31,6 +32,10 @@ def set_render_settings():
     cmds.setAttr("vraySettings.fileNamePrefix", "<Scene>.<Layer>", type="string")
 
     mel.eval("updateRendererUI")
+
+    if cmds.objExists("persp"):
+        camera = pm.PyNode("persp")
+        camera.farClipPlane.set(100000)
 
 
 def startup_maya():
