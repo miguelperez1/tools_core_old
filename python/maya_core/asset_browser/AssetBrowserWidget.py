@@ -62,13 +62,11 @@ class AssetTreeWidget(QtWidgets.QTreeWidget):
                 with open(asset_json_path, "w") as f:
                     json.dump(asset_data, f, indent=4, sort_keys=True)
 
-                library_utils.build_library_jsons(data['asset_type'])
-
         else:
             library_json_path = os.path.join(libraries[data['asset_type']], "assets.json")
             library_data = library_utils.get_library_data(data['asset_type'])
 
-            asset_data = list(filter(lambda a: a['asset_name'] == asset_name, library_data['assets']))
+            asset_data = library_data['assets'][asset_name]
 
             asset_data['tags'] = item.text(2)
 
@@ -80,6 +78,8 @@ class AssetTreeWidget(QtWidgets.QTreeWidget):
         data['tags'] = item.text(2)
 
         item.setData(0, QtCore.Qt.UserRole, data)
+
+        library_utils.build_library_jsons(data['asset_type'])
 
         self.tags_updated.emit()
 
@@ -178,7 +178,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             if not library_data:
                 continue
 
-            for k in sorted(library_data["assets"].keys(), key=lambda x:x.lower()):
+            for k in sorted(library_data["assets"].keys(), key=lambda x: x.lower()):
                 asset_data = library_data["assets"][k]
 
                 asset = asset_data["asset_name"]
