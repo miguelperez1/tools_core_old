@@ -71,12 +71,14 @@ def build_library_jsons(build_library=None):
                 }
 
                 asset_data['tags'] = ''
-                if current_library_data:
+                if current_library_data and asset_name in current_library_data['assets'].keys():
                     current_asset_data = current_library_data['assets'][asset_name]
 
                     if 'tags' in current_asset_data.keys():
                         asset_tags = current_asset_data['tags']
                         asset_data['tags'] = asset_tags
+                        t = asset_data['tags'].split(",")
+                        tags.extend(t)
 
                 if os.path.isfile(preview_path):
                     asset_data["asset_preview"] = preview_path
@@ -98,11 +100,16 @@ def build_library_jsons(build_library=None):
                     'material_data': None
                 }
 
-                if current_library_data:
+                if current_library_data and asset in current_library_data['assets'].keys():
                     current_asset_data = current_library_data['assets'][asset]
 
                     if 'tags' in current_asset_data.keys():
                         asset_data['tags'] = current_asset_data['tags']
+                        t = asset_data['tags'].split(",")
+                        tags.extend(t)
+
+                    if 'material_data' in current_asset_data.keys():
+                        asset_data["material_data"] = current_asset_data["material_data"]
 
                 preview_path = os.path.join(asset_path, "{}_preview.png".format(asset))
 
@@ -128,8 +135,6 @@ def build_library_jsons(build_library=None):
                         t = asset_root_data['tags'].split(",")
                         asset_data["tags"] = asset_root_data["tags"]
                         tags.extend(t)
-                    if 'material_data' in asset_root_data.keys():
-                        asset_data["material_data"] = asset_root_data["material_data"]
 
                 library_data['assets'][asset] = asset_data
 
