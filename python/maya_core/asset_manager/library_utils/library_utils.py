@@ -30,39 +30,58 @@ def rename_root_folders():
                 print new_path
 
 
-def build_library_jsons():
+def build_library_jsons(build_library=None):
     # library_datas = [get_library_data(library) for library in libraries.keys()]
-
-    delete_library_datas()
 
     for library, path in libraries.items():
         if library == "root":
             continue
 
+        if build_library and build_library != library:
+            continue
+
         library_json = os.path.join(path, "assets.json")
         library_data = OrderedDict()
 
-        assets = []
+        if os.path.exists(library_json):
+            json_file = open(library_json, "r")
+            current_library_data = json.load(json_file)
+            json_file.close()
+        else:
+            current_library_data = None
+
         tags = []
+
+        library_data['assets'] = {}
 
         if library not in ['model', 'material', 'plants', 'rigs']:
             for asset in os.listdir(path):
                 if os.path.isdir(os.path.join(path, asset)) or asset.endswith(".json"):
                     continue
 
+                asset_name = asset.split(".")[0]
+
                 preview_path = os.path.join(path, "thumbnails", "{}_preview.png".format(asset.split(".")[0]))
 
                 asset_data = {
-                    "asset_name": asset.split(".")[0],
+                    "asset_name": asset_name,
                     "asset_type": library,
                     "asset_preview": "",
-                    "import_file": os.path.join(path, asset)
+                    "import_file": os.path.join(path, asset),
                 }
+
+                asset_data['tags'] = ''
+                if current_library_data:
+                    current_asset_data = current_library_data['assets'][asset_name]
+
+                    if 'tags' in current_asset_data.keys():
+                        asset_tags = current_asset_data['tags']
+                        asset_data['tags'] = asset_tags
 
                 if os.path.isfile(preview_path):
                     asset_data["asset_preview"] = preview_path
 
-                assets.append(asset_data)
+                library_data['assets'][asset_name] = asset_data
         else:
             for asset in os.listdir(path):
                 if os.path.isfile(os.path.join(path, asset)):
@@ -78,6 +97,12 @@ def build_library_jsons():
                     'import_file': None,
                     'material_data': None
                 }
+
+                if current_library_data:
+                    current_asset_data = current_library_data['assets'][asset]
+
+                    if 'tags' in current_asset_data.keys():
+                        asset_data['tags'] = current_asset_data['tags']
 
                 preview_path = os.path.join(asset_path, "{}_preview.png".format(asset))
 
@@ -106,15 +131,9 @@ def build_library_jsons():
                     if 'material_data' in asset_root_data.keys():
                         asset_data["material_data"] = asset_root_data["material_data"]
 
-                assets.append(asset_data)
+                library_data['assets'][asset] = asset_data
 
-        if "" in tags:
-            tags.remove("")
-
-        library_data = {
-            "assets": sorted(assets, key=lambda i: i['asset_name'].lower()),
-            "tags": sorted(list(set(tags)))
-        }
+        library_data['tags'] = sorted(list(set(tags)))
 
         with open(library_json, "w") as f:
             json.dump(library_data, f, indent=4, sort_keys=True)
@@ -432,10 +451,11 @@ def rename():
 
 
 if __name__ == '__main__':
-    fix_roots()
+    # fix_roots()
     # delete_existing_megascans()
     # # rename()
-    # build_library_jsons()
+    build_library_jsons()
+    # delete_library_datas()
     # # build_megascan_models()
     # build_megascan_materials()
     # # build_library_jsons()

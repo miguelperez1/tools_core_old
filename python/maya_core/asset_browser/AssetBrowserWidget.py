@@ -3,6 +3,7 @@ import re
 from collections import OrderedDict
 import subprocess
 import logging
+import json
 
 from PySide2 import QtCore
 from PySide2 import QtWidgets
@@ -23,6 +24,64 @@ reload(lighting_utils)
 libraries = constants.libraries
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
+
+
+class AssetTreeWidget(QtWidgets.QTreeWidget):
+    tags_updated = QtCore.Signal()
+
+    def __init__(self):
+        super(AssetTreeWidget, self).__init__()
+        self.itemDoubleClicked.connect(self.onTreeWidgetItemDoubleClicked)
+        self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.setAlternatingRowColors(True)
+
+        header_item = QtWidgets.QTreeWidgetItem(['Preview', 'Asset', 'Tags'])
+        self.setHeaderItem(header_item)
+
+        self.itemChanged.connect(self.update_tags)
+
+    def onTreeWidgetItemDoubleClicked(self, item, column):
+        if column == 2:
+            self.editItem(item, column)
+
+    def update_tags(self, item, column):
+        data = item.data(0, QtCore.Qt.UserRole)
+        asset_name = item.text(1)
+
+        # Update normal asset tags
+        if data['asset_type'] in ['model', 'material', 'rigs', 'plants']:
+            asset_json_path = os.path.join(libraries[data['asset_type']], data['name'], "data.json")
+
+            if os.path.exists(asset_json_path):
+                json_file = open(asset_json_path, "r")
+                asset_data = json.load(json_file)
+                json_file.close()
+
+                asset_data['tags'] = item.text(2)
+
+                with open(asset_json_path, "w") as f:
+                    json.dump(asset_data, f, indent=4, sort_keys=True)
+
+                library_utils.build_library_jsons(data['asset_type'])
+
+        else:
+            library_json_path = os.path.join(libraries[data['asset_type']], "assets.json")
+            library_data = library_utils.get_library_data(data['asset_type'])
+
+            asset_data = list(filter(lambda a: a['asset_name'] == asset_name, library_data['assets']))
+
+            asset_data['tags'] = item.text(2)
+
+            library_data['assets'][asset_name] = asset_data
+
+            with open(library_json_path, "w") as f:
+                json.dump(library_data, f, indent=4, sort_keys=True)
+
+        data['tags'] = item.text(2)
+
+        item.setData(0, QtCore.Qt.UserRole, data)
+
+        self.tags_updated.emit()
 
 
 class AssetBrowserWidget(QtWidgets.QWidget):
@@ -68,12 +127,30 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.libraries_tw.setAlternatingRowColors(True)
         self.libraries_tw.setMaximumWidth(self.width() * .2)
 
+        self.refresh_libraries_tw()
+
+        self.assets_tw = AssetTreeWidget()
+
+        self.assets_tw.setMinimumWidth(self.width() * .8)
+        self.assets_tw.setColumnWidth(0, 200)
+        self.assets_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+
+        self.create_asset_item_widgets()
+
+    def refresh_libraries_tw(self):
+        self.libraries_tw.blockSignals(True)
+        self.libraries_tw.clear()
+
+        item_font = QtGui.QFont()
+        item_font.setPointSize(10)
+
         for library in sorted(libraries.keys()):
             if library == 'root':
                 continue
 
             library_item = QtWidgets.QTreeWidgetItem()
             library_item.setText(0, library.title())
+            library_item.setFont(0, item_font)
 
             library_data = library_utils.get_library_data(library)
 
@@ -83,21 +160,17 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
                 tag_item = QtWidgets.QTreeWidgetItem()
                 tag_item.setText(0, tag.title())
+                tag_item.setFont(0, item_font)
 
                 library_item.addChild(tag_item)
 
             self.libraries_tw.addTopLevelItem(library_item)
 
-        self.assets_tw = QtWidgets.QTreeWidget()
-        header_item = QtWidgets.QTreeWidgetItem(['Preview', 'Asset', 'Tags'])
-        self.assets_tw.setHeaderItem(header_item)
-        self.assets_tw.setMinimumWidth(self.width() * .8)
-        self.assets_tw.setColumnWidth(0, 200)
-        self.assets_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-
-        self.create_asset_item_widgets()
+        self.libraries_tw.blockSignals(False)
 
     def create_asset_item_widgets(self):
+        self.assets_tw.blockSignals(True)
+
         self.asset_item_widgets = []
         for library in libraries.keys():
             library_data = library_utils.get_library_data(library)
@@ -105,7 +178,9 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             if not library_data:
                 continue
 
-            for asset_data in library_data["assets"]:
+            for k in sorted(library_data["assets"].keys(), key=lambda x:x.lower()):
+                asset_data = library_data["assets"][k]
+
                 asset = asset_data["asset_name"]
                 preview = asset_data["asset_preview"]
 
@@ -133,12 +208,20 @@ class AssetBrowserWidget(QtWidgets.QWidget):
                 asset_item.setText(1, asset)
                 asset_item.setText(2, tags)
                 asset_item.setData(0, QtCore.Qt.UserRole, new_asset_data)
+                asset_item.setFlags(asset_item.flags() | QtCore.Qt.ItemIsEditable)
+
+                item_font = QtGui.QFont()
+                item_font.setPointSize(10)
+                asset_item.setFont(1, item_font)
+                asset_item.setFont(2, item_font)
 
                 self.assets_tw.addTopLevelItem(asset_item)
                 self.assets_tw.setItemWidget(asset_item, 0, preview_widget)
                 asset_item.setHidden(True)
 
                 self.asset_item_widgets.append(asset_item)
+
+        self.assets_tw.blockSignals(False)
 
     def refresh_asset_items(self):
         logger.debug("Refreshing asset items")
@@ -195,6 +278,8 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.build_material_action.triggered.connect(self.build_material_action_callback)
         self.build_and_assign_material_action.triggered.connect(self.build_and_assign_material_action_callback)
         self.create_card_action.triggered.connect(self.create_card_action_callback)
+
+        self.assets_tw.tags_updated.connect(self.refresh_libraries_tw)
 
     def update_current_asset(self):
         if self.assets_tw.selectedItems():
@@ -310,3 +395,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         logger.info("Creating card: %s", self.current_asset)
 
         lighting_utils.create_card(self.current_asset, self.current_asset_data['import_file'])
+
+    def update_tags(self):
+        pass
