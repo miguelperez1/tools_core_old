@@ -97,8 +97,9 @@ class MaterialBuilder(object):
 
     def build_VRayMtl2Sided(self):
         shader = pm.PyNode(cmds.shadingNode('VRayMtl2Sided', name=self.name + "_2sided_mat", asShader=True))
-        shading_group = pm.PyNode(cmds.sets(name=str(shader).replace("_mat", "") + "_2sided_sg", empty=True, renderable=True,
-                                            noSurfaceShader=True))
+        shading_group = pm.PyNode(
+            cmds.sets(name=str(shader).replace("_mat", "") + "_2sided_sg", empty=True, renderable=True,
+                      noSurfaceShader=True))
 
         pm.connectAttr(shader.outColor, shading_group.surfaceShader)
 
@@ -145,31 +146,34 @@ def create_texture(name=None, path=None, cc=True, uv=True):
     return nodes
 
 
-def create_cc_node(source_node):
-    if not isinstance(source_node, pm.PyNode):
-        source_node = pm.PyNode(source_node)
-
-    # Store original outcolor connections
-    out_connections = pm.listConnections(source_node, connections=True, plugs=True)
-
+def create_cc_node(source_node=None):
     # Create CC Node
-    cc_node = pm.shadingNode('colorCorrect', n=source_node + "_CC", asUtility=True)
-
-    # Connect file to cc
-    pm.connectAttr(source_node.outColor, cc_node.inColor)
-    pm.connectAttr(source_node.outAlpha, cc_node.inAlpha)
+    cc_node = pm.shadingNode('colorCorrect', asUtility=True)
 
     # Connect gamma attributes
     pm.connectAttr(cc_node.colGammaX, cc_node.colGammaY)
     pm.connectAttr(cc_node.colGammaX, cc_node.colGammaZ)
 
-    # Connect cc to original connections
-    for connection_pair in out_connections:
-        out_attr = connection_pair[0].split(".")[-1]
-        if out_attr.startswith("outColor") or out_attr == "outAlpha":
-            source_connection = connection_pair[0].split(".")[-1]
-            target_connection = connection_pair[-1]
-            pm.connectAttr(cc_node + "." + source_connection, target_connection, f=True)
+    if source_node:
+        if not isinstance(source_node, pm.PyNode):
+            source_node = pm.PyNode(source_node)
+
+        # Store original outcolor connections
+        out_connections = pm.listConnections(source_node, connections=True, plugs=True)
+
+        # Connect file to cc
+        pm.connectAttr(source_node.outColor, cc_node.inColor)
+        pm.connectAttr(source_node.outAlpha, cc_node.inAlpha)
+
+        # Connect cc to original connections
+        for connection_pair in out_connections:
+            out_attr = connection_pair[0].split(".")[-1]
+            if out_attr.startswith("outColor") or out_attr == "outAlpha":
+                source_connection = connection_pair[0].split(".")[-1]
+                target_connection = connection_pair[-1]
+                pm.connectAttr(cc_node + "." + source_connection, target_connection, f=True)
+
+        pm.rename(cc_node, str(source_node) + "_CC")
 
     return cc_node
 

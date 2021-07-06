@@ -10,7 +10,7 @@ import maya_core
 
 from maya_core.pipeline.project import maya_project
 
-version = "1.0.2"
+version = "1.1"
 
 
 def set_default_workspace():
