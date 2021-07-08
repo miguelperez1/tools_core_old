@@ -8,8 +8,10 @@ from PySide2 import QtGui
 import maya.cmds as cmds
 
 from pyqt_commons import MWidgets
+from pyqt_commons import DockableWidget
 from maya_core.pipeline.project import maya_project
 
+reload(MWidgets)
 reload(maya_project)
 
 projects_root = r"F:\share\projects"
@@ -18,66 +20,95 @@ logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
 
-class ProjectToolsUI(QtWidgets.QMainWindow):
-    def __init__(self, parent=MWidgets.maya_main_window()):
-        super(ProjectToolsUI, self).__init__(parent)
+class ProjectToolsUI(DockableWidget.DockableWidget):
+    WINDOW_TITLE = "Project Tools"
 
-        self.setWindowTitle("Project Tools")
-        self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
-        self.setMinimumWidth(500)
+    def __init__(self):
+        super(ProjectToolsUI, self).__init__()
 
-        self.setObjectName("ProjectToolsUI")
-
-        self.prefs_directory = cmds.internalVar(userPrefDir=True)
-
-        self.create_actions()
-        self.create_widgets()
-        self.create_layout()
-        self.create_connections()
+        self.setContentsMargins(20, 20, 20, 20)
 
     def create_actions(self):
         pass
 
     def create_widgets(self):
-        self.projects_lbl = QtWidgets.QLabel("Project: ")
+        self.project_hdrlbl = MWidgets.HeaderLabel("Project Tools", 1.5)
+
+        self.projects_lbl = MWidgets.HeaderLabel("Project: ")
         self.projects_cmbx = QtWidgets.QComboBox()
         self.projects_cmbx.setMinimumWidth(150)
 
         self.refresh_projects()
 
-        self.create_project_lble = MWidgets.LabeledLineEdit("Project Name:")
+        self.create_project_lble = MWidgets.LabeledLineEdit("Project Name: ")
 
-        self.create_btn = QtWidgets.QPushButton("Create")
+        self.create_project_btn = QtWidgets.QPushButton("Create")
+
+        self.seq_lbl = QtWidgets.QLabel("Sequence: ")
+        self.seq_cmbx = QtWidgets.QComboBox()
+        self.seq_create_btn = QtWidgets.QPushButton("Create")
+
+        self.shot_lbl = QtWidgets.QLabel("Shot: ")
+        self.shot_cmbx = QtWidgets.QComboBox()
+        self.shot_create_btn = QtWidgets.QPushButton("Create")
+
+        self.open_shot_btn = QtWidgets.QPushButton()
+        file_browse_icon = QtGui.QIcon(':fileOpen.png')
+        self.open_shot_btn.setIcon(file_browse_icon)
+
+        self.refresh_seq_shot()
 
     def create_layout(self):
-        central_widget = QtWidgets.QWidget(self)
-        self.setCentralWidget(central_widget)
+        main_layout = QtWidgets.QVBoxLayout(self)
 
-        main_layout = QtWidgets.QVBoxLayout(central_widget)
+        header_layout = QtWidgets.QVBoxLayout()
+
+        header_layout.addWidget(self.project_hdrlbl)
+        header_layout.addWidget(MWidgets.QHLine())
+        # header_layout.addWidget(MWidgets.VSpacerWidget(25))
+
+        main_layout.addLayout(header_layout)
+
+        inner_layout = QtWidgets.QVBoxLayout()
+        inner_layout.setContentsMargins(25, 15, 0, 0)
 
         set_layout = QtWidgets.QHBoxLayout()
         set_layout.addWidget(self.projects_lbl)
         set_layout.addWidget(self.projects_cmbx)
         set_layout.addStretch()
 
-        main_layout.addLayout(set_layout)
-        main_layout.addWidget(MWidgets.QHLine())
+        inner_layout.addLayout(set_layout)
+        inner_layout.addWidget(MWidgets.QHLine())
+
+        shot_seq_layout = QtWidgets.QHBoxLayout()
+        shot_seq_layout.addWidget(self.seq_lbl)
+        shot_seq_layout.addWidget(self.seq_cmbx)
+        shot_seq_layout.addWidget(self.seq_create_btn)
+        shot_seq_layout.addWidget(self.shot_lbl)
+        shot_seq_layout.addWidget(self.shot_cmbx)
+        shot_seq_layout.addWidget(self.shot_create_btn)
+        shot_seq_layout.addWidget(self.open_shot_btn)
+        shot_seq_layout.addStretch()
+
+        inner_layout.addLayout(shot_seq_layout)
 
         create_layout = QtWidgets.QHBoxLayout()
         create_layout.addWidget(self.create_project_lble)
-        create_layout.addWidget(self.create_btn)
+        create_layout.addWidget(self.create_project_btn)
 
-        main_layout.addLayout(create_layout)
+        main_layout.addLayout(inner_layout)
         main_layout.addStretch()
+        main_layout.addLayout(create_layout)
 
     def create_connections(self):
         self.projects_cmbx.currentTextChanged.connect(self.set_project)
-        self.create_btn.clicked.connect(self.create_btn_callback)
+        self.create_project_btn.clicked.connect(self.create_btn_callback)
 
     def create_btn_callback(self):
         self.projects_cmbx.blockSignals(True)
         if self.create_project_lble.text():
-            maya_project.create_maya_project(self.create_project_lble.text())
+            self.maya_project = maya_project.Project(self.create_project_lble.text())
+            self.maya_project.create_maya_project()
             self.refresh_projects()
         self.projects_cmbx.blockSignals(False)
 
@@ -85,6 +116,7 @@ class ProjectToolsUI(QtWidgets.QMainWindow):
         project_root = os.path.join(projects_root, self.projects_cmbx.currentText())
 
         maya_project.set_maya_project(project_root)
+        self.maya_project = maya_project.get_current_project()
 
     def refresh_projects(self):
         self.projects_cmbx.blockSignals(True)
@@ -100,18 +132,23 @@ class ProjectToolsUI(QtWidgets.QMainWindow):
 
         if current_project in os.listdir(projects_root):
             self.projects_cmbx.setCurrentText(current_project)
+            self.maya_project = maya_project.Project(current_project)
+
+        self.refresh_seq_shot()
 
         self.projects_cmbx.blockSignals(False)
 
-
-def main():
-    try:
-        cmds.deleteUI("ProjectToolsUI")
-    except Exception:
+    def refresh_seq_shot(self):
         pass
 
-    dialog = ProjectToolsUI()
-    dialog.show()
+
+def main():
+    workspace_contorl_name = ProjectToolsUI.get_workspace_control_name()
+    if cmds.workspaceControl(workspace_contorl_name, q=True, exists=True):
+        cmds.deleteUI(workspace_contorl_name)
+
+    ProjectToolsUI.module_name_override = "project_tools_ui"
+    ui = ProjectToolsUI()
 
 
 if __name__ == "__main__":

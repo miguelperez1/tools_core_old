@@ -90,6 +90,28 @@ class LabeledLineEdit(QtWidgets.QWidget):
         self.le_widget.setText(text)
 
 
+class LabeledLineEditButton(QtWidgets.QWidget):
+    def __init__(self, label, btn_label):
+        super(LabeledLineEdit, self).__init__()
+
+        self.label = label
+        self.lbl_widget = QtWidgets.QLabel(self.label)
+        self.le_widget = QtWidgets.QLineEdit()
+        self.btn_widget = QtWidgets.QPushButton(btn_label)
+
+        self.main_layout = QtWidgets.QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.addWidget(self.lbl_widget)
+        self.main_layout.addSpacing(5)
+
+        self.main_layout.addWidget(self.le_widget)
+
+    def text(self):
+        return self.le_widget.text()
+
+    def setText(self, text):
+        self.le_widget.setText(text)
+
 class FileBrowseWidget(QtWidgets.QWidget):
     def __init__(self, label, size=(30, 30), justify='left', starting_dir=None):
         super(FileBrowseWidget, self).__init__()
@@ -146,10 +168,10 @@ class ImagePushButton(QtWidgets.QPushButton):
 
 
 class HeaderLabel(QtWidgets.QLabel):
-    def __init__(self, text):
+    def __init__(self, text, scale=1):
         super(HeaderLabel, self).__init__()
         self.setText(text)
-        self.setStyleSheet("font: 20px")
+        self.setStyleSheet("font: {0}px".format(str(int(20 * scale))))
 
 
 class PreviewLabel(QtWidgets.QLabel):
