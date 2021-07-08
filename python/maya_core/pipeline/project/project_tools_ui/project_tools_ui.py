@@ -38,8 +38,6 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.projects_cmbx = QtWidgets.QComboBox()
         self.projects_cmbx.setMinimumWidth(150)
 
-        self.refresh_projects()
-
         self.create_project_lble = MWidgets.LabeledLineEdit("Project Name: ")
 
         self.create_project_btn = QtWidgets.QPushButton("Create")
@@ -56,7 +54,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         file_browse_icon = QtGui.QIcon(':fileOpen.png')
         self.open_shot_btn.setIcon(file_browse_icon)
 
-        self.refresh_seq_shot()
+        self.refresh_projects()
 
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -118,6 +116,8 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         maya_project.set_maya_project(project_root)
         self.maya_project = maya_project.get_current_project()
 
+        self.refresh_seq()
+
     def refresh_projects(self):
         self.projects_cmbx.blockSignals(True)
         self.projects_cmbx.clear()
@@ -134,12 +134,34 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             self.projects_cmbx.setCurrentText(current_project)
             self.maya_project = maya_project.Project(current_project)
 
-        self.refresh_seq_shot()
+        self.refresh_seq()
 
         self.projects_cmbx.blockSignals(False)
 
-    def refresh_seq_shot(self):
-        pass
+    def refresh_seq(self):
+        self.seq_cmbx.blockSignals(True)
+        self.seq_cmbx.clear()
+
+        # replace this with sequences manifest
+        for seq in sorted(os.listdir(self.maya_project.seq_root)):
+            self.seq_cmbx.addItem(seq)
+
+        self.seq_cmbx.setCurrentIndex(0)
+
+        self.seq_cmbx.blockSignals(False)
+
+        self.refresh_shots()
+
+    def refresh_shots(self):
+        self.shot_cmbx.blockSignals(True)
+        self.shot_cmbx.clear()
+
+        if self.seq_cmbx.currentText():
+            # change this to get from sequence manifest
+            for shot in os.listdir(os.path.join(self.maya_project.seq_root, self.seq_cmbx.currentText())):
+                self.shot_cmbx.addItem(shot)
+
+        self.shot_cmbx.blockSignals(False)
 
 
 def main():
