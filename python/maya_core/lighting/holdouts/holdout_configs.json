@@ -1,0 +1,581 @@
+{
+    "presets": {
+        "default": {
+            "giAmount": 1.0, 
+            "objectIDEnabled": false, 
+            "objectID": 0, 
+            "shadowBrightness": 1.0, 
+            "useRefractionExclude": false, 
+            "generateRenderElements": true, 
+            "refractionVisibility": true, 
+            "matteSurface": false, 
+            "sssSurfaceID": 0, 
+            "alphaContribution": 1.0, 
+            "giSubdivsMultiplier": 1.0, 
+            "reflectionAmount": 1.0, 
+            "generateGI": true, 
+            "giSurfaceID": 0, 
+            "receiveCaustics": true, 
+            "shadowVisibility": true, 
+            "useReflectionExclude": false, 
+            "generateCaustics": true, 
+            "primaryVisibility": true, 
+            "skipExport": false, 
+            "refractionAmount": 1.0, 
+            "refractionListIsInclusive": false, 
+            "reflectionExclude": null, 
+            "reflectionVisibility": true, 
+            "hiddenInOutliner": false, 
+            "overrideMBSamples": false, 
+            "affectAlpha": false, 
+            "matteForSecondaryRays": 0, 
+            "receiveShadows": true, 
+            "noGIOnOtherMattes": true, 
+            "generateGIMultiplier": 1.0, 
+            "shadows": false, 
+            "useIrradianceMap": true, 
+            "giVisibility": true, 
+            "mbSamples": 2, 
+            "refractionExclude": null, 
+            "skipExportEnabled": false, 
+            "ignore": false, 
+            "causticsMultiplier": 1.0, 
+            "reflectionListIsInclusive": false
+        }, 
+        "matte": {
+            "giAmount": 1.0, 
+            "objectIDEnabled": false, 
+            "objectID": 0, 
+            "shadowBrightness": 1.0, 
+            "useRefractionExclude": false, 
+            "generateRenderElements": true, 
+            "refractionVisibility": true, 
+            "matteSurface": true, 
+            "sssSurfaceID": 0, 
+            "alphaContribution": -1.0, 
+            "giSubdivsMultiplier": 1.0, 
+            "reflectionAmount": 0.0, 
+            "generateGI": true, 
+            "giSurfaceID": 0, 
+            "receiveCaustics": true, 
+            "shadowVisibility": true, 
+            "useReflectionExclude": false, 
+            "generateCaustics": true, 
+            "primaryVisibility": true, 
+            "skipExport": false, 
+            "refractionAmount": 0.0, 
+            "refractionListIsInclusive": false, 
+            "reflectionExclude": null, 
+            "reflectionVisibility": true, 
+            "hiddenInOutliner": false, 
+            "overrideMBSamples": false, 
+            "affectAlpha": false, 
+            "matteForSecondaryRays": 0, 
+            "receiveShadows": true, 
+            "noGIOnOtherMattes": true, 
+            "generateGIMultiplier": 1.0, 
+            "shadows": false, 
+            "useIrradianceMap": true, 
+            "giVisibility": true, 
+            "mbSamples": 2, 
+            "refractionExclude": null, 
+            "skipExportEnabled": false, 
+            "ignore": false, 
+            "causticsMultiplier": 1.0, 
+            "reflectionListIsInclusive": false
+        }, 
+        "hidden": {
+            "giAmount": 1.0, 
+            "objectIDEnabled": false, 
+            "objectID": 0, 
+            "shadowBrightness": 1.0, 
+            "useRefractionExclude": false, 
+            "generateRenderElements": true, 
+            "refractionVisibility": true, 
+            "matteSurface": false, 
+            "sssSurfaceID": 0, 
+            "alphaContribution": 1.0, 
+            "giSubdivsMultiplier": 1.0, 
+            "reflectionAmount": 1.0, 
+            "generateGI": true, 
+            "giSurfaceID": 0, 
+            "receiveCaustics": true, 
+            "shadowVisibility": true, 
+            "useReflectionExclude": false, 
+            "generateCaustics": true, 
+            "primaryVisibility": false, 
+            "skipExport": false, 
+            "refractionAmount": 1.0, 
+            "refractionListIsInclusive": false, 
+            "reflectionExclude": null, 
+            "reflectionVisibility": true, 
+            "hiddenInOutliner": false, 
+            "overrideMBSamples": false, 
+            "affectAlpha": false, 
+            "matteForSecondaryRays": 0, 
+            "receiveShadows": true, 
+            "noGIOnOtherMattes": true, 
+            "generateGIMultiplier": 1.0, 
+            "shadows": false, 
+            "useIrradianceMap": true, 
+            "giVisibility": true, 
+            "mbSamples": 2, 
+            "refractionExclude": null, 
+            "skipExportEnabled": false, 
+            "ignore": false, 
+            "causticsMultiplier": 1.0, 
+            "reflectionListIsInclusive": false
+        }
+    }, 
+    "attrs": {
+        "giAmount": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "giAmount", 
+            "label": "GI Amount"
+        }, 
+        "objectIDEnabled": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "objectIDEnabled", 
+            "label": "Override Object ID"
+        }, 
+        "objectID": {
+            "values": [
+                0, 
+                10
+            ], 
+            "widget_class": "SliderAttrWidget", 
+            "name": "objectID", 
+            "label": "Object ID"
+        }, 
+        "shadowBrightness": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "shadowBrightness", 
+            "label": "Shadow Brightness"
+        }, 
+        "useRefractionExclude": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "useRefractionExclude", 
+            "label": "Use Refraction Exclude List"
+        }, 
+        "generateRenderElements": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "generateRenderElements", 
+            "label": "Generate Render Elements"
+        }, 
+        "refractionVisibility": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "refractionVisibility", 
+            "label": "Visible in Refractions"
+        }, 
+        "matteSurface": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "matteSurface", 
+            "label": "Matte Surface"
+        }, 
+        "sssSurfaceID": {
+            "values": [
+                0, 
+                10
+            ], 
+            "widget_class": "SliderAttrWidget", 
+            "name": "sssSurfaceID", 
+            "label": "SSS Surface ID"
+        }, 
+        "reflectionAmount": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "reflectionAmount", 
+            "label": "Reflection Amount"
+        }, 
+        "giSubdivsMultiplier": {
+            "values": [
+                0, 
+                2
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "giSubdivsMultiplier", 
+            "label": "Subdivs Multiplier"
+        }, 
+        "alphaContribution": {
+            "values": [
+                -1, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "alphaContribution", 
+            "label": "Alpha Contribution"
+        }, 
+        "generateGI": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "generateGI", 
+            "label": "Generate GI"
+        }, 
+        "giSurfaceID": {
+            "values": [
+                0, 
+                10
+            ], 
+            "widget_class": "SliderAttrWidget", 
+            "name": "giSurfaceID", 
+            "label": "GI Surface ID"
+        }, 
+        "receiveCaustics": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "receiveCaustics", 
+            "label": "Receive Caustics"
+        }, 
+        "giVisibility": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "giVisibility", 
+            "label": "Visible to GI"
+        }, 
+        "shadowVisibility": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "shadowVisibility", 
+            "label": "Cast Shadows"
+        }, 
+        "generateCaustics": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "generateCaustics", 
+            "label": "Generate Caustics"
+        }, 
+        "primaryVisibility": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "primaryVisibility", 
+            "label": "Primary Visibility"
+        }, 
+        "skipExport": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "skipExport", 
+            "label": "Skip Rendering"
+        }, 
+        "refractionAmount": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "refractionAmount", 
+            "label": "Refraction Amount"
+        }, 
+        "refractionListIsInclusive": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "refractionListIsInclusive", 
+            "label": "As Inclusive List"
+        }, 
+        "reflectionExclude": {
+            "values": [], 
+            "widget_class": "LineEditAttrWidget", 
+            "name": "reflectionExclude", 
+            "label": "Reflection Exclude"
+        }, 
+        "reflectionVisibility": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "reflectionVisibility", 
+            "label": "Visible in Reflections"
+        }, 
+        "hiddenInOutliner": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "hiddenInOutliner", 
+            "label": "Hidden in Outliner"
+        }, 
+        "overrideMBSamples": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "overrideMBSamples", 
+            "label": "Override Motion Blur Samples"
+        }, 
+        "affectAlpha": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "affectAlpha", 
+            "label": "Affect Alpha"
+        }, 
+        "matteForSecondaryRays": {
+            "values": [
+                "Disable", 
+                "With Projection Mapping", 
+                "Without Projection Mapping"
+            ], 
+            "widget_class": "ComboBoxAttrWidget", 
+            "name": "matteForSecondaryRays", 
+            "label": "Matte for Secondary Rays"
+        }, 
+        "receiveShadows": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "receiveShadows", 
+            "label": "Receive Shadows"
+        }, 
+        "noGIOnOtherMattes": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "noGIOnOtherMattes", 
+            "label": "No GI On Other Mattes"
+        }, 
+        "generateGIMultiplier": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "generateGIMultiplier", 
+            "label": "Generate GI Multiplier"
+        }, 
+        "shadows": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "shadows", 
+            "label": "Shadows"
+        }, 
+        "useIrradianceMap": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "useIrradianceMap", 
+            "label": "Use Irradiance Map"
+        }, 
+        "useReflectionExclude": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "useReflectionExclude", 
+            "label": "Use Reflection Exclude List"
+        }, 
+        "mbSamples": {
+            "values": [
+                1, 
+                16
+            ], 
+            "widget_class": "SliderAttrWidget", 
+            "name": "mbSamples", 
+            "label": "Motion Blur Samples"
+        }, 
+        "refractionExclude": {
+            "values": [], 
+            "widget_class": "LineEditAttrWidget", 
+            "name": "refractionExclude", 
+            "label": "Refraction Exclude"
+        }, 
+        "skipExportEnabled": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "skipExportEnabled", 
+            "label": "Override Skip Rendering"
+        }, 
+        "ignore": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "ignore", 
+            "label": "Disable"
+        }, 
+        "causticsMultiplier": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "DoubleSliderAttrWidget", 
+            "name": "causticsMultiplier", 
+            "label": "Caustics Multiplier"
+        }, 
+        "reflectionListIsInclusive": {
+            "values": [
+                0, 
+                1
+            ], 
+            "widget_class": "CheckBoxAttrWidget", 
+            "name": "reflectionListIsInclusive", 
+            "label": "As Inclusive List"
+        }
+    }, 
+    "attr_groups": {
+        "visibility_options": {
+            "attrs": [
+                "giVisibility", 
+                "primaryVisibility", 
+                "reflectionVisibility", 
+                "refractionVisibility", 
+                "shadowVisibility", 
+                "receiveShadows"
+            ], 
+            "label": "Visibility Options"
+        }, 
+        "extra_attributes": {
+            "attrs": [
+                "hiddenInOutliner"
+            ], 
+            "label": "Extra Attributes"
+        }, 
+        "motion_blur_samples": {
+            "attrs": [
+                "overrideMBSamples", 
+                "mbSamples"
+            ], 
+            "label": "Motion Blur Samples"
+        }, 
+        "miscellaneous": {
+            "attrs": [
+                "generateRenderElements"
+            ], 
+            "label": "Miscellaneous"
+        }, 
+        "object_id": {
+            "attrs": [
+                "objectIDEnabled", 
+                "objectID"
+            ], 
+            "label": "Object ID"
+        }, 
+        "general": {
+            "attrs": [
+                "ignore"
+            ], 
+            "label": "General"
+        }, 
+        "additional_surface_properties": {
+            "attrs": [
+                "useIrradianceMap", 
+                "generateGI", 
+                "generateGIMultiplier", 
+                "receiveGI", 
+                "receiveGIMultiplier", 
+                "giSubdivsMultiplier", 
+                "generateCaustics", 
+                "receiveCaustics", 
+                "causticsMultiplier", 
+                "giSurfaceID", 
+                "sssSurfaceID"
+            ], 
+            "label": "Additional Surface Properties"
+        }, 
+        "matte_properties": {
+            "attrs": [
+                "matteSurface", 
+                "alphaContribution", 
+                "shadows", 
+                "affectAlpha", 
+                "shadowBrightness", 
+                "reflectionAmount", 
+                "refractionAmount", 
+                "giAmount", 
+                "noGIOnOtherMattes", 
+                "matteForSecondaryRays"
+            ], 
+            "label": "Matte Properties"
+        }, 
+        "exclude_lists": {
+            "attrs": [
+                "useReflectionExclude", 
+                "reflectionListIsInclusive", 
+                "reflectionExclude", 
+                "useRefractionExclude", 
+                "refractionListIsInclusive", 
+                "refractionExclude"
+            ], 
+            "label": "Exclude Lists"
+        }, 
+        "skip_rendering": {
+            "attrs": [
+                "skipExportEnabled", 
+                "skipExport"
+            ], 
+            "label": "Skip Rendering"
+        }
+    }
+}

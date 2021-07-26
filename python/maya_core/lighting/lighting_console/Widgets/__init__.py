@@ -1,13 +1,13 @@
-from maya_core.lighting_console.Widgets import AOVsWidget
-from maya_core.lighting_console.Widgets import ConsoleWidget
-from maya_core.lighting_console.Widgets import LogWidget
-from maya_core.lighting_console.Widgets import ModifiersWidget
-from maya_core.lighting_console.Widgets import PropertiesWidget
-from maya_core.lighting_console.Widgets import RenderLayersWidget
-from maya_core.lighting_console.Widgets import RenderSettingsWidget
-from maya_core.lighting_console.Widgets import SetsWidget
-from maya_core.lighting_console.Widgets import ToolButtonsWidget
-from maya_core.lighting_console.Widgets import ViewportPanelWidget
+from maya_core.lighting.lighting_console.Widgets import AOVsWidget
+from maya_core.lighting.lighting_console.Widgets import ConsoleWidget
+from maya_core.lighting.lighting_console.Widgets import LogWidget
+from maya_core.lighting.lighting_console.Widgets import ModifiersWidget
+from maya_core.lighting.lighting_console.Widgets import PropertiesWidget
+from maya_core.lighting.lighting_console.Widgets import RenderLayersWidget
+from maya_core.lighting.lighting_console.Widgets import RenderSettingsWidget
+from maya_core.lighting.lighting_console.Widgets import SetsWidget
+from maya_core.lighting.lighting_console.Widgets import ToolButtonsWidget
+from maya_core.lighting.lighting_console.Widgets import ViewportPanelWidget
 
 reload(AOVsWidget)
 reload(ConsoleWidget)

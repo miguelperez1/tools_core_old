@@ -18,9 +18,6 @@ from maya_core.asset_manager.library_utils import constants
 from maya_core.lighting.lighting_utils import lighting_utils
 from maya_core.lookdev.material_utils import material_utils
 
-reload(library_utils)
-reload(lighting_utils)
-
 libraries = constants.libraries
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
@@ -41,6 +38,7 @@ class AssetTreeWidget(QtWidgets.QTreeWidget):
         self.itemChanged.connect(self.update_tags)
 
     def onTreeWidgetItemDoubleClicked(self, item, column):
+        # Only allow the tags column to be edited
         if column == 2:
             self.editItem(item, column)
 
@@ -85,6 +83,9 @@ class AssetTreeWidget(QtWidgets.QTreeWidget):
 
 
 class AssetBrowserWidget(QtWidgets.QWidget):
+    light_created = QtCore.Signal(pm.PyNode)
+
+
     def __init__(self, width, height, use_tags_widget=1):
         super(AssetBrowserWidget, self).__init__()
         self.setObjectName("AssetBrowserUI")
@@ -337,11 +338,13 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         logger.debug("Import file %s", self.current_asset_data['import_file'])
 
         if self.current_library == "studiolights":
-            lighting_utils.create_vray_light("VRayLightRectShape", name=self.current_asset,
+            light = lighting_utils.create_vray_light("VRayLightRectShape", name=self.current_asset,
                                              texture=self.current_asset_data['import_file'])
+            self.light_created.emit(light)
         elif self.current_library == "hdri":
-            lighting_utils.create_vray_light("VRayLightDomeShape", name=self.current_asset,
+            light = lighting_utils.create_vray_light("VRayLightDomeShape", name=self.current_asset,
                                              texture=self.current_asset_data['import_file'])
+            self.light_created.emit(light)
         elif self.current_library == "gobolights":
             lighting_utils.create_gobo(self.current_asset, self.current_asset_data['import_file'])
         elif self.current_library in ['material', 'model', 'rigs', 'plants']:

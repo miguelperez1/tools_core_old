@@ -15,8 +15,6 @@ default_project_root = os.path.join(projects_root, "default")
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
-reload(Sequence)
-
 
 class Project(object):
     def __init__(self, project_name):
@@ -84,7 +82,7 @@ def set_maya_project(project_root):
 
     mel.eval('setProject \"' + project_root + '\"')
 
-    cmds.autoSave(en=1, dst=0, int=300)
+    cmds.autoSave(en=1, dst=0, int=1800)
 
     if get_current_project().project_name == project_root.split("/")[-1]:
         logger.info("Project set to %s", project_root.split("/")[-1])

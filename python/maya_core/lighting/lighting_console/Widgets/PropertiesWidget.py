@@ -11,15 +11,12 @@ from pyqt_commons import MWidgets
 
 reload(MWidgets)
 
-from maya_core.lighting_console.constants import *
-from maya_core.lighting_console import re_constants
+from maya_core.lighting.lighting_console.constants import *
+from maya_core.lighting.lighting_console import re_constants
 
 reload(MWidgets)
 reload(re_constants)
 
-from maya_core.common_tools import logger
-
-log = logger.Logger()
 
 INDENT = 40
 
@@ -62,7 +59,7 @@ class CheckBoxAttrWidget(QtWidgets.QWidget):
         self.cb.stateChanged.connect(self.set_attr)
 
     def set_attr(self):
-        log.info("PropertiesWidget, CheckBoxAttrWidget, set_attr")
+        # log.info("PropertiesWidget, CheckBoxAttrWidget, set_attr")
 
         getattr(self.pm_node, self.attr).set(self.cb.isChecked())
 
@@ -72,7 +69,7 @@ class CheckBoxAttrWidget(QtWidgets.QWidget):
             cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def refresh_attr(self):
-        log.info("PropertiesWidget, CheckBoxAttrWidget, refresh_attr")
+        # log.info("PropertiesWidget, CheckBoxAttrWidget, refresh_attr")
 
         value = getattr(self.pm_node, self.attr).get()
 
@@ -120,7 +117,7 @@ class LineEditAttrWidget(QtWidgets.QWidget):
         self.le.returnPressed.connect(self.set_attr)
 
     def set_attr(self):
-        log.info("PropertiesWidget, LineEditAttrWidget, set_attr")
+        # log.info("PropertiesWidget, LineEditAttrWidget, set_attr")
 
         try:
             getattr(self.pm_node, self.attr).set(self.le.text())
@@ -137,7 +134,7 @@ class LineEditAttrWidget(QtWidgets.QWidget):
             cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def refresh_attr(self):
-        log.info("PropertiesWidget, LineEditAttrWidget, refresh_attr")
+        # log.info("PropertiesWidget, LineEditAttrWidget, refresh_attr")
 
         value = getattr(self.pm_node, self.attr).get()
         self.le.setText(str(value))
@@ -182,7 +179,7 @@ class ComboBoxAttrWidget(QtWidgets.QWidget):
         self.cmbx.currentIndexChanged.connect(self.set_attr)
 
     def set_attr(self):
-        log.info("PropertiesWidget, ComboBoxAttrWidget, set_attr")
+        # log.info("PropertiesWidget, ComboBoxAttrWidget, set_attr")
 
         getattr(self.pm_node, self.attr).set(self.cmbx.currentIndex())
 
@@ -192,7 +189,7 @@ class ComboBoxAttrWidget(QtWidgets.QWidget):
             cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def refresh_attr(self):
-        log.info("PropertiesWidget, ComboBoxAttrWidget, refresh_attr")
+        # log.info("PropertiesWidget, ComboBoxAttrWidget, refresh_attr")
 
         value = getattr(self.pm_node, self.attr).get()
         self.cmbx.setCurrentIndex(value)
@@ -246,19 +243,19 @@ class SliderAttrWidget(QtWidgets.QWidget):
         self.slider.sliderMoved.connect(self.slider_sliderMoved_callback)
 
     def refresh_attr(self):
-        log.info("PropertiesWidget, SliderAttrWidget, refresh_attr")
+        # log.info("PropertiesWidget, SliderAttrWidget, refresh_attr")
 
         self.le.setText(str(self.value))
         self.slider.setValue(self.value)
 
     def get_value(self):
-        log.info("PropertiesWidget, SliderAttrWidget, get_value")
+        # log.info("PropertiesWidget, SliderAttrWidget, get_value")
 
         self.value = getattr(self.pm_node, self.attr).get()
         return self.value
 
     def set_attr(self):
-        log.info("PropertiesWidget, SliderAttrWidget, set_attr")
+        # log.info("PropertiesWidget, SliderAttrWidget, set_attr")
 
         getattr(self.pm_node, self.attr).set(self.value)
 
@@ -268,7 +265,7 @@ class SliderAttrWidget(QtWidgets.QWidget):
             cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def le_returnPressed_callback(self):
-        log.info("PropertiesWidget, SliderAttrWidget, le_returnPressed_callback")
+        # log.info("PropertiesWidget, SliderAttrWidget, le_returnPressed_callback")
 
         try:
             self.value = int(self.le.text())
@@ -278,7 +275,7 @@ class SliderAttrWidget(QtWidgets.QWidget):
             self.refresh_attr()
 
     def slider_sliderMoved_callback(self, value):
-        log.info("PropertiesWidget, SliderAttrWidget, slider_sliderMoved_callback")
+        # log.info("PropertiesWidget, SliderAttrWidget, slider_sliderMoved_callback")
 
         try:
             self.value = value
@@ -336,7 +333,7 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
         self.slider.doubleValueChanged.connect(self.slider_sliderMoved_callback)
 
     def refresh_attr(self):
-        log.info("PropertiesWidget, DoubleSliderAttrWidget, refresh_attr")
+        # log.info("PropertiesWidget, DoubleSliderAttrWidget, refresh_attr")
         self.le.blockSignals(True)
         self.slider.blockSignals(True)
 
@@ -347,13 +344,13 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
         self.slider.blockSignals(False)
 
     def get_value(self):
-        log.info("PropertiesWidget, DoubleSliderAttrWidget, get_value")
+        # log.info("PropertiesWidget, DoubleSliderAttrWidget, get_value")
 
         self.value = getattr(self.pm_node, self.attr).get()
         return self.value
 
     def set_attr(self):
-        log.info("PropertiesWidget, DoubleSliderAttrWidget, set_attr")
+        # log.info("PropertiesWidget, DoubleSliderAttrWidget, set_attr")
 
         getattr(self.pm_node, self.attr).set(self.value)
 
@@ -363,7 +360,7 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
             cmds.editRenderLayerAdjustment("{0}.{1}".format(str(self.pm_node), self.attr))
 
     def le_returnPressed_callback(self):
-        log.info("PropertiesWidget, DoubleSliderAttrWidget, le_returnPressed_callback")
+        # log.info("PropertiesWidget, DoubleSliderAttrWidget, le_returnPressed_callback")
         self.le.blockSignals(True)
         self.slider.blockSignals(True)
 
@@ -378,7 +375,7 @@ class DoubleSliderAttrWidget(QtWidgets.QWidget):
         self.slider.blockSignals(False)
 
     def slider_sliderMoved_callback(self, value):
-        log.info("PropertiesWidget, DoubleSliderAttrWidget, slider_sliderMoved_callback")
+        # log.info("PropertiesWidget, DoubleSliderAttrWidget, slider_sliderMoved_callback")
         self.le.blockSignals(True)
         self.slider.blockSignals(True)
 
@@ -426,7 +423,7 @@ class PropertiesWidget(QtWidgets.QWidget):
         pass
 
     def set_properties(self, properties_widget):
-        log.info("PropertiesWidget, PropertiesWidget, set_properties")
+        # log.info("PropertiesWidget, PropertiesWidget, set_properties")
 
         for i in range(self.properties_cw.count()):
             widget = self.properties_cw.itemAt(i).widget()

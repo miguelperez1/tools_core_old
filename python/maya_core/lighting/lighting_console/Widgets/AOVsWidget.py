@@ -10,16 +10,10 @@ import re
 
 from pyqt_commons import MWidgets
 
-from maya_core.lighting_console.constants import *
-from maya_core.lighting_console import constants
-from maya_core.lighting_console import re_constants
-from maya_core.lighting_console.Widgets import PropertiesWidget
-from maya_core.common_tools import logger
-
-reload(MWidgets)
-reload(re_constants)
-
-log = logger.Logger()
+from maya_core.lighting.lighting_console.constants import *
+from maya_core.lighting.lighting_console import constants
+from maya_core.lighting.lighting_console import re_constants
+from maya_core.lighting.lighting_console.Widgets import PropertiesWidget
 
 
 class LSMemberWidgetItem(QtWidgets.QTreeWidgetItem):
@@ -87,7 +81,7 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         self.remove_ls_member_action.triggered.connect(self.remove_ls_member)
 
     def refresh_ls_members(self):
-        log.info("AOVsWidget, LightSelectMembersWidget, refresh_ls_members")
+        # log.info("AOVsWidget, LightSelectMembersWidget, refresh_ls_members")
         self.ls_members_tw.clear()
 
         ls_members = pm.sets(self.pm_node, q=True)
@@ -98,7 +92,7 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
             self.ls_members_tw.addTopLevelItem(new_ls_member_item)
 
     def refresh_attr(self):
-        log.info("AOVsWidget, LightSelectMembersWidget, refresh_attr")
+        # log.info("AOVsWidget, LightSelectMembersWidget, refresh_attr")
         self.refresh_ls_members()
 
     def show_ls_members_tw_context_menu(self, eventPosition):
@@ -119,7 +113,7 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
 
     def add_ls_member(self):
-        log.info("AOVsWidget, LightSelectMembersWidget, add_ls_member")
+        # log.info("AOVsWidget, LightSelectMembersWidget, add_ls_member")
 
         for node in pm.ls(sl=1):
             if node.nodeType() != "transform":
@@ -135,7 +129,7 @@ class LightSelectMembersWidget(QtWidgets.QWidget):
                 self.ls_members_tw.addTopLevelItem(new_ls_member_item)
 
     def remove_ls_member(self):
-        log.info("AOVsWidget, LightSelectMembersWidget, remove_ls_member")
+        # log.info("AOVsWidget, LightSelectMembersWidget, remove_ls_member")
 
         current_pm_node = self.current_ls_member_tw_item.pm_node
 
@@ -227,7 +221,7 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         self.header_le.returnPressed.connect(self.rename)
 
     def rename(self):
-        log.info("AOVsWidget, AOVsWidgetProperties, rename")
+        # log.info("AOVsWidget, AOVsWidgetProperties, rename")
 
         try:
             pm.rename(self.pm_node, self.header_le.text())
@@ -238,7 +232,7 @@ class AOVsWidgetProperties(QtWidgets.QWidget):
         self.renamed.emit(str(self.pm_node))
 
     def refresh_attr(self):
-        log.info("AOVsWidget, AOVsWidgetProperties, refresh_attr")
+        # log.info("AOVsWidget, AOVsWidgetProperties, refresh_attr")
 
         for widget in self.widgets:
             if hasattr(widget, 'refresh_attr'):
@@ -356,7 +350,7 @@ class AOVsWidget(QtWidgets.QWidget):
         self.duplicate_aov_action.triggered.connect(self.duplicate_aov)
 
     def rename_aov(self, item, column):
-        log.info("AOVsWidget, AOVsWidget, rename_aov")
+        # log.info("AOVsWidget, AOVsWidget, rename_aov")
 
         try:
             pm.rename(item.pm_node, item.text(0))
@@ -365,7 +359,7 @@ class AOVsWidget(QtWidgets.QWidget):
             pass
 
     def remove_aov(self):
-        log.info("AOVsWidget, AOVsWidget, remove_aov")
+        # log.info("AOVsWidget, AOVsWidget, remove_aov")
 
         try:
             pm.delete(self.current_aov_tw_item.pm_node)
@@ -374,7 +368,7 @@ class AOVsWidget(QtWidgets.QWidget):
             pass
 
     def duplicate_aov(self):
-        log.info("AOVsWidget, AOVsWidget, duplicate_aov")
+        # log.info("AOVsWidget, AOVsWidget, duplicate_aov")
 
         try:
             pm.duplicate(self.current_aov_tw_item.pm_node, un=True)
@@ -383,7 +377,7 @@ class AOVsWidget(QtWidgets.QWidget):
             pass
 
     def update_current_aov(self):
-        log.info("AOVsWidget, AOVsWidget, update_current_aov")
+        # log.info("AOVsWidget, AOVsWidget, update_current_aov")
 
         if not self.aovs_tw.selectedItems():
             self.push_properties.emit(None)
@@ -399,7 +393,7 @@ class AOVsWidget(QtWidgets.QWidget):
                 pm.select(item.text(0))
 
     def show_properties(self, item):
-        log.info("AOVsWidget, AOVsWidget, show_properties")
+        # log.info("AOVsWidget, AOVsWidget, show_properties")
 
         if item is not None:
             self.push_properties.emit(item.properties_widget)
@@ -407,7 +401,7 @@ class AOVsWidget(QtWidgets.QWidget):
             self.push_properties.emit(None)
 
     def refresh_res(self):
-        log.info("AOVsWidget, AOVsWidget, refresh_res")
+        # log.info("AOVsWidget, AOVsWidget, refresh_res")
 
         self.aovs_tw.blockSignals(True)
 
@@ -426,7 +420,7 @@ class AOVsWidget(QtWidgets.QWidget):
         self.push_properties.emit(None)
 
     def create_aov(self, item, column):
-        log.info("AOVsWidget, AOVsWidget, create_aov")
+        # log.info("AOVsWidget, AOVsWidget, create_aov")
 
         command = re_constants.VRayAOVS[item.text(0)]
         pm_node = pm.PyNode(mel.eval("vrayAddRenderElement {}".format(command)))

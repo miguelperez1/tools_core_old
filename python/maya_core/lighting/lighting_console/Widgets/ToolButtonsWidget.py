@@ -7,11 +7,9 @@ import pymel.core as pm
 import vray
 
 from pyqt_commons import MWidgets
-from maya_core.material_builder import material_builder_ui
+from maya_core.lookdev.material_builder_ui import material_builder_ui
 
-reload(MWidgets)
-
-from maya_core.lighting_console.constants import *
+from maya_core.lighting.lighting_console.constants import *
 
 
 class ToolButtonsWidget(QtWidgets.QWidget):

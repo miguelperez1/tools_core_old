@@ -10,11 +10,11 @@ from pyqt_commons import MWidgets
 
 reload(MWidgets)
 
-from maya_core.lighting_console.constants import *
+from maya_core.lighting.lighting_console.constants import *
 
-from maya_core.common_tools import logger
+# from maya_core.common_tools import logger
 
-log = logger.Logger()
+# log = logger.Logger()
 
 
 class RenderLayersWidget(QtWidgets.QWidget):
@@ -133,7 +133,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
 
     def delete_layer(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, delete_layer")
+        # log.info("RenderLayersWidget, RenderLayersWidget, delete_layer")
 
         current_layer = self.current_rl_item.text(0)
 
@@ -152,7 +152,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.update_render_layers()
 
     def duplicate_layer(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, duplicate_layer")
+        # log.info("RenderLayersWidget, RenderLayersWidget, duplicate_layer")
 
         if self.current_rl is None:
             return
@@ -169,7 +169,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.update_render_layers()
 
     def add_to_layer(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, add_to_layer")
+        # log.info("RenderLayersWidget, RenderLayersWidget, add_to_layer")
 
         for obj in cmds.ls(sl=1):
             try:
@@ -179,7 +179,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
                 continue
 
     def remove_from_layer(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, remove_from_layer")
+        # log.info("RenderLayersWidget, RenderLayersWidget, remove_from_layer")
 
         for obj in cmds.ls(sl=1):
             try:
@@ -189,19 +189,19 @@ class RenderLayersWidget(QtWidgets.QWidget):
                 continue
 
     def refresh_layers(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, refresh_layers")
+        # log.info("RenderLayersWidget, RenderLayersWidget, refresh_layers")
 
         self.update_render_layers()
 
     def add_layer(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, add_layer")
+        # log.info("RenderLayersWidget, RenderLayersWidget, add_layer")
 
         rl = cmds.createRenderLayer(empty=True)
         self.log_event.emit("result", "Created " + rl)
         self.update_render_layers()
 
     def update_current_rl(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, update_current_rl")
+        # log.info("RenderLayersWidget, RenderLayersWidget, update_current_rl")
 
         self.render_layers_tw.blockSignals(True)
         if not self.render_layers_tw.selectedItems():
@@ -214,9 +214,9 @@ class RenderLayersWidget(QtWidgets.QWidget):
 
         if self.current_rl == "masterLayer":
             cmds.editRenderLayerGlobals(crl="defaultRenderLayer")
-            log.info("Switching layers")
+            # log.info("Switching layers")
         else:
-            log.info("Switching layers")
+            # log.info("Switching layers")
             cmds.editRenderLayerGlobals(crl=self.current_rl)
 
         self.render_layers_tw.blockSignals(False)
@@ -224,7 +224,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.properties_refresh_attr.emit()
 
     def render_layers_tw_rename_callback(self, item, column):
-        log.info("RenderLayersWidget, RenderLayersWidget, render_layers_tw_rename_callback")
+        # log.info("RenderLayersWidget, RenderLayersWidget, render_layers_tw_rename_callback")
 
         prev_rl_name = self.current_rl
         new_rl_name = item.text(0)
@@ -236,7 +236,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
         self.log_event.emit("result", "Renamed {0} to {1}".format(prev_rl_name, new_rl_name))
 
     def update_render_layers(self):
-        log.info("RenderLayersWidget, RenderLayersWidget, update_render_layers")
+        # log.info("RenderLayersWidget, RenderLayersWidget, update_render_layers")
 
         self.render_layers_tw.blockSignals(True)
 

@@ -8,8 +8,6 @@ from pyqt_commons import MWidgets
 from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_browser import AssetBrowserWidget
 
-reload(AssetBrowserWidget)
-
 LIBRARIES = constants.libraries
 
 

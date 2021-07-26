@@ -10,7 +10,6 @@ import shutil
 from maya_core.asset_manager.asset_builder import asset_builder
 from maya_core.asset_manager.library_utils import constants
 
-reload(asset_builder)
 
 libraries = constants.libraries
 

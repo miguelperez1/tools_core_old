@@ -10,16 +10,12 @@ from pyqt_commons import MWidgets
 
 reload(MWidgets)
 
-from maya_core.lighting_console import constants
-from maya_core.lighting_console import modifiers_constants
-from maya_core.lighting_console.Widgets import PropertiesWidget
+from maya_core.lighting.lighting_console import constants
+from maya_core.lighting.lighting_console import modifiers_constants
+from maya_core.lighting.lighting_console.Widgets import PropertiesWidget
 
 reload(constants)
 reload(modifiers_constants)
-
-from maya_core.common_tools import logger
-
-log = logger.Logger()
 
 
 class ModifiersWidgetProperties(QtWidgets.QWidget):
@@ -105,7 +101,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         self.header_le.returnPressed.connect(self.rename)
 
     def rename(self):
-        log.info("ModifiersWidget, ModifiersWidgetProperties, rename")
+        # log.info("ModifiersWidget, ModifiersWidgetProperties, rename")
 
         try:
             pm.rename(self.pm_node, self.header_le.text())
@@ -116,7 +112,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
         self.renamed.emit(str(self.pm_node))
 
     def refresh_attr(self):
-        log.info("ModifiersWidget, ModifiersWidgetProperties, refresh_attr")
+        # log.info("ModifiersWidget, ModifiersWidgetProperties, refresh_attr")
 
         for widget in self.widgets:
             if hasattr(widget, 'refresh_attr'):
@@ -264,7 +260,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         pass
 
     def duplicate_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, duplicate_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, duplicate_modifier")
 
         try:
             pm.duplicate(self.current_modifier_item.pm_node, un=False)
@@ -273,7 +269,7 @@ class ModifiersWidget(QtWidgets.QWidget):
             pass
 
     def delete_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, delete_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, delete_modifier")
 
         try:
             pm.delete(self.current_modifier_item.pm_node)
@@ -337,7 +333,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))
 
     def selected_in_modifier(self, objs=None):
-        log.info("ModifiersWidget, ModifiersWidget, selected_in_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, selected_in_modifier")
 
         if objs is None:
             objs = pm.ls(sl=1)
@@ -351,7 +347,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         return selected_in_modifier
 
     def update_current_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, update_current_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, update_current_modifier")
 
         if not self.modifiers_tw.selectedItems():
             self.push_properties.emit(None)
@@ -368,7 +364,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.show_properties(self.current_modifier_item)
 
     def update_modifier_members(self):
-        log.info("ModifiersWidget, ModifiersWidget, update_modifier_members")
+        # log.info("ModifiersWidget, ModifiersWidget, update_modifier_members")
 
         self.modifier_objects_tw.clear()
 
@@ -383,7 +379,7 @@ class ModifiersWidget(QtWidgets.QWidget):
             self.modifier_objects_tw.addTopLevelItem(item)
 
     def modifiers_tw_rename_callback(self, item, column):
-        log.info("ModifiersWidget, ModifiersWidget, modifiers_tw_rename_callback")
+        # log.info("ModifiersWidget, ModifiersWidget, modifiers_tw_rename_callback")
 
         try:
             item.pm_node.rename(item.text(0))
@@ -394,7 +390,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.refresh_modifiers()
 
     def refresh_modifiers(self):
-        log.info("ModifiersWidget, ModifiersWidget, refresh_modifiers")
+        # log.info("ModifiersWidget, ModifiersWidget, refresh_modifiers")
 
         self.modifiers_tw.clear()
         self.modifiers_tw.blockSignals(True)
@@ -409,19 +405,19 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.modifiers_tw.blockSignals(False)
 
     def create_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, create_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, create_modifier")
 
         modifier_node = pm.PyNode(pm.createNode("VRayObjectProperties"))
 
         self.refresh_modifiers()
 
     def set_preset(self, preset):
-        log.info("ModifiersWidget, ModifiersWidget, set_preset")
+        # log.info("ModifiersWidget, ModifiersWidget, set_preset")
 
         pass
 
     def add_to_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, add_to_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, add_to_modifier")
 
         current_modifier_node = self.current_modifier_item.pm_node
 
@@ -431,7 +427,7 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.update_modifier_members()
 
     def remove_from_modifier(self):
-        log.info("ModifiersWidget, ModifiersWidget, remove_from_modifier")
+        # log.info("ModifiersWidget, ModifiersWidget, remove_from_modifier")
 
         current_modifier = str(self.current_modifier_item.pm_node)
 
@@ -444,6 +440,6 @@ class ModifiersWidget(QtWidgets.QWidget):
         self.update_modifier_members()
 
     def show_properties(self, item):
-        log.info("ModifiersWidget, ModifiersWidget, show_properties")
+        # log.info("ModifiersWidget, ModifiersWidget, show_properties")
 
         self.push_properties.emit(item.properties_widget)

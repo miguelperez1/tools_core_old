@@ -5,6 +5,7 @@ from PySide2 import QtGui
 import maya.cmds as cmds
 
 from pyqt_commons import DockableWidget
+
 reload(DockableWidget)
 
 

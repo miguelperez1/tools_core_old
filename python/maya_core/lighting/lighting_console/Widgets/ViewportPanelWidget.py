@@ -13,7 +13,7 @@ from pyqt_commons import MWidgets
 
 reload(MWidgets)
 
-from maya_core.lighting_console.constants import *
+from maya_core.lighting.lighting_console.constants import *
 
 
 def get_display_flags(model):

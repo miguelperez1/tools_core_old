@@ -6,8 +6,6 @@ import imagesize
 from maya_core.lookdev.material_utils import material_utils
 from maya_core.common_tools.normalize_scale import normalize_scale
 
-reload(material_utils)
-
 
 def create_vray_light(light_type, name=None, texture=None):
     trans = cmds.createNode('transform')

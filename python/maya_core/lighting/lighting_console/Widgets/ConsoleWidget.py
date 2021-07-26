@@ -10,13 +10,7 @@ import math
 
 from pyqt_commons import MWidgets
 
-from maya_core.common_tools import logger
-
-log = logger.Logger()
-
-reload(MWidgets)
-
-from maya_core.lighting_console import constants
+from maya_core.lighting.lighting_console import constants
 
 
 def convert_K_to_RGB(colour_temperature):
@@ -451,7 +445,7 @@ class LightConsoleTreeWidget(QtWidgets.QTreeWidget):
             self.editItem(item, column)
 
     def update_attribute(self, item, column):
-        log.info("updating_attribute")
+        # log.info("updating_attribute")
 
         value = item.text(column)
 

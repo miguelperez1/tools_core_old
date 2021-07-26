@@ -9,17 +9,10 @@ import pymel.core as pm
 import vray
 
 from pyqt_commons import MWidgets
-from maya_core.asset_manager.asset_browser import AssetBrowser
+from maya_core.asset_browser import AssetBrowserWidget
 
-from maya_core.lighting_console import Widgets
-from maya_core.lighting_console import constants
-
-from maya_core.common_tools import logger
-
-reload(Widgets)
-reload(MWidgets)
-reload(AssetBrowser)
-reload(constants)
+from maya_core.lighting.lighting_console import Widgets
+from maya_core.lighting.lighting_console import constants
 
 
 def maya_main_window():
@@ -28,9 +21,6 @@ def maya_main_window():
     """
     main_window_ptr = omui.MQtUtil.mainWindow()
     return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
-
-
-log = logger.Logger()
 
 
 class LightingConsole(QtWidgets.QMainWindow):
@@ -44,7 +34,7 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
-        self.log = Widgets.LogWidget.LogWidget()
+        # self.log = Widgets.LogWidget.LogWidget()
 
         self.scale = 1
         self.res_x = constants.RES_X * self.scale
@@ -61,12 +51,20 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.create_connections()
         self.create_menu()
 
-        self.log.result("Loaded Lighting Console version-" + self.version)
+        # self.log.result("Loaded Lighting Console version-" + self.version)
 
     def create_actions(self):
         pass
 
     def create_widgets(self):
+        # Sizing
+        row_width = self.res_x * .95
+        row_height = self.res_y * .875
+
+        col1_width = row_width * .185
+        col2_width = row_width * .6
+        col3_width = row_width * .1
+
         # Render settings
         self.render_settings_widget = Widgets.RenderSettingsWidget.RenderSettingsWidget()
 
@@ -86,9 +84,7 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.console_widget = Widgets.ConsoleWidget.ConsoleWidget()
 
         # asset Browser
-        self.asset_browser_widget = AssetBrowser.AssetBrowser(1.589, 6,
-                                                              libraries=['hdri', 'studio_lights', 'gobo_lights',
-                                                                         'clouds'])
+        self.asset_browser_widget = AssetBrowserWidget.AssetBrowserWidget(col2_width * .666, row_height * .375)
 
         # Properties
         self.properties_widget = Widgets.PropertiesWidget.PropertiesWidget()
@@ -98,14 +94,6 @@ class LightingConsole(QtWidgets.QMainWindow):
 
         # Sets
         self.sets_widget = Widgets.SetsWidget.SetsWidget()
-
-        # Sizing
-        row_width = self.res_x * .95
-        row_height = self.res_y * .875
-
-        col1_width = row_width * .185
-        col2_width = row_width * .6
-        col3_width = row_width * .1
 
         self.tool_buttons_widget.setFixedHeight(self.res_y * .05)
 
@@ -178,16 +166,16 @@ class LightingConsole(QtWidgets.QMainWindow):
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addSpacing(5)
 
-        main_layout.addWidget(self.log.log_le)
+        # main_layout.addWidget(self.log.log_le)
 
     def create_connections(self):
-        self.tool_buttons_widget.log_event.connect(self.push_log)
-        self.render_layers_widget.log_event.connect(self.push_log)
-        self.modifiers_widget.log_event.connect(self.push_log)
-        self.console_widget.log_event.connect(self.push_log)
-        self.aovs_widget.log_event.connect(self.push_log)
-        self.properties_widget.log_event.connect(self.push_log)
-        self.sets_widget.log_event.connect(self.push_log)
+        # self.tool_buttons_widget.log_event.connect(self.push_log)
+        # self.render_layers_widget.log_event.connect(self.push_log)
+        # self.modifiers_widget.log_event.connect(self.push_log)
+        # self.console_widget.log_event.connect(self.push_log)
+        # self.aovs_widget.log_event.connect(self.push_log)
+        # self.properties_widget.log_event.connect(self.push_log)
+        # self.sets_widget.log_event.connect(self.push_log)
 
         # self.tool_buttons_widget.update_properties.connect(self.push_log)
         self.render_layers_widget.push_properties.connect(self.update_properties_panel)
@@ -209,19 +197,19 @@ class LightingConsole(QtWidgets.QMainWindow):
         self.properties_widget.set_properties(properties_widget)
 
     def properties_refresh_attrs(self):
-        log.info("properties_refresh_attrs")
+        # log.info("properties_refresh_attrs")
         if hasattr(self.properties_widget, "properties_widget"):
             self.properties_widget.properties_widget.refresh_attr()
 
-    def push_log(self, log_type, log_message):
-        if log_type == "info":
-            self.log.info(log_message)
-        if log_type == "result":
-            self.log.result(log_message)
-        if log_type == "warning":
-            self.log.warning(log_message)
-        if log_type == "error":
-            self.log.error(log_message)
+    # def push_log(self, log_type, log_message):
+    #     if log_type == "info":
+    #         self.log.info(log_message)
+    #     if log_type == "result":
+    #         self.log.result(log_message)
+    #     if log_type == "warning":
+    #         self.log.warning(log_message)
+    #     if log_type == "error":
+    #         self.log.error(log_message)
 
     def create_menu(self):
         self.menu_bar = QtWidgets.QMenuBar(self)

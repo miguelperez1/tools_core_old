@@ -24,6 +24,8 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
     WINDOW_TITLE = "Project Tools"
 
     def __init__(self):
+        self.maya_project = maya_project.get_current_project()
+
         super(ProjectToolsUI, self).__init__()
 
         self.setContentsMargins(20, 20, 20, 20)
@@ -32,11 +34,16 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         pass
 
     def create_widgets(self):
+        file_browse_icon = QtGui.QIcon(':fileOpen.png')
+
         self.project_hdrlbl = MWidgets.HeaderLabel("Project Tools", 1.5)
 
         self.projects_lbl = MWidgets.HeaderLabel("Project: ")
         self.projects_cmbx = QtWidgets.QComboBox()
         self.projects_cmbx.setMinimumWidth(150)
+
+        self.projects_open_btn = QtWidgets.QPushButton()
+        self.projects_open_btn.setIcon(file_browse_icon)
 
         self.create_project_lble = MWidgets.LabeledLineEdit("Project Name: ")
 
@@ -51,7 +58,6 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.shot_create_btn = QtWidgets.QPushButton("Create")
 
         self.open_shot_btn = QtWidgets.QPushButton()
-        file_browse_icon = QtGui.QIcon(':fileOpen.png')
         self.open_shot_btn.setIcon(file_browse_icon)
 
         self.refresh_projects()
@@ -73,6 +79,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         set_layout = QtWidgets.QHBoxLayout()
         set_layout.addWidget(self.projects_lbl)
         set_layout.addWidget(self.projects_cmbx)
+        set_layout.addWidget(self.projects_open_btn)
         set_layout.addStretch()
 
         inner_layout.addLayout(set_layout)
@@ -101,6 +108,10 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
     def create_connections(self):
         self.projects_cmbx.currentTextChanged.connect(self.set_project)
         self.create_project_btn.clicked.connect(self.create_btn_callback)
+        self.projects_open_btn.clicked.connect(self.open_project_root)
+
+    def open_project_root(self):
+        os.startfile(self.maya_project.project_root)
 
     def create_btn_callback(self):
         self.projects_cmbx.blockSignals(True)

@@ -10,11 +10,8 @@ from pyqt_commons import MWidgets
 
 reload(MWidgets)
 
-from maya_core.lighting_console.constants import *
+from maya_core.lighting.lighting_console.constants import *
 
-
-# TODO Sets created script job
-# TODO Select Set
 
 class SetsWidgetItem(QtWidgets.QTreeWidgetItem):
     log_event = QtCore.Signal(str, str)
