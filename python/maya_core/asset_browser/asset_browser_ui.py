@@ -9,7 +9,7 @@ from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_browser import AssetBrowserWidget
 
 LIBRARIES = constants.libraries
-
+reload(AssetBrowserWidget)
 
 class AssetBrowser(QtWidgets.QMainWindow):
     def __init__(self, parent=MWidgets.maya_main_window()):

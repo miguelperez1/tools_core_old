@@ -4,6 +4,7 @@ import subprocess
 from shutil import copyfile
 
 from maya_core.asset_manager.library_utils import constants
+from maya_core.asset_manager.library_utils import library_utils
 
 LIBRARIES = constants.libraries
 
@@ -30,16 +31,22 @@ LIBRARIES = constants.libraries
 # }
 
 class AssetBuilder(object):
-    def __init__(self, asset_data):
+    def __init__(self, asset_data, build_maya_file=False):
         super(AssetBuilder, self).__init__()
         self.asset_data = asset_data
         self.name = asset_data['name']
         self.asset_type = asset_data['asset_type']
-        self.preview_src = asset_data['preview']
+
+        if 'preview' in self.asset_data.keys():
+            self.preview_src = asset_data['preview']
+
+        self.build_maya_file = build_maya_file
 
         self.asset_root = os.path.join(LIBRARIES[self.asset_type], self.name)
         self.json_path = os.path.join(self.asset_root, "data.json")
-        self.maya_file = os.path.join(self.asset_root, "maya", "{}.ma".format(self.name))
+        self.maya_dir = os.path.join(self.asset_root, "maya")
+        self.maya_file = os.path.join(self.maya_dir, "{}.ma".format(self.name))
+        self.material_dir = os.path.join(self.asset_root, "material")
 
         self.publish_data = {
             'asset_name': self.name,
@@ -52,35 +59,41 @@ class AssetBuilder(object):
         if 'scale' in self.asset_data.keys():
             self.publish_data['scale'] = self.asset_data['scale']
 
-        print "Building " + self.name
+    def create_asset(self, save_type=None):
+        import maya.cmds as cmds
 
-        self.create_asset()
+        self._create_directories()
+        self._copy_preview()
+        self._publish_material()
+        self._copy_mesh()
+        self._create_asset_json()
 
-    def create_asset(self):
-        self.create_directories()
-        self.copy_preview()
-        self.publish_material()
-        self.copy_mesh()
-        self.create_asset_json()
-        self.build_maya()
+        if self.build_maya_file:
+            self._build_maya()
 
+        if save_type == "file":
+            cmds.file(rename=self.maya_file)
+            cmds.file(save=True, force=True, type="mayaAscii")
+        elif save_type == "selection":
+            cmds.file(self.maya_file, es=True, save=True, type="mayaAscii")
 
-    def create_directories(self):
+        library_utils.build_library_jsons()
+
+    def _create_directories(self):
         os.mkdir(self.asset_root)
         os.mkdir(os.path.join(self.asset_root, "build_log"))
 
         self.maya_dir = os.path.join(self.asset_root, "maya")
         os.mkdir(self.maya_dir)
 
-        material_dir = os.path.join(self.asset_root, "material")
-        os.mkdir(material_dir)
+        os.mkdir(self.material_dir)
 
         if 'material_data' in self.asset_data.keys() and self.asset_data['material_data']:
-            self.material_dir = os.path.join(self.asset_root, "material", self.asset_data['material_data']['name'])
-            os.mkdir(self.material_dir)
+            mat_dir = os.path.join(self.asset_root, "material", self.asset_data['material_data']['name'])
+            os.mkdir(mat_dir)
 
-            self.textures_dir = os.path.join(self.material_dir, "textures")
-            os.mkdir(self.textures_dir)
+            textures_dir = os.path.join(mat_dir, "textures")
+            os.mkdir(textures_dir)
 
         if 'has_proxy' in self.asset_data.keys() and self.asset_data['has_proxy']:
             self.publish_data['has_proxy'] = self.asset_data['has_proxy']
@@ -89,11 +102,11 @@ class AssetBuilder(object):
         if 'mesh' in self.asset_data.keys() and self.asset_data['mesh']:
             os.mkdir(os.path.join(self.asset_root, 'mesh'))
 
-    def create_asset_json(self):
+    def _create_asset_json(self):
         with open(self.json_path, "w") as f:
             json.dump(self.publish_data, f, indent=4)
 
-    def publish_material(self):
+    def _publish_material(self):
         if 'material_data' in self.asset_data.keys() and self.asset_data['material_data']:
             material_data = self.asset_data['material_data']
 
@@ -119,7 +132,7 @@ class AssetBuilder(object):
 
             self.publish_data['material_data'] = publish_material_data
 
-    def copy_preview(self):
+    def _copy_preview(self):
         if 'preview' in self.asset_data.keys() and self.asset_data['preview']:
             src_preview = self.asset_data['preview']
             preview_name = "{0}_preview.png".format(self.name)
@@ -129,7 +142,7 @@ class AssetBuilder(object):
 
             copyfile(src_preview, dst_preview)
 
-    def copy_mesh(self):
+    def _copy_mesh(self):
         if 'mesh' in self.asset_data.keys() and self.asset_data['mesh']:
             src_mesh = self.asset_data['mesh']
             dst_mesh = os.path.join(self.asset_root, "mesh", src_mesh.split("\\")[-1])
@@ -137,7 +150,7 @@ class AssetBuilder(object):
 
             self.publish_data['mesh'] = dst_mesh
 
-    def build_maya(self):
+    def _build_maya(self):
         function = r'F:\share\tools\tools_core\python\maya_core\asset_manager\asset_builder\maya_builder.py'
 
         arg = '{}'.format(self.json_path)
@@ -146,6 +159,16 @@ class AssetBuilder(object):
         f = open(log_path, "w")
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
+
+    def publish_textures(self, materials=None):
+        if materials:
+            for material in materials:
+                # search all connections for file nodes
+                pass
+        else:
+            # publish from all materials in scene
+            pass
+        pass
 
 
 def build_asset(asset_data):

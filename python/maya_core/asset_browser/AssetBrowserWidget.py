@@ -356,7 +356,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         logger.info("Importing vrayproxy for %s", self.current_asset)
         logger.debug("Import file %s", self.current_asset_data['import_file'])
 
-        cmds.file(os.path.join(libraries['model'], self.current_asset, "vrayproxy",
+        cmds.file(os.path.join(libraries[self.current_library], self.current_asset, "vrayproxy",
                                "{}_vrayproxy.ma".format(self.current_asset)), i=True)
 
     def open_action_callback(self):
