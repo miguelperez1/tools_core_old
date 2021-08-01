@@ -5,6 +5,7 @@ from shutil import copyfile
 
 from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_manager.library_utils import library_utils
+from maya_core.common_tools.maya_utilities import maya_utilities
 
 LIBRARIES = constants.libraries
 
@@ -75,7 +76,7 @@ class AssetBuilder(object):
             cmds.file(rename=self.maya_file)
             cmds.file(save=True, force=True, type="mayaAscii")
         elif save_type == "selection":
-            cmds.file(self.maya_file, es=True, save=True, type="mayaAscii")
+            cmds.file(self.maya_file, es=True, type="mayaAscii", force=True)
 
         library_utils.build_library_jsons()
 
@@ -160,15 +161,45 @@ class AssetBuilder(object):
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
 
-    def publish_textures(self, materials=None):
-        if materials:
+    def publish_textures(self, texture_data=None):
+        if not texture_data:
+            materials = maya_utilities.get_all_materials()
             for material in materials:
-                # search all connections for file nodes
-                pass
-        else:
-            # publish from all materials in scene
-            pass
-        pass
+                texs_tmp = maya_utilities.filter_connected_nodes(material, "file")
+                if texs_tmp:
+                    texture_data[material] = texs_tmp
+
+        if not texture_data.keys():
+            return
+
+        for material, textures in texture_data.items():
+            for texture in textures:
+                src = texture.fileTextureName.get().replace("\\", "/")
+                dst_root = os.path.join(self.material_dir, str(material))
+
+                if not os.path.isdir(dst_root):
+                    os.mkdir(dst_root)
+
+                dst = os.path.join(dst_root, src.split("/")[-1])
+
+                copyfile(src, dst)
+
+                texture.fileTextureName.set(dst)
+
+    def repath_textures(self):
+        materials = maya_utilities.get_materials_from_selection()
+
+        for material in materials:
+            texs = maya_utilities.filter_connected_nodes(material, "file")
+
+            for tex in texs:
+                file_name = tex.fileTextureName.get().replace("\\", "/").split("/")[-1]
+
+                dst = os.path.join(self.material_dir, str(material), file_name)
+
+                if os.path.isfile(dst):
+                    print("repathed: {}".format(dst))
+                    tex.fileTextureName.set(dst)
 
 
 def build_asset(asset_data):

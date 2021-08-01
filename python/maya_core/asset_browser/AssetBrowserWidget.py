@@ -274,6 +274,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.assets_tw.itemSelectionChanged.connect(self.update_current_asset)
 
         self.open_root_action.triggered.connect(self.open_root_action_callback)
+        self.open_action.triggered.connect(self.open_action_callback)
         self.import_action.triggered.connect(self.import_action_callback)
         self.import_vrayproxy_action.triggered.connect(self.import_vrayproxy_action_callback)
         self.build_material_action.triggered.connect(self.build_material_action_callback)

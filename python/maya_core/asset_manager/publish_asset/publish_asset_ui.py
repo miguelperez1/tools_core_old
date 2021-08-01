@@ -9,8 +9,10 @@ from pyqt_commons import MWidgets
 from maya_core.asset_manager.library_utils import library_utils
 from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_manager.asset_builder import asset_builder
+from maya_core.common_tools.maya_utilities import maya_utilities
 
 reload(asset_builder)
+reload(maya_utilities)
 
 library_data = {}
 
@@ -22,7 +24,7 @@ class FilePublisherUI(QtWidgets.QMainWindow):
     def __init__(self, parent=MWidgets.maya_main_window()):
         super(FilePublisherUI, self).__init__(parent)
 
-        self.setWindowTitle("Window")
+        self.setWindowTitle("Asset File Publisher")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
         self.setMinimumWidth(800)
 
@@ -51,6 +53,8 @@ class FilePublisherUI(QtWidgets.QMainWindow):
         self.preview_lblebtn = MWidgets.FileBrowseWidget("Preview:")
 
         self.publish_textures_cb = QtWidgets.QCheckBox("Publish Textures")
+        self.publish_textures_cb.setChecked(True)
+
         self.create_vrayproxy_cb = QtWidgets.QCheckBox("Create VRay Proxy")
         self.selection_cb = QtWidgets.QCheckBox("Publish Selection")
 
@@ -85,21 +89,10 @@ class FilePublisherUI(QtWidgets.QMainWindow):
 
     def create_connections(self):
         self.publish_asset_btn.clicked.connect(self.publish_file)
-        self.asset_name_lble.le_widget.textChanged.connect(self.validate_asset_name)
+        self.asset_name_lble.le_widget.textChanged.connect(self.valid_asset_name)
+        self.asset_type_cmbx.currentTextChanged.connect(self.valid_asset_name)
 
     def publish_file(self):
-        # Example asset data structure
-        # asset_data = {
-        #     'name': '',
-        #     'asset_type': 'model',
-        #     'preview': None,
-        #     'tags': 'megascans',
-        #     'mesh': None,
-        #     'material_data': None,
-        #     'scale': 1,
-        #     'has_proxy': 1
-        # }
-
         asset_data = {
             'name': self.asset_name_lble.text().replace(" ", "_"),
             'asset_type': self.asset_type_cmbx.currentText().lower(),
@@ -119,11 +112,18 @@ class FilePublisherUI(QtWidgets.QMainWindow):
             builder.create_asset(save_type=save_type)
 
         if self.publish_textures_cb.isChecked():
+            texture_data = {}
+
             if self.selection_cb.isChecked():
-                # get materials from selection
-                pass
-            # publish textures
-            # builder.publish_textures()
+                materials = maya_utilities.get_materials_from_selection()
+                for material in materials:
+                    texs_tmp = maya_utilities.filter_connected_nodes(material, "file")
+                    if texs_tmp:
+                        texture_data[material] = texs_tmp
+
+                builder.publish_textures(texture_data)
+            else:
+                builder.publish_textures()
             pass
 
     def valid_asset_name(self):
