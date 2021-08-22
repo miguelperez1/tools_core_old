@@ -112,6 +112,7 @@ class LabeledLineEditButton(QtWidgets.QWidget):
     def setText(self, text):
         self.le_widget.setText(text)
 
+
 class FileBrowseWidget(QtWidgets.QWidget):
     def __init__(self, label, size=(30, 30), justify='left', starting_dir=None):
         super(FileBrowseWidget, self).__init__()
@@ -384,3 +385,72 @@ class VSpacerWidget(QtWidgets.QWidget):
         super(VSpacerWidget, self).__init__()
 
         self.setFixedHeight(height)
+
+
+class LabeledIntSlider(QtWidgets.QWidget):
+    value_changed = QtCore.Signal(int)
+
+    def __init__(self, label, min_range, max_range, value):
+        super(LabeledIntSlider, self).__init__()
+
+        self.label = label
+        self.min_range = min_range
+        self.max_range = max_range
+        self.starting_value = value
+
+        self.create_actions()
+        self.create_widgets()
+        self.create_layout()
+        self.create_connections()
+
+    def create_actions(self):
+        pass
+
+    def create_widgets(self):
+        self.lbl = QtWidgets.QLabel(self.label)
+        self.le = QtWidgets.QLineEdit()
+        self.le.setMaximumWidth(80)
+        self.le.setAlignment(QtCore.Qt.AlignRight)
+        self.le.setText(str(self.starting_value))
+
+        self.slider = QtWidgets.QSlider()
+        self.slider.setRange(self.min_range, self.max_range)
+        self.slider.setValue(self.starting_value)
+
+        self.slider.setOrientation(QtCore.Qt.Horizontal)
+
+    def create_layout(self):
+        main_layout = QtWidgets.QHBoxLayout(self)
+
+        main_layout.addWidget(self.lbl)
+        main_layout.addWidget(self.le)
+        main_layout.addWidget(self.slider)
+
+    def create_connections(self):
+        self.le.editingFinished.connect(self.le_callback)
+        self.slider.valueChanged.connect(self.slider_callback)
+
+    def le_callback(self):
+        self.slider.blockSignals(True)
+
+        prev_value = self.slider.value()
+
+        try:
+            value = int(self.le.text())
+            self.slider.setValue(value)
+            self.value_changed.emit(value)
+        except Exception:
+            self.le.setText(str(prev_value))
+
+        self.slider.blockSignals(False)
+
+    def slider_callback(self):
+        self.le.blockSignals(True)
+
+        self.le.setText(str(self.slider.value()))
+        self.value_changed.emit(self.slider.value())
+
+        self.le.blockSignals(False)
+
+    def value(self):
+        return self.slider.value()

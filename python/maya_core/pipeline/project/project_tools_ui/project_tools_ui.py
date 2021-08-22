@@ -6,6 +6,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import pymel.core as pm
 
 from pyqt_commons import MWidgets
 from pyqt_commons import DockableWidget
@@ -42,8 +43,11 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.projects_cmbx = QtWidgets.QComboBox()
         self.projects_cmbx.setMinimumWidth(150)
 
-        self.projects_open_btn = QtWidgets.QPushButton()
-        self.projects_open_btn.setIcon(file_browse_icon)
+        self.projects_open_dir_btn = QtWidgets.QPushButton()
+        self.projects_open_dir_btn.setIcon(file_browse_icon)
+
+        self.projects_open_maya_file_btn = QtWidgets.QPushButton()
+        self.projects_open_maya_file_btn.setIcon(QtGui.QIcon(r"F:\share\tools\shelf_icons\maya.png"))
 
         self.create_project_lble = MWidgets.LabeledLineEdit("Project Name: ")
 
@@ -79,7 +83,8 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         set_layout = QtWidgets.QHBoxLayout()
         set_layout.addWidget(self.projects_lbl)
         set_layout.addWidget(self.projects_cmbx)
-        set_layout.addWidget(self.projects_open_btn)
+        set_layout.addWidget(self.projects_open_dir_btn)
+        set_layout.addWidget(self.projects_open_maya_file_btn)
         set_layout.addStretch()
 
         inner_layout.addLayout(set_layout)
@@ -108,10 +113,25 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
     def create_connections(self):
         self.projects_cmbx.currentTextChanged.connect(self.set_project)
         self.create_project_btn.clicked.connect(self.create_btn_callback)
-        self.projects_open_btn.clicked.connect(self.open_project_root)
+        self.projects_open_dir_btn.clicked.connect(self.open_project_root)
+        self.projects_open_maya_file_btn.clicked.connect(self.open_maya_file)
 
     def open_project_root(self):
         os.startfile(self.maya_project.project_root)
+
+    def open_maya_file(self):
+        project_root = os.path.join(projects_root, self.projects_cmbx.currentText(), "scenes")
+        multipleFilters = "Maya Files (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;All Files (*.*)"
+
+        if cmds.file(q=True, modified=True):
+            result = QtWidgets.QMessageBox.question(self, 'Modified',
+                                                    'Current scene has unsaved changes. Continue?')
+            if result == QtWidgets.QMessageBox.StandardButton.Yes:
+                f = pm.fileDialog2(fileFilter=multipleFilters, fileMode=1, dir=project_root)[0]
+
+                cmds.file(f, open=True, ignoreVersion=True, force=force)
+            else:
+                return
 
     def create_btn_callback(self):
         self.projects_cmbx.blockSignals(True)

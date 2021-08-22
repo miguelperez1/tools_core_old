@@ -32,6 +32,8 @@ class FilePublisherUI(QtWidgets.QMainWindow):
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
+        self.library_data = library_data
+
         self.create_actions()
         self.create_widgets()
         self.create_layout()
@@ -126,9 +128,18 @@ class FilePublisherUI(QtWidgets.QMainWindow):
                 builder.publish_textures()
             pass
 
+        if self.create_vrayproxy_cb.isChecked():
+            builder.export_proxy()
+
+        self.library_data = {}
+        for library in constants.libraries.keys():
+            self.library_data[library] = library_utils.get_library_data(library)
+
+        self.valid_asset_name()
+
     def valid_asset_name(self):
         self.asset_name_lble.le_widget.setStyleSheet("")
-        if self.asset_name_lble.text().strip() in library_data[self.asset_type_cmbx.currentText().lower()]['assets']:
+        if self.asset_name_lble.text().strip() in self.library_data[self.asset_type_cmbx.currentText().lower()]['assets']:
             self.asset_name_lble.le_widget.setStyleSheet("color:red;")
             return False
         return True

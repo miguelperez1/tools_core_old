@@ -126,6 +126,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         header_item.setText(0, 'Libraries')
         self.libraries_tw.setHeaderItem(header_item)
         self.libraries_tw.setAlternatingRowColors(True)
+
         self.libraries_tw.setMaximumWidth(self.width() * .2)
 
         self.refresh_libraries_tw()
@@ -275,6 +276,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
         self.open_root_action.triggered.connect(self.open_root_action_callback)
         self.open_action.triggered.connect(self.open_action_callback)
+        self.reference_action.triggered.connect(self.open_action_callback)
         self.import_action.triggered.connect(self.import_action_callback)
         self.import_vrayproxy_action.triggered.connect(self.import_vrayproxy_action_callback)
         self.build_material_action.triggered.connect(self.build_material_action_callback)
@@ -402,3 +404,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
     def update_tags(self):
         pass
+
+    def reference_action_callback(self):
+        cmds.file(self.current_asset_data['import_file'], r=True)

@@ -6,6 +6,10 @@ from shutil import copyfile
 from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_manager.library_utils import library_utils
 from maya_core.common_tools.maya_utilities import maya_utilities
+from maya_core.lookdev.material_utils import material_utils
+
+import pymel.core as pm
+import maya.cmds as cmds
 
 LIBRARIES = constants.libraries
 
@@ -24,7 +28,7 @@ LIBRARIES = constants.libraries
 
 # Example published asset json data
 # {
-#     "asset_name": "icelandic_rock_assembly_var2",
+#     "self.name": "icelandic_rock_assembly_var2",
 #     "asset_preview": "F:\\share\\assets\\libraries\\model\\icelandic_rock_assembly_var2\\icelandic_rock_assembly_var2_preview.png",
 #     "asset_type": "model",
 #     "tags": "megascans,environment"
@@ -50,7 +54,7 @@ class AssetBuilder(object):
         self.material_dir = os.path.join(self.asset_root, "material")
 
         self.publish_data = {
-            'asset_name': self.name,
+            'self.name': self.name,
             "asset_type": self.asset_type,
             "import_file": self.maya_file
         }
@@ -187,7 +191,7 @@ class AssetBuilder(object):
                 texture.fileTextureName.set(dst)
 
     def repath_textures(self):
-        materials = maya_utilities.get_materials_from_selection()
+        materials = maya_utilities.get_all_materials()
 
         for material in materials:
             texs = maya_utilities.filter_connected_nodes(material, "file")
@@ -200,6 +204,79 @@ class AssetBuilder(object):
                 if os.path.isfile(dst):
                     print("repathed: {}".format(dst))
                     tex.fileTextureName.set(dst)
+                else:
+                    dst = os.path.join(self.material_dir, "textures", file_name)
+
+                    if os.path.isfile(dst):
+                        print("repathed: {}".format(dst))
+                        tex.fileTextureName.set(dst)
+
+    def export_proxy(self):
+        # Create proxy
+        world_node = pm.PyNode(self.name)
+
+        proxy_path = os.path.join(self.asset_root, "vrayproxy")
+        proxy_maya_path = proxy_path + "\\{0}_vrayproxy.ma".format(self.name)
+
+        cmds.select(clear=True)
+        pm.select(self.name)
+
+        # export proxy
+        cmds.vrayCreateProxy(exportType=1, previewFaces=17500, dir=proxy_path, fname=self.name + ".vrmesh",
+                             overwrite=True,
+                             previewType="clustering", makeBackup=True, ignoreHiddenObjects=False,
+                             vertexColorsOn=True,
+                             exportHierarchy=True, includeTransformation=True)
+
+        # deslect everything
+        cmds.select(clear=True)
+
+        # create vray_proxy nodes
+        vrmesh = self.name + "_vrmesh"
+        vraymeshmtl = vrmesh + "_vraymeshmtl"
+        vrproxy_path = proxy_path + "\\{}.vrmesh".format(self.name)
+        vrmesh_vrdisp = None
+
+        cmds.vrayCreateProxy(createProxyNode=True, node=vrmesh, existing=True,
+                             dir=vrproxy_path, geomToLoad=3, newProxyNode=False)
+
+        cmds.select(clear=1)
+        cmds.select(self.name)
+
+        material = [m for m in maya_utilities.get_materials_from_selection() if pm.nodeType(m) in ['VRayMtl', 'VRayMtl2Sided']]
+
+        if material:
+            # assign shader
+            cmds.connectAttr("{}.outColor".format(material[0]), "{}.shaders[0]".format(vraymeshmtl))
+
+            if pm.nodeType(material[0]) == "VRayMtl":
+                pm.connectAttr("{}.diffuseColor".format(material[0]), "{}.color".format(vraymeshmtl))
+            elif pm.nodeType(material[0]) == "VRayMtl2Sided":
+                pm.connectAttr("{}.outColor".format(material[0]), "{}.color".format(vraymeshmtl))
+
+            sgs = pm.listConnections(world_node.getShape(), type="shadingEngine")
+
+            if sgs:
+                sg = sgs[0]
+
+                if pm.listConnections(sg.displacementShader):
+                    displacement_tex_node = pm.PyNode("{}_displacement_TEX".format(self.name))
+                    vraymeshmtlsg = pm.PyNode("{}_vrmesh_vraymeshmtlSG".format(self.name))
+                    pm.connectAttr(displacement_tex_node.outColor, vraymeshmtlsg.displacementShader)
+
+                    vrmesh_vrdisp = material_utils.create_displacement_node(self.name, displacement_tex_node,
+                                                                            pm.PyNode(vrmesh))
+
+        # select vray_proxy
+        cmds.select(clear=True)
+
+        # save selection as new maya file
+        pm.select(vrmesh, r=1)
+
+        if vrmesh_vrdisp is not None:
+            pm.select(str(vrmesh_vrdisp), add=True, r=1, ne=1)
+
+        pm.exportSelected(proxy_maya_path, type="mayaAscii", channels=True, force=True)
 
 
 def build_asset(asset_data):

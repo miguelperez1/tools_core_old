@@ -5,21 +5,25 @@ from PySide2 import QtGui
 import maya.cmds as cmds
 
 from pyqt_commons import MWidgets
+from pyqt_commons import DockableWidget
+
 from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_browser import AssetBrowserWidget
 
 LIBRARIES = constants.libraries
 reload(AssetBrowserWidget)
 
-class AssetBrowser(QtWidgets.QMainWindow):
-    def __init__(self, parent=MWidgets.maya_main_window()):
-        super(AssetBrowser, self).__init__(parent)
+
+class AssetBrowser(DockableWidget.DockableWidget):
+    WINDOW_TITLE = "Asset Browser"
+
+    def __init__(self):
+        super(AssetBrowser, self).__init__()
 
         self.setWindowTitle("Asset Browser")
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.setObjectName("AssetBrowserUI")
-        self.setMinimumSize(1560, 877)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
@@ -32,13 +36,10 @@ class AssetBrowser(QtWidgets.QMainWindow):
         pass
 
     def create_widgets(self):
-        self.asset_browser_widget = AssetBrowserWidget.AssetBrowserWidget(1560-20, 877-20)
+        self.asset_browser_widget = AssetBrowserWidget.AssetBrowserWidget(1920, 0)
 
     def create_layout(self):
-        central_widget = QtWidgets.QWidget(self)
-        self.setCentralWidget(central_widget)
-
-        main_layout = QtWidgets.QVBoxLayout(central_widget)
+        main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addWidget(self.asset_browser_widget)
 
     def create_connections(self):
@@ -46,14 +47,12 @@ class AssetBrowser(QtWidgets.QMainWindow):
 
 
 def main():
-    try:
-        cmds.deleteUI("AssetBrowserUI")
-    except Exception:
-        pass
+    workspace_contorl_name = AssetBrowser.get_workspace_control_name()
+    if cmds.workspaceControl(workspace_contorl_name, q=True, exists=True):
+        cmds.deleteUI(workspace_contorl_name)
 
-    dialog = AssetBrowser()
-    dialog.show()
-
+    AssetBrowser.module_name_override = "asset_browser_ui"
+    ui = AssetBrowser()
 
 if __name__ == "__main__":
     main()
