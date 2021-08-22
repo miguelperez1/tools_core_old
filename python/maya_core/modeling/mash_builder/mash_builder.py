@@ -1,3 +1,5 @@
+import random
+
 import maya.cmds as cmds
 import pymel.core as pm
 import mash_repro_utils as repro
@@ -10,7 +12,7 @@ def create_mash_network(mash_data):
     scatter_amount = mash_data['scatter_amount']
     mesh = mash_data['mesh']
     objects = mash_data['objects']
-    random = mash_data['random']
+    create_random = mash_data['random']
     mash_random = None
 
     mash_waiter = pm.createNode("MASH_Waiter", n=network_name)
@@ -23,7 +25,7 @@ def create_mash_network(mash_data):
         except Exception:
             print("Could not connect mesh: {} to distribute".format(mesh))
 
-    if random:
+    if create_random:
         mash_random = pm.createNode("MASH_Random", n="{}_Random".format(network_name))
 
     mash_id = pm.createNode("MASH_Id", n="{}_Id".format(network_name))
@@ -89,8 +91,7 @@ def create_mash_network(mash_data):
     # Set Attrs
     mash_distribute.pointCount.set(scatter_amount)
     mash_distribute.arrangement.set(distribute_type)
-
-
+    mash_distribute.seed.set(random.randint(0, 5000))
 
     mash_id.numObjects.set(len(objects))
 
@@ -103,5 +104,7 @@ def create_mash_network(mash_data):
     mash_random.rotationZ.set(5)
 
     mash_random.scaleX.set(0.5)
+
     mash_random.uniformRandom.set(1)
     mash_random.transformationSpace.set(2)
+    mash_random.randomSeed.set(random.randint(0, 5000))
