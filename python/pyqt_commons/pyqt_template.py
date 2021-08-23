@@ -3,6 +3,7 @@ from PySide2 import QtWidgets
 from PySide2 import QtGui
 
 import maya.cmds as cmds
+import pymel.core as pm
 
 from pyqt_commons import MWidgets
 

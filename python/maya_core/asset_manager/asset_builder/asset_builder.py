@@ -25,14 +25,37 @@ LIBRARIES = constants.libraries
 #     'scale': 1,
 #     'has_proxy': 1
 # }
-
-# Example published asset json data
+#
 # {
-#     "self.name": "icelandic_rock_assembly_var2",
-#     "asset_preview": "F:\\share\\assets\\libraries\\model\\icelandic_rock_assembly_var2\\icelandic_rock_assembly_var2_preview.png",
+#     "asset_name": "bike_stand_var1",
 #     "asset_type": "model",
-#     "tags": "megascans,environment"
-#     "material_data": material_data
+#     "has_proxy": 1,
+#     "import_file": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\maya\\bike_stand_var1.ma",
+#     "material_data": {
+#         "material_type": "VRayMtl",
+#         "name": "bike_stand_var1",
+#         "textures": [
+#             {
+#                 "diffuse": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\material\\bike_stand_var1\\textures\\uhcgehnfa_4K_Albedo.exr"
+#             },
+#             {
+#                 "specular": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\material\\bike_stand_var1\\textures\\uhcgehnfa_4K_Specular.exr"
+#             },
+#             {
+#                 "gloss": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\material\\bike_stand_var1\\textures\\uhcgehnfa_4K_Gloss.exr"
+#             },
+#             {
+#                 "normal": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\material\\bike_stand_var1\\textures\\uhcgehnfa_4K_Normal_LOD0.exr"
+#             },
+#             {
+#                 "displacement": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\material\\bike_stand_var1\\textures\\uhcgehnfa_4K_Displacement.exr"
+#             }
+#         ]
+#     },
+#     "mesh": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\mesh\\uhcgehnfa_LOD0.obj",
+#     "preview": "F:\\share\\assets\\libraries\\model\\bike_stand_var1\\bike_stand_var1_preview.png",
+#     "scale": 2.7552,
+#     "tags": "megascans,city"
 # }
 
 class AssetBuilder(object):
@@ -243,7 +266,8 @@ class AssetBuilder(object):
         cmds.select(clear=1)
         cmds.select(self.name)
 
-        material = [m for m in maya_utilities.get_materials_from_selection() if pm.nodeType(m) in ['VRayMtl', 'VRayMtl2Sided']]
+        material = [m for m in maya_utilities.get_materials_from_selection() if
+                    pm.nodeType(m) in ['VRayMtl', 'VRayMtl2Sided']]
 
         if material:
             # assign shader

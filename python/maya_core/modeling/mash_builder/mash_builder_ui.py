@@ -31,7 +31,7 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
         self.create_connections()
 
     def create_actions(self):
-        self.add_object_action = QtWidgets.QAction("Add selected object")
+        self.add_object_action = QtWidgets.QAction("Add selected object(s)")
         self.remove_object_action = QtWidgets.QAction("Remove object")
 
     def create_widgets(self):
@@ -48,10 +48,12 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
 
         self.distribute_type_cmbx = QtWidgets.QComboBox()
         self.distribute_type_cmbx.addItems(["Linear", "Mesh", "Grid"])
+        self.distribute_type_cmbx.setCurrentText("Mesh")
 
         self.mesh_input_lble = MWidgets.LabeledLineEdit("Mesh: ")
 
         self.add_random_cb = QtWidgets.QCheckBox("Add Default Random")
+        self.add_random_cb.setChecked(True)
 
         self.objects_tw = QtWidgets.QTreeWidget()
         header_item = QtWidgets.QTreeWidgetItem(["Objects"])
@@ -59,7 +61,7 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
 
         self.objects_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.objects_tw.customContextMenuRequested.connect(self.show_objects_tw_context_menu)
-        self.current_object_item = None
+        self.objects_tw.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         self.cancel_btn = QtWidgets.QPushButton("Cancel")
         self.build_btn = QtWidgets.QPushButton("Build")
@@ -106,8 +108,8 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
             self.objects_tw.addTopLevelItem(item)
 
     def remove_object_action_callback(self):
-        if self.current_object_item:
-            index = self.objects_tw.indexFromItem(self.current_object_item).row()
+        for item in self.objects_tw.selectedItems():
+            index = self.objects_tw.indexFromItem(item).row()
 
             self.objects_tw.takeTopLevelItem(index)
 
@@ -119,14 +121,14 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
 
     def show_objects_tw_context_menu(self, eventPosition):
         child = self.childAt(self.sender().mapTo(self, eventPosition))
-        self.current_object_item = self.objects_tw.itemAt(eventPosition)
+        item = self.objects_tw.itemAt(eventPosition)
 
         contextMenu = QtWidgets.QMenu(self)
 
         if cmds.ls(sl=1):
             contextMenu.addAction(self.add_object_action)
 
-        if self.current_object_item is not None:
+        if item is not None:
             contextMenu.addAction(self.remove_object_action)
 
         action = contextMenu.exec_(child.mapToGlobal(eventPosition))

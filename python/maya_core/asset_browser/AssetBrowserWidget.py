@@ -85,7 +85,6 @@ class AssetTreeWidget(QtWidgets.QTreeWidget):
 class AssetBrowserWidget(QtWidgets.QWidget):
     light_created = QtCore.Signal(pm.PyNode)
 
-
     def __init__(self, width, height, use_tags_widget=1):
         super(AssetBrowserWidget, self).__init__()
         self.setObjectName("AssetBrowserUI")
@@ -135,6 +134,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
         self.assets_tw.setMinimumWidth(self.width() * .8)
         self.assets_tw.setColumnWidth(0, 200)
+        self.assets_tw.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self.assets_tw.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         self.create_asset_item_widgets()
@@ -272,7 +272,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.libraries_tw.itemSelectionChanged.connect(self.refresh_asset_items)
         self.search_lble.le_widget.textChanged.connect(self.refresh_asset_items)
         self.assets_tw.customContextMenuRequested.connect(self.show_asset_context_menu)
-        self.assets_tw.itemSelectionChanged.connect(self.update_current_asset)
 
         self.open_root_action.triggered.connect(self.open_root_action_callback)
         self.open_action.triggered.connect(self.open_action_callback)
@@ -284,16 +283,6 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.create_card_action.triggered.connect(self.create_card_action_callback)
 
         self.assets_tw.tags_updated.connect(self.refresh_libraries_tw)
-
-    def update_current_asset(self):
-        if self.assets_tw.selectedItems():
-            self.current_asset_item = self.assets_tw.selectedItems()[0]
-            self.current_asset = self.assets_tw.selectedItems()[0].text(1)
-            self.current_asset_data = self.current_asset_item.data(0, QtCore.Qt.UserRole)
-        else:
-            self.current_asset_item = None
-            self.current_asset = None
-            self.current_asset_data = None
 
     def show_asset_context_menu(self, eventPosition):
         asset_item = self.assets_tw.itemAt(eventPosition)
@@ -314,9 +303,16 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         if self.current_library in ['model', 'material', 'rigs', 'plants']:
             contextMenu.addAction(self.reference_action)
 
-            asset_path = os.path.join(library_utils.libraries[self.current_library], asset)
+        if self.current_library in ['model', 'plants']:
+            has_proxy = False
+            for item in self.assets_tw.selectedItems():
+                asset_path = os.path.join(library_utils.libraries[self.current_library], item.text(1))
 
-            if "vrayproxy" in os.listdir(asset_path):
+                if "vrayproxy" in os.listdir(asset_path):
+                    has_proxy = True
+                    break
+
+            if has_proxy:
                 contextMenu.addAction(self.import_vrayproxy_action)
 
         contextMenu.addSeparator()
@@ -337,73 +333,112 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         action = contextMenu.exec_(self.assets_tw.mapToGlobal(eventPosition))
 
     def import_action_callback(self):
-        logger.info("Importing %s", self.current_asset)
-        logger.debug("Import file %s", self.current_asset_data['import_file'])
 
-        if self.current_library == "studiolights":
-            light = lighting_utils.create_vray_light("VRayLightRectShape", name=self.current_asset,
-                                             texture=self.current_asset_data['import_file'])
-            self.light_created.emit(light)
-        elif self.current_library == "hdri":
-            light = lighting_utils.create_vray_light("VRayLightDomeShape", name=self.current_asset,
-                                             texture=self.current_asset_data['import_file'])
-            self.light_created.emit(light)
-        elif self.current_library == "gobolights":
-            lighting_utils.create_gobo(self.current_asset, self.current_asset_data['import_file'])
-        elif self.current_library in ['material', 'model', 'rigs', 'plants']:
-            cmds.file(self.current_asset_data['import_file'], i=True)
-        elif self.current_library == "texture":
-            material_utils.create_texture(self.current_asset, self.current_asset_data['import_file'])
+        for item in self.assets_tw.selectedItems():
+            asset_data = item.data(0, QtCore.Qt.UserRole)
+            asset = item.text(1)
+
+            logger.info("Importing %s", asset)
+            logger.debug("Import file %s", asset_data['import_file'])
+
+            if self.current_library == "studiolights":
+                light = lighting_utils.create_vray_light("VRayLightRectShape", name=asset,
+                                                         texture=asset_data['import_file'])
+                self.light_created.emit(light)
+
+            elif self.current_library == "hdri":
+                light = lighting_utils.create_vray_light("VRayLightDomeShape", name=asset,
+                                                         texture=asset_data['import_file'])
+                self.light_created.emit(light)
+
+            elif self.current_library == "gobolights":
+                lighting_utils.create_gobo(asset, asset_data['import_file'])
+
+            elif self.current_library in ['material', 'model', 'rigs', 'plants']:
+                cmds.file(asset_data['import_file'], i=True)
+
+            elif self.current_library == "texture":
+                material_utils.create_texture(asset, asset_data['import_file'])
 
     def import_vrayproxy_action_callback(self):
-        logger.info("Importing vrayproxy for %s", self.current_asset)
-        logger.debug("Import file %s", self.current_asset_data['import_file'])
+        for item in self.assets_tw.selectedItems():
+            asset_data = item.data(0, QtCore.Qt.UserRole)
+            asset = item.text(1)
 
-        cmds.file(os.path.join(libraries[self.current_library], self.current_asset, "vrayproxy",
-                               "{}_vrayproxy.ma".format(self.current_asset)), i=True)
+            proxy_path = os.path.join(libraries[self.current_library], asset, "vrayproxy",
+                                      "{}_vrayproxy.ma".format(asset))
+
+            if os.path.isfile(proxy_path):
+                logger.info("Importing vrayproxy for %s", asset)
+                logger.debug("Import file %s", asset_data['import_file'])
+
+                cmds.file(proxy_path, i=True)
+            else:
+                logger.info("{} does not have a vrayproxy, skipping.".format(asset))
 
     def open_action_callback(self):
-        os.startfile(self.current_asset_data['import_file'])
+        for item in self.assets_tw.selectedItems():
+            asset_data = item.data(0, QtCore.Qt.UserRole)
+
+            os.startfile(asset_data['import_file'])
 
     def open_root_action_callback(self):
-        if self.current_library in ['material', 'model', 'rigs', 'plants']:
-            subprocess.Popen('explorer "{}"'.format(os.path.join(libraries[self.current_library], self.current_asset)))
-        else:
-            subprocess.Popen('explorer "{}"'.format(libraries[self.current_library]))
+        for item in self.assets_tw.selectedItems():
+            asset = item.text(1)
+
+            if self.current_library in ['material', 'model', 'rigs', 'plants']:
+                subprocess.Popen('explorer "{}"'.format(os.path.join(libraries[self.current_library], asset)))
+            else:
+                subprocess.Popen('explorer "{}"'.format(libraries[self.current_library]))
 
     def build_material_action_callback(self):
-        logger.info("Building material: %s", self.current_asset)
-        logger.debug(self.current_asset_data['material_data'])
+        for item in self.assets_tw.selectedItems():
+            asset = item.text(1)
+            asset_data = item.data(0, QtCore.Qt.UserRole)
 
-        material_data = self.current_asset_data['material_data']
+            if "material_data" in asset_data.keys():
+                material_data = asset_data['material_data']
 
-        if material_data:
-            material_utils.build_material(material_data)
+                logger.info("Building material: %s", asset)
+                logger.debug(material_data)
+
+                material_utils.build_material(material_data)
 
     def build_and_assign_material_action_callback(self):
-        logger.info("Building material: %s", self.current_asset)
-        logger.debug(self.current_asset_data['material_data'])
+        for item in self.assets_tw.selectedItems():
+            asset = item.text(1)
+            asset_data = item.data(0, QtCore.Qt.UserRole)
 
-        material_data = self.current_asset_data['material_data']
+            if "material_data" in asset_data.keys():
+                selection = pm.ls(sl=1)
 
-        if material_data:
-            selection = pm.ls(sl=1)
+                material_data = asset_data['material_data']
 
-            material = material_utils.build_material(material_data)
+                logger.info("Building material: %s", asset)
+                logger.debug(material_data)
 
-            for sel in selection:
-                pm.sets(material[1], edit=True, forceElement=sel)
+                material = material_utils.build_material(material_data)
 
-                if material[-1]:
-                    cmds.sets(str(sel), edit=True, add=str(material[-1]))
+                for sel in selection:
+                    pm.sets(material[1], edit=True, forceElement=sel)
+
+                    if material[-1]:
+                        cmds.sets(str(sel), edit=True, add=str(material[-1]))
 
     def create_card_action_callback(self):
-        logger.info("Creating card: %s", self.current_asset)
+        for item in self.assets_tw.selectedItems():
+            asset = item.text(1)
+            asset_data = item.data(0, QtCore.Qt.UserRole)
 
-        lighting_utils.create_card(self.current_asset, self.current_asset_data['import_file'])
+            logger.info("Creating card: %s", asset)
+
+            lighting_utils.create_card(asset, asset_data['import_file'])
 
     def update_tags(self):
         pass
 
     def reference_action_callback(self):
-        cmds.file(self.current_asset_data['import_file'], r=True)
+        for item in self.assets_tw.selectedItems():
+            asset_data = item.data(0, QtCore.Qt.UserRole)
+
+            cmds.file(asset_data['import_file'], r=True)

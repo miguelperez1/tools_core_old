@@ -1,6 +1,7 @@
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtGui
+import os
 
 import maya.cmds as cmds
 
@@ -93,6 +94,7 @@ class FilePublisherUI(QtWidgets.QMainWindow):
         self.publish_asset_btn.clicked.connect(self.publish_file)
         self.asset_name_lble.le_widget.textChanged.connect(self.valid_asset_name)
         self.asset_type_cmbx.currentTextChanged.connect(self.valid_asset_name)
+        self.preview_lblebtn.lble_widget.le_widget.textChanged.connect(self.valid_preview)
 
     def publish_file(self):
         asset_data = {
@@ -108,7 +110,7 @@ class FilePublisherUI(QtWidgets.QMainWindow):
 
         builder = asset_builder.AssetBuilder(asset_data)
 
-        if self.valid_asset_name():
+        if self.valid_asset_name() and self.valid_preview():
             save_type = "selection" if self.selection_cb.isChecked() else "file"
 
             builder.create_asset(save_type=save_type)
@@ -141,6 +143,13 @@ class FilePublisherUI(QtWidgets.QMainWindow):
         self.asset_name_lble.le_widget.setStyleSheet("")
         if self.asset_name_lble.text().strip() in self.library_data[self.asset_type_cmbx.currentText().lower()]['assets']:
             self.asset_name_lble.le_widget.setStyleSheet("color:red;")
+            return False
+        return True
+
+    def valid_preview(self):
+        self.preview_lblebtn.lble_widget.le_widget.setStyleSheet("")
+        if not os.path.isfile(self.preview_lblebtn.text()):
+            self.preview_lblebtn.lble_widget.le_widget.setStyleSheet("color:red;")
             return False
         return True
 

@@ -8,6 +8,7 @@ import pymel.core as pm
 from pyqt_commons import MWidgets
 from maya_core.lookdev.material_builder_ui import material_builder_ui
 from maya_core.lookdev.material_utils import material_utils
+from maya_core.lookdev.cc_node_editor import cc_node_editor_ui
 
 
 class LookdevToolkitUI(QtWidgets.QMainWindow):
@@ -35,6 +36,7 @@ class LookdevToolkitUI(QtWidgets.QMainWindow):
         self.create_cc_btn = QtWidgets.QPushButton("Create Color Correct")
         self.create_texture_btn = QtWidgets.QPushButton("Create Texture")
         self.create_displacement_btn = QtWidgets.QPushButton("Create Displacement")
+        self.cc_node_finder = QtWidgets.QPushButton("CC Node Finder")
 
     def create_layout(self):
         central_widget = QtWidgets.QWidget(self)
@@ -45,17 +47,22 @@ class LookdevToolkitUI(QtWidgets.QMainWindow):
         main_layout.addWidget(self.material_builder_btn)
         main_layout.addWidget(self.create_texture_btn)
         main_layout.addWidget(self.create_cc_btn)
+        main_layout.addWidget(self.cc_node_finder)
         main_layout.addWidget(self.create_displacement_btn)
         main_layout.addStretch()
 
     def create_connections(self):
         self.material_builder_btn.clicked.connect(self.material_builder_btn_callback)
         self.create_cc_btn.clicked.connect(self.create_cc_btn_callback)
+        self.cc_node_finder.clicked.connect(self.cc_node_finder_callback)
         self.create_texture_btn.clicked.connect(self.create_texture_btn_callback)
         self.create_displacement_btn.clicked.connect(self.create_displacement_btn_callback)
 
     def material_builder_btn_callback(self):
         material_builder_ui.main()
+
+    def cc_node_finder_callback(self):
+        cc_node_editor_ui.main()
 
     def create_cc_btn_callback(self):
         if pm.ls(sl=1):
