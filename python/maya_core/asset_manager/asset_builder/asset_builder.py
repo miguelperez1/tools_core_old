@@ -193,6 +193,8 @@ class AssetBuilder(object):
             materials = maya_utilities.get_all_materials()
             for material in materials:
                 texs_tmp = maya_utilities.filter_connected_nodes(material, "file")
+                texs_tmp.extend(maya_utilities.filter_connected_nodes(material, "VRayPtex"))
+
                 if texs_tmp:
                     texture_data[material] = texs_tmp
 
@@ -201,7 +203,14 @@ class AssetBuilder(object):
 
         for material, textures in texture_data.items():
             for texture in textures:
-                src = texture.fileTextureName.get().replace("\\", "/")
+                ptex = False
+                if texture.nodeType == "VRayPtex":
+                    ptex = True
+
+                if not ptex:
+                    src = texture.fileTextureName.get().replace("\\", "/")
+                else:
+                    src = texture.ptexFile.get().replace("\\", "/")
                 dst_root = os.path.join(self.material_dir, str(material))
 
                 if not os.path.isdir(dst_root):
@@ -211,28 +220,46 @@ class AssetBuilder(object):
 
                 copyfile(src, dst)
 
-                texture.fileTextureName.set(dst)
+                if not ptex:
+                    texture.fileTextureName.set(dst)
+                else:
+                    texture.ptexFile.set(dst)
 
     def repath_textures(self):
         materials = maya_utilities.get_all_materials()
 
         for material in materials:
             texs = maya_utilities.filter_connected_nodes(material, "file")
+            texs.extend(maya_utilities.filter_connected_nodes(material, "VRayPtex"))
 
             for tex in texs:
-                file_name = tex.fileTextureName.get().replace("\\", "/").split("/")[-1]
+                ptex = False
+                if tex.nodeType() == "VRayPtex":
+                    ptex = True
+
+                if not ptex:
+                    file_name = tex.fileTextureName.get().replace("\\", "/").split("/")[-1]
+                else:
+                    file_name = tex.ptexFile.get().replace("\\", "/").split("/")[-1]
 
                 dst = os.path.join(self.material_dir, str(material), file_name)
 
                 if os.path.isfile(dst):
                     print("repathed: {}".format(dst))
-                    tex.fileTextureName.set(dst)
+                    if not ptex:
+                        tex.fileTextureName.set(dst)
+                    else:
+                        tex.ptexFile.set(dst)
                 else:
                     dst = os.path.join(self.material_dir, "textures", file_name)
 
                     if os.path.isfile(dst):
                         print("repathed: {}".format(dst))
-                        tex.fileTextureName.set(dst)
+
+                        if not ptex:
+                            tex.fileTextureName.set(dst)
+                        else:
+                            tex.ptexFile.set(dst)
 
     def export_proxy(self):
         # Create proxy
