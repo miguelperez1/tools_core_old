@@ -39,7 +39,10 @@ DEFAULT_CONNECTIONS = {
 #     'name': name,
 #     'material_type': material_type,
 #     'textures' : {
-#         'diffuse': diffuse_path
+#         'diffuse': {
+#             path: path,
+#             ptex: 0
+#         }
 #     }
 
 
@@ -69,29 +72,32 @@ class MaterialBuilder(object):
 
         displacement = None
 
-        for tex in self.material_data['textures']:
-            for tex_type, tex_path in tex.items():
-                # create nodes
-                connection = DEFAULT_CONNECTIONS['VRayMtl'][tex_type].split(".")
+        for tex_type in self.material_data['textures'].keys():
+            tex_path = self.material_data['textures'][tex_type]['path']
+            use_ptex = self.material_data['textures'][tex_type]['use_ptex']
 
-                if tex_type != "displacement":
-                    tex_nodes = create_texture(name=self.name + "_" + tex_type, path=tex_path, uv=False)
-                    cc_node = tex_nodes['cc_node']
+            # create nodes
+            connection = DEFAULT_CONNECTIONS['VRayMtl'][tex_type].split(".")
 
-                    pm.connectAttr(getattr(cc_node, connection[0]), getattr(shader, connection[1]))
-                else:
-                    tex_nodes = create_texture(name=self.name + "_" + tex_type, path=tex_path, cc=False, uv=False)
+            if tex_type != "displacement":
+                tex_nodes = create_texture(name=self.name + "_" + tex_type, path=tex_path, uv=False, ptex=use_ptex)
+                cc_node = tex_nodes['cc_node']
 
-                    displacement = create_displacement_node(name=self.name, disp_source=tex_nodes["texture_node"])
+                pm.connectAttr(getattr(cc_node, connection[0]), getattr(shader, connection[1]))
+            else:
+                tex_nodes = create_texture(name=self.name + "_" + tex_type, path=tex_path, cc=False, uv=False)
 
-                    pm.connectAttr(getattr(tex_nodes["texture_node"], connection[0]),
-                                   getattr(shading_group, connection[1]))
+                displacement = create_displacement_node(name=self.name, disp_source=tex_nodes["texture_node"])
 
+                pm.connectAttr(getattr(tex_nodes["texture_node"], connection[0]),
+                               getattr(shading_group, connection[1]))
+
+            if not use_ptex:
                 pm.connectAttr(uv_node.outUV, tex_nodes['texture_node'].uvCoord)
 
-                # Set default values
-                if tex_type == "normal":
-                    shader.bumpMapType.set(1)
+            # Set default values
+            if tex_type == "normal":
+                shader.bumpMapType.set(1)
 
         return shader, shading_group, displacement
 
@@ -115,16 +121,24 @@ class MaterialBuilder(object):
         return None
 
 
-def create_texture(name=None, path=None, cc=True, uv=True):
+def create_texture(name=None, path=None, cc=True, uv=True, ptex=False):
     nodes = {}
 
-    texture_node = pm.shadingNode('file', asTexture=True, isColorManaged=True)
+    if ptex:
+        texture_node = pm.shadingNode('VRayPtex', asTexture=True, isColorManaged=True)
+    else:
+        texture_node = pm.shadingNode('file', asTexture=True, isColorManaged=True)
+
     nodes['texture_node'] = texture_node
 
-    if path:
-        texture_node.fileTextureName.set(path)
 
-    if uv:
+    if path:
+        if ptex:
+            texture_node.ptexFile.set(path)
+        else:
+            texture_node.fileTextureName.set(path)
+
+    if uv and not ptex:
         uv_node = pm.shadingNode("place2dTexture", asUtility=True)
         nodes['uv_node'] = uv_node
 
@@ -135,9 +149,12 @@ def create_texture(name=None, path=None, cc=True, uv=True):
         nodes['cc_node'] = cc_node
 
     if name:
-        texture_node.rename(name + "_TEX")
+        if not ptex:
+            texture_node.rename(name + "_TEX")
+        else:
+            texture_node.rename(name + "_PTEX")
 
-        if uv:
+        if uv and not ptex:
             uv_node.rename(name + "_UV")
 
         if cc:

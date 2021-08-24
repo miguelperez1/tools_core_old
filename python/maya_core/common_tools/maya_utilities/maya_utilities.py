@@ -42,10 +42,17 @@ def get_materials_from_node(nodes=None):
                 if mats:
                     materials.extend(mats)
 
-    return materials
+    return materials        
 
 
 def get_all_materials():
+    mat_types = [
+        'lambert',
+        'phong',
+        'VRayMtl',
+        'VRayMtl2Sided'
+    ]
+
     materials = []
 
     for sg in pm.ls(type="shadingEngine"):
@@ -53,5 +60,10 @@ def get_all_materials():
         if pm.sets(sg, q=1):
             if mats:
                 materials.extend(mats)
+
+    for mat in mat_types:
+        materials.extend(pm.ls(type=mat))
+
+    materials = sorted(list(set(materials)))
 
     return materials

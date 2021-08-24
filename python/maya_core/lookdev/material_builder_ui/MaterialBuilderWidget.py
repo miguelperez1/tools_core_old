@@ -13,19 +13,27 @@ reload(material_utils)
 tex_types = material_utils.TEX_TYPES
 
 
-class MaterialWidgetFileBrowse(MWidgets.FileBrowseWidget):
+class MaterialWidgetFileBrowse(QtWidgets.QWidget):
     def __init__(self, label):
-        super(MaterialWidgetFileBrowse, self).__init__(label)
+        super(MaterialWidgetFileBrowse, self).__init__()
 
+        self.fb = MWidgets.FileBrowseWidget(label)
         self.cb = QtWidgets.QCheckBox()
+        self.ptex_cb = QtWidgets.QCheckBox("Ptex")
 
-        self.fb_btn.clicked.connect(self.set_cb)
+        self.fb.fb_btn.clicked.connect(self.set_cb)
 
-        # self.main_layout = QtWidgets.QHBoxLayout(self)
-        self.main_layout.insertWidget(0, self.cb)
+        self.main_layout = QtWidgets.QHBoxLayout(self)
+        self.main_layout.setContentsMargins(0,0,0,0)
+        self.main_layout.addWidget(self.cb)
+        self.main_layout.addWidget(self.fb)
+
+        self.main_layout.addWidget(self.ptex_cb)
+
+        self.setContentsMargins(0, 0, 0, 0)
 
     def set_cb(self):
-        if self.lble_widget.le_widget.text():
+        if self.fb.lble_widget.le_widget.text():
             self.cb.setChecked(1)
 
 
@@ -59,11 +67,12 @@ class MaterialBuilderWidget(QtWidgets.QWidget):
 
         for tex_type in tex_types:
             tex_browse_widget = MaterialWidgetFileBrowse(tex_type.capitalize())
-            tex_browse_widget.lble_widget.lbl_widget.setFixedWidth(self.width() * .15)
+            tex_browse_widget.fb.lble_widget.lbl_widget.setFixedWidth(self.width() * .15)
 
             self.tex_browse_widgets.append(tex_browse_widget)
 
         self.create_all_cb = QtWidgets.QCheckBox("Create All")
+        self.ptex_all_cb = QtWidgets.QCheckBox("All Ptex")
 
     def create_layout(self):
         main_layout = QtWidgets.QVBoxLayout(self)
@@ -74,6 +83,7 @@ class MaterialBuilderWidget(QtWidgets.QWidget):
         name_type_layout.addWidget(self.mat_name_lble)
         name_type_layout.addWidget(self.material_type_cmbx)
         name_type_layout.addWidget(self.create_all_cb)
+        name_type_layout.addWidget(self.ptex_all_cb)
 
         main_layout.addWidget(MWidgets.QHLine())
         main_layout.addLayout(name_type_layout)
@@ -89,26 +99,30 @@ class MaterialBuilderWidget(QtWidgets.QWidget):
 
     def create_connections(self):
         self.create_all_cb.stateChanged.connect(self.create_all_cb_callback)
+        self.ptex_all_cb.stateChanged.connect(self.ptex_all_cb_callback)
 
     def create_all_cb_callback(self):
         for tex in self.tex_browse_widgets:
             tex.cb.setChecked(self.create_all_cb.isChecked())
 
+    def ptex_all_cb_callback(self):
+        for tex in self.tex_browse_widgets:
+            tex.ptex_cb.setChecked(self.ptex_all_cb.isChecked())
+
     def get_material_data(self):
         material_data = {
             'name': self.mat_name_lble.text(),
-            'material_type': self.material_type_cmbx.currentText()
+            'material_type': self.material_type_cmbx.currentText(),
+            'textures': {}
         }
 
         textures = []
         for tex in self.tex_browse_widgets:
             if tex.cb.isChecked():
-                tex_data = {
-                    tex.lble_widget.lbl_widget.text().lower(): tex.lble_widget.le_widget.text()
+                material_data['textures'][tex.fb.lble_widget.lbl_widget.text().lower()] = {
+                    'use_ptex': tex.ptex_cb.isChecked(),
+                    'path': tex.fb.lble_widget.le_widget.text()
                 }
-                textures.append(tex_data)
-
-        material_data['textures'] = textures
 
         return material_data
 

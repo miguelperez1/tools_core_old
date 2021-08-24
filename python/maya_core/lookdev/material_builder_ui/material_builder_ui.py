@@ -20,7 +20,7 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
 
         self.setObjectName("MaterialBuilderUI")
-        self.setMinimumSize(650, 500)
+        # self.setMinimumSize(650, 500)
 
         self.prefs_directory = cmds.internalVar(userPrefDir=True)
 
@@ -63,6 +63,8 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
     def build_material(self):
         material_data = self.material_builder_widget.get_material_data()
 
+        print(material_data)
+
         if material_data['name']:
             selection = pm.ls(sl=1)
             material = material_utils.build_material(material_data)
@@ -70,7 +72,6 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
             if self.assign_cb.isChecked():
                 for sel in selection:
                     try:
-                        print material[1]
                         pm.sets(material[1], edit=True, forceElement=sel)
 
                         if material[-1] and pm.nodeType(material[-1]) == "VRayDisplacement":

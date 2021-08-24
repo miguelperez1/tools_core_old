@@ -129,7 +129,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             if result == QtWidgets.QMessageBox.StandardButton.Yes:
                 f = pm.fileDialog2(fileFilter=multipleFilters, fileMode=1, dir=project_root)[0]
 
-                cmds.file(f, open=True, ignoreVersion=True, force=force)
+                cmds.file(f, open=True, ignoreVersion=True, force=True)
             else:
                 return
 

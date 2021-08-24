@@ -250,7 +250,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
                     asset_item_widget.setHidden(True)
 
                 if self.search_lble.text():
-                    if not re.search(self.search_lble.text(), asset_item_widget.text(1)) and not re.search(
+                    if not re.search(self.search_lble.text(), asset_item_widget.text(1).lower()) and not re.search(
                             self.search_lble.text(), asset_data['tags']):
                         asset_item_widget.setHidden(True)
 
