@@ -100,7 +100,7 @@ class FilePublisherUI(QtWidgets.QMainWindow):
         asset_data = {
             'name': self.asset_name_lble.text().replace(" ", "_"),
             'asset_type': self.asset_type_cmbx.currentText().lower(),
-            'preview': self.preview_lblebtn.text(),
+            'asset_preview': self.preview_lblebtn.text(),
             'tags': self.tags_lble.text(),
             'mesh': None,
             'material_data': None,

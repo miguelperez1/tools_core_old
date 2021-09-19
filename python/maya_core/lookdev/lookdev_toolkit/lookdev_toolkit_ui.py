@@ -37,6 +37,7 @@ class LookdevToolkitUI(QtWidgets.QMainWindow):
         self.material_builder_btn = QtWidgets.QPushButton("Material Builder")
         self.create_cc_btn = QtWidgets.QPushButton("Create Color Correct")
         self.create_texture_btn = QtWidgets.QPushButton("Create Texture")
+        self.create_proj_btn = QtWidgets.QPushButton("Create Projection")
         self.create_ptex_btn = QtWidgets.QPushButton("Create VRay Ptex")
         self.create_displacement_btn = QtWidgets.QPushButton("Create Displacement")
         self.cc_node_finder = QtWidgets.QPushButton("CC Node Finder")
@@ -50,6 +51,7 @@ class LookdevToolkitUI(QtWidgets.QMainWindow):
         main_layout.addWidget(self.material_builder_btn)
         main_layout.addWidget(self.create_texture_btn)
         main_layout.addWidget(self.create_ptex_btn)
+        main_layout.addWidget(self.create_proj_btn)
         main_layout.addWidget(self.create_cc_btn)
         main_layout.addWidget(self.cc_node_finder)
         main_layout.addWidget(self.create_displacement_btn)
@@ -60,8 +62,12 @@ class LookdevToolkitUI(QtWidgets.QMainWindow):
         self.create_cc_btn.clicked.connect(self.create_cc_btn_callback)
         self.cc_node_finder.clicked.connect(self.cc_node_finder_callback)
         self.create_texture_btn.clicked.connect(self.create_texture_btn_callback)
+        self.create_proj_btn.clicked.connect(self.create_proj_btn_callback)
         self.create_ptex_btn.clicked.connect(self.create_ptex_btn_callback)
         self.create_displacement_btn.clicked.connect(self.create_displacement_btn_callback)
+
+    def create_proj_btn_callback(self):
+        material_utils.create_projection()
 
     def material_builder_btn_callback(self):
         material_builder_ui.main()

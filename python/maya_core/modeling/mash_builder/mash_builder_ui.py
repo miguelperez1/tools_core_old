@@ -37,7 +37,7 @@ class MASHBuilderUI(QtWidgets.QMainWindow):
     def create_widgets(self):
         self.network_name_lble = MWidgets.LabeledLineEdit("Network Name: ")
 
-        self.scatter_amount = MWidgets.LabeledIntSlider("Number of Points: ", 0, 7000, 0)
+        self.scatter_amount = MWidgets.LabeledIntSlider("Number of Points: ", 0, 4000, 100)
 
         self.geo_type_lbl = QtWidgets.QLabel("Geometry Type: ")
         self.geo_type_cmbx = QtWidgets.QComboBox()

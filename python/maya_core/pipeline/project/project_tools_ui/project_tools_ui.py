@@ -12,9 +12,6 @@ from pyqt_commons import MWidgets
 from pyqt_commons import DockableWidget
 from maya_core.pipeline.project import maya_project
 
-reload(MWidgets)
-reload(maya_project)
-
 projects_root = r"F:\share\projects"
 
 logger = logging.getLogger(__name__)
@@ -61,6 +58,11 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.shot_cmbx = QtWidgets.QComboBox()
         self.shot_create_btn = QtWidgets.QPushButton("Create")
 
+        self.create_asset_lble = MWidgets.LabeledLineEdit("Create Asset: ")
+        self.create_asset_type_cmbx = QtWidgets.QComboBox()
+        self.create_asset_type_cmbx.addItems(['Character', 'Prop', 'Set', 'SetDress', 'Transit'])
+        self.create_asset_btn = QtWidgets.QPushButton("Create")
+
         self.open_shot_btn = QtWidgets.QPushButton()
         self.open_shot_btn.setIcon(file_browse_icon)
 
@@ -102,6 +104,14 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
 
         inner_layout.addLayout(shot_seq_layout)
 
+        create_asset_layout = QtWidgets.QHBoxLayout()
+        create_asset_layout.addWidget(self.create_asset_lble)
+        create_asset_layout.addWidget(self.create_asset_type_cmbx)
+        create_asset_layout.addWidget(self.create_asset_btn)
+
+        inner_layout.addWidget(MWidgets.QHLine())
+        inner_layout.addLayout(create_asset_layout)
+
         create_layout = QtWidgets.QHBoxLayout()
         create_layout.addWidget(self.create_project_lble)
         create_layout.addWidget(self.create_project_btn)
@@ -115,9 +125,10 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.create_project_btn.clicked.connect(self.create_btn_callback)
         self.projects_open_dir_btn.clicked.connect(self.open_project_root)
         self.projects_open_maya_file_btn.clicked.connect(self.open_maya_file)
+        self.create_asset_btn.clicked.connect(self.create_asset_btn_callback)
 
     def open_project_root(self):
-        os.startfile(self.maya_project.project_root)
+        os.startfile(self.maya_project.project_path)
 
     def open_maya_file(self):
         project_root = os.path.join(projects_root, self.projects_cmbx.currentText(), "scenes")
@@ -142,9 +153,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.projects_cmbx.blockSignals(False)
 
     def set_project(self):
-        project_root = os.path.join(projects_root, self.projects_cmbx.currentText())
-
-        maya_project.set_maya_project(project_root)
+        maya_project.set_maya_project(self.projects_cmbx.currentText())
         self.maya_project = maya_project.get_current_project()
 
         self.refresh_seq()
@@ -174,7 +183,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.seq_cmbx.clear()
 
         # replace this with sequences manifest
-        for seq in sorted(os.listdir(self.maya_project.seq_root)):
+        for seq in sorted(os.listdir(self.maya_project.seq_path)):
             self.seq_cmbx.addItem(seq)
 
         self.seq_cmbx.setCurrentIndex(0)
@@ -189,10 +198,14 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
 
         if self.seq_cmbx.currentText():
             # change this to get from sequence manifest
-            for shot in os.listdir(os.path.join(self.maya_project.seq_root, self.seq_cmbx.currentText())):
+            for shot in os.listdir(os.path.join(self.maya_project.seq_path, self.seq_cmbx.currentText())):
                 self.shot_cmbx.addItem(shot)
 
         self.shot_cmbx.blockSignals(False)
+
+    def create_asset_btn_callback(self):
+        self.maya_project.create_asset(self.create_asset_lble.text(), self.create_asset_type_cmbx.currentText().lower())
+        pass
 
 
 def main():

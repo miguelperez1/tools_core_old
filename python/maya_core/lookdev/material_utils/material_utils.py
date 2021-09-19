@@ -64,6 +64,8 @@ class MaterialBuilder(object):
 
         pm.connectAttr(shader.outColor, shading_group.surfaceShader)
 
+        print(self.material_data)
+
         if 'textures' not in self.material_data.keys():
             return shader, shading_group
 
@@ -72,7 +74,7 @@ class MaterialBuilder(object):
 
         displacement = None
 
-        for tex_type in self.material_data['textures'].keys():
+        for tex_type in self.material_data['textures']:
             tex_path = self.material_data['textures'][tex_type]['path']
             use_ptex = self.material_data['textures'][tex_type]['use_ptex']
 
@@ -130,7 +132,6 @@ def create_texture(name=None, path=None, cc=True, uv=True, ptex=False):
         texture_node = pm.shadingNode('file', asTexture=True, isColorManaged=True)
 
     nodes['texture_node'] = texture_node
-
 
     if path:
         if ptex:
@@ -221,3 +222,32 @@ def build_material(material_data):
     mb = MaterialBuilder(material_data)
 
     return mb.build_material()
+
+
+def create_projection(name='', path='', comp=True):
+    tex_nodes = create_texture(name=name, path=path)
+    tex_nodes['uv_node'].wrapU.set(0)
+    tex_nodes['uv_node'].wrapV.set(0)
+    tex_nodes['texture_node'].defaultColor.set([0, 0, 0])
+
+    # Create 3d projection nodes
+    place = pm.shadingNode("place3dTexture", asUtility=True)
+    proj = pm.shadingNode("projection", asUtility=True)
+
+    pm.connectAttr(place.worldInverseMatrix, proj.placementMatrix)
+    pm.connectAttr(tex_nodes['cc_node'].outColor, proj.image)
+
+    proj.defaultColor.set([0, 0, 0])
+
+    # Composite
+    if comp:
+        composite = pm.shadingNode("colorComposite", asUtility=True)
+        pm.connectAttr(proj.outColorR, composite.factor)
+        composite.operation.set(2)
+
+    # Rename
+    if name:
+        pm.rename(place, "{}_place3dTexture".format(name))
+        pm.rename(proj, "{}_projection".format(name))
+        if comp:
+            pm.rename(composite, "{}_colorComposite".format(name))

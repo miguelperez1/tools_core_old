@@ -4,7 +4,7 @@ import subprocess
 from shutil import copyfile
 
 from maya_core.asset_manager.library_utils import constants
-from maya_core.asset_manager.library_utils import library_utils
+# from maya_core.asset_manager.library_utils import library_utils
 from maya_core.common_tools.maya_utilities import maya_utilities
 from maya_core.lookdev.material_utils import material_utils
 
@@ -59,16 +59,16 @@ LIBRARIES = constants.libraries
 # }
 
 class AssetBuilder(object):
-    def __init__(self, asset_data, build_maya_file=False):
+    def __init__(self, asset_data, build_maya=False):
         super(AssetBuilder, self).__init__()
         self.asset_data = asset_data
         self.name = asset_data['name']
         self.asset_type = asset_data['asset_type']
 
-        if 'preview' in self.asset_data.keys():
-            self.preview_src = asset_data['preview']
+        if 'asset_preview' in self.asset_data.keys():
+            self.preview_src = asset_data['asset_preview']
 
-        self.build_maya_file = build_maya_file
+        self.build_maya_file = build_maya
 
         self.asset_root = os.path.join(LIBRARIES[self.asset_type], self.name)
         self.json_path = os.path.join(self.asset_root, "data.json")
@@ -77,7 +77,7 @@ class AssetBuilder(object):
         self.material_dir = os.path.join(self.asset_root, "material")
 
         self.publish_data = {
-            'self.name': self.name,
+            'asset_name': self.name,
             "asset_type": self.asset_type,
             "import_file": self.maya_file
         }
@@ -86,6 +86,8 @@ class AssetBuilder(object):
             self.publish_data['tags'] = self.asset_data['tags']
         if 'scale' in self.asset_data.keys():
             self.publish_data['scale'] = self.asset_data['scale']
+        if 'megascan_id' in self.asset_data.keys():
+            self.publish_data['megascan_id'] = self.asset_data['megascan_id']
 
     def create_asset(self, save_type=None):
         import maya.cmds as cmds
@@ -103,9 +105,11 @@ class AssetBuilder(object):
             cmds.file(rename=self.maya_file)
             cmds.file(save=True, force=True, type="mayaAscii")
         elif save_type == "selection":
+            cmds.select(clear=1)
+            cmds.select(self.name)
             cmds.file(self.maya_file, es=True, type="mayaAscii", force=True)
 
-        library_utils.build_library_jsons()
+        # library_utils.build_library_jsons()
 
     def _create_directories(self):
         os.mkdir(self.asset_root)
@@ -140,33 +144,47 @@ class AssetBuilder(object):
 
             publish_material_data = {
                 'name': self.name,
-                'material_type': material_data['material_type']
+                'material_type': material_data['material_type'],
+                'textures': {}
             }
 
-            textures = []
-            for tex_data in material_data['textures']:
-                for tex_type, texture in tex_data.items():
-                    src_tex = texture.replace("/", "\\")
-                    dst_tex = os.path.join(self.textures_dir, src_tex.split("\\")[-1])
+            textures = {}
+            for tex_data in material_data['textures'].items():
+                tex_type = tex_data[0]
+                texture = tex_data[1]['path']
+                src_tex = texture.replace("/", "\\")
+                dst_tex = os.path.join(self.material_dir, src_tex.split("\\")[-1])
+
+                if not os.path.isfile(src_tex):
+                    print(src_tex + " does not exist, skipping copying image")
+                    continue
+
+                if src_tex == dst_tex:
+                    print("source and destination image are the same, skipping copying image")
+                    continue
+
+                try:
                     copyfile(src_tex, dst_tex)
+                except Exception as e:
+                    print(e)
 
-                    tex_data = {
-                        tex_type: dst_tex
-                    }
-
-                    textures.append(tex_data)
+                # TODO fix this ptex check
+                textures[tex_type] = {
+                    'path': dst_tex,
+                    'use_ptex': False
+                }
 
             publish_material_data['textures'] = textures
 
             self.publish_data['material_data'] = publish_material_data
 
     def _copy_preview(self):
-        if 'preview' in self.asset_data.keys() and self.asset_data['preview']:
-            src_preview = self.asset_data['preview']
+        if 'asset_preview' in self.asset_data.keys() and self.asset_data['asset_preview']:
+            src_preview = self.asset_data['asset_preview']
             preview_name = "{0}_preview.png".format(self.name)
             dst_preview = os.path.join(self.asset_root, preview_name)
 
-            self.publish_data['preview'] = dst_preview
+            self.publish_data['asset_preview'] = dst_preview
 
             copyfile(src_preview, dst_preview)
 
@@ -185,6 +203,8 @@ class AssetBuilder(object):
 
         log_path = os.path.join(self.asset_root, "build_log", "build_log.txt")
         f = open(log_path, "w")
+
+        print("running mayapy process for {}".format(self.name))
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
 
@@ -218,7 +238,11 @@ class AssetBuilder(object):
 
                 dst = os.path.join(dst_root, src.split("/")[-1])
 
-                copyfile(src, dst)
+                try:
+                    copyfile(src, dst)
+                except Exception as e:
+                    print(e)
+                    continue
 
                 if not ptex:
                     texture.fileTextureName.set(dst)
@@ -330,8 +354,10 @@ class AssetBuilder(object):
         pm.exportSelected(proxy_maya_path, type="mayaAscii", channels=True, force=True)
 
 
-def build_asset(asset_data):
+def build_asset(asset_data, build_maya=False):
     if not asset_data:
+        print("no asset data provided")
         return
 
-    asset_builder = AssetBuilder(asset_data)
+    asset_builder = AssetBuilder(asset_data, build_maya=build_maya)
+    asset_builder.create_asset()

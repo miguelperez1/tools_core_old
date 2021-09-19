@@ -116,6 +116,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
 
         # Texture Actions
         self.create_card_action = QtWidgets.QAction("Create Card")
+        self.create_projection_action = QtWidgets.QAction("Create Projection")
 
     def create_widgets(self):
         self.search_lble = MWidgets.LabeledLineEdit('Search')
@@ -281,6 +282,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         self.build_material_action.triggered.connect(self.build_material_action_callback)
         self.build_and_assign_material_action.triggered.connect(self.build_and_assign_material_action_callback)
         self.create_card_action.triggered.connect(self.create_card_action_callback)
+        self.create_projection_action.triggered.connect(self.create_projection_action_callback)
 
         self.assets_tw.tags_updated.connect(self.refresh_libraries_tw)
 
@@ -325,6 +327,7 @@ class AssetBrowserWidget(QtWidgets.QWidget):
         if self.current_library == 'texture':
             contextMenu.addSeparator()
             contextMenu.addAction(self.create_card_action)
+            contextMenu.addAction(self.create_projection_action)
 
         contextMenu.addSeparator()
 
@@ -433,6 +436,15 @@ class AssetBrowserWidget(QtWidgets.QWidget):
             logger.info("Creating card: %s", asset)
 
             lighting_utils.create_card(asset, asset_data['import_file'])
+
+    def create_projection_action_callback(self):
+        for item in self.assets_tw.selectedItems():
+            asset = item.text(1)
+            asset_data = item.data(0, QtCore.Qt.UserRole)
+
+            logger.info("Creating projection: %s", asset)
+
+            material_utils.create_projection(name=asset, path=asset_data['import_file'])
 
     def update_tags(self):
         pass

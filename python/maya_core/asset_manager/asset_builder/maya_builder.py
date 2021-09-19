@@ -18,6 +18,8 @@ libraries = constants.libraries
 
 
 def build_maya(asset_data):
+    import pymel.core as pm
+
     asset_name = asset_data['asset_name']
     asset_type = asset_data['asset_type']
     asset_root = os.path.join(libraries[asset_type], asset_name)
@@ -30,11 +32,13 @@ def build_maya(asset_data):
     if asset_type == 'model':
         if asset_data['mesh']:
             # import mesh
-            cmds.file(asset_data['mesh'], i=True)
+            print("importing mesh: " + asset_data['mesh'])
+            print(os.path.isfile(asset_data['mesh']))
 
-            cmds.select(cmds.listRelatives(cmds.ls(geometry=True), p=True, path=True), r=True)
+            cmds.file(asset_data['mesh'], i=True, typ="OBJ")
 
-            mesh_node = pm.PyNode(cmds.ls(sl=1)[0])
+            mesh_node = (pm.ls(geometry=True)[0].getTransform())
+            # mesh_node = pm.PyNode(cmds.ls(sl=1)[0])
 
             cmds.select(clear=1)
 
@@ -47,11 +51,12 @@ def build_maya(asset_data):
 
     # Create material
     if asset_data['material_data']:
+        print(asset_data['material_data'])
 
         material = material_utils.build_material(asset_data['material_data'])
 
         # Assign material
-        if mesh_node:
+        if mesh_node is not None:
             cmds.sets(str(mesh_node), e=True, forceElement=str(material[1]))
 
             if material[-1]:
@@ -120,8 +125,9 @@ def main():
     asset_data = json.load(json_file)
     json_file.close()
 
-    cmds.file(rename=os.path.join(asset_data['import_file']))
-    cmds.file(save=True, type='mayaAscii')
+    maya_file = asset_data['import_file']
+
+    cmds.file(rename=os.path.join(maya_file))
 
     build_maya(asset_data)
 
