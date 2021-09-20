@@ -45,3 +45,20 @@ def publish_asset_stage(asset_data, stage, version):
 
     with open(asset_json_path, "w") as f:
         json.dump(asset_root_data, f, indent=4, sort_keys=True)
+
+
+def get_asset_data(asset_data):
+    proj = maya_project.get_current_project()
+
+    asset_name = asset_data['asset_name']
+    asset_type = asset_data['asset_type']
+
+    asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
+
+    asset_json_path = os.path.join(asset_root_path, 'data', 'data.json')
+
+    json_file = open(asset_json_path, "r")
+    asset_root_data = json.load(json_file)
+    json_file.close()
+
+    return asset_root_data

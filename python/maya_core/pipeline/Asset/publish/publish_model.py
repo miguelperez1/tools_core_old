@@ -33,7 +33,9 @@ def publish_model(world_node):
 
     # Update world_node to include the model attribute with the current version number
 
-    cmds.addAttr(str(world_node), ln="buildModel", dt="string")
+    if not hasattr(world_node, "buildModel"):
+        cmds.addAttr(str(world_node), ln="buildModel", dt="string")
+
     world_node.buildModel.set(version_number)
 
     logger.info("Asset world node buildModel version set to: %s", version_number)
@@ -43,6 +45,9 @@ def publish_model(world_node):
     publish_file_path = os.path.join(asset_root_path, "model", "publish", "{}.ma".format(asset_name))
 
     cmds.file(save=True, type="mayaAscii")
+
+    if os.path.isfile(publish_file_path):
+        os.remove(publish_file_path)
 
     copyfile(file_path, publish_file_path)
 
