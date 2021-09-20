@@ -55,6 +55,15 @@ ASSET_FOLDER_STRUCTURE = {
     'cache': {},
     'data': {
         'logs': []
+    },
+    'build': {
+        'publish': [],
+        'world_node': [],
+        'wip': []
+    },
+    'rig': {
+        'publish': [],
+        'wip': []
     }
 }
 
@@ -68,12 +77,13 @@ class Project(object):
         self.seq_path = os.path.join(self.scenes_path, "seq")
         self.assets_path = os.path.join(self.scenes_path, "assets")
 
-        # globals
-
     def project_exists(self):
         return os.path.isfile(os.path.join(self.project_path, "workspace.mel"))
 
     def create_maya_project(self):
+        if self.project_exists():
+            return
+
         cmds.workspace(self.project_path, n=1)
 
         for file_rule in cmds.workspace(query=True, fileRuleList=True):
@@ -129,6 +139,9 @@ class Project(object):
         pass
 
     def create_asset(self, asset_name, asset_type):
+        if asset_name in self.get_assets()[-1]:
+            return
+
         asset_name = asset_name.replace(" ", "_")
 
         asset_letter_path = os.path.join(self.assets_path, asset_type, asset_name[0].lower())
@@ -150,7 +163,7 @@ class Project(object):
                     for f in sfsf:
                         os.mkdir(os.path.join(asset_root_path, folder, sf, f))
 
-        function = r'F:\share\tools\tools_core\python\maya_core\pipeline\Asset\build_asset_maya_template.py'
+        function = r'F:\share\tools\tools_core\python\maya_core\pipeline\Asset\build\build_asset_maya_template.py'
 
         arg = '{0} {1} {2}'.format(self.project_name, asset_name, asset_type)
 
@@ -163,6 +176,12 @@ class Project(object):
         for seq, shots in seq_data.items():
             new_seq = Sequence.Sequence(self, seq, shots)
             new_seq.create_sequence()
+
+    def get_asset(self, asset_name):
+        for asset_type, assets in self.get_assets()[0].items():
+            for asset in assets:
+                if asset_name == asset:
+                    return asset_name, asset_type
 
 
 def set_maya_project(project_name):

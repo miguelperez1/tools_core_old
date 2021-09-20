@@ -3,7 +3,7 @@ import maya.cmds as cmds
 
 MAYA_ASSET_NODE_STRUCTURE = {
     'Geometry': {
-        'Parts': []
+        'Constrain': ['Parts']
     },
     'Cache': {
         'Geo': [],
@@ -44,6 +44,10 @@ class MayaAsset(object):
         # Create Attrs
         cmds.addAttr(str(self.world_node), ln="mayaAsset", at="long")
         cmds.addAttr(str(self.world_node), ln="assetType", dt="string")
+        cmds.addAttr(str(self.world_node), ln="assetName", dt="string")
+        cmds.addAttr(str(self.world_node), ln="build", dt="string")
 
         self.world_node.mayaAsset.set(1)
         self.world_node.assetType.set(self.asset_data['asset_type'])
+        self.world_node.assetName.set(self.asset_data['asset_name'])
+        self.world_node.build.set('v001')

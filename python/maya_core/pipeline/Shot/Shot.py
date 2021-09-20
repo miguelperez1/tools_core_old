@@ -18,8 +18,10 @@ SHOT_FOLDER_STRUCTURE = {
         'comp': ['wip', 'publish'],
         'publish': ['exr'],
         'src_renders': ['old', 'standby', 'current']
-    }
+    },
+    'fx': {}
 }
+
 
 class Shot(object):
     def __init__(self, project, seq_num, shot_num):
@@ -31,10 +33,10 @@ class Shot(object):
 
     def create_shot(self):
 
-        self.shot_path = os.path.join(self.project.seq_path, self.seq_num, 'shots', "{0}_{1}".format(self.seq_num, self.shot_num))
+        self.shot_path = os.path.join(self.project.seq_path, self.seq_num, 'shots',
+                                      "{0}_{1}".format(self.seq_num, self.shot_num))
 
         if os.path.isdir(self.shot_path):
-            # TODO Log error
             print("shot exists, skipping")
             return
 
