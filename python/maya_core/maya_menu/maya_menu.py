@@ -2,6 +2,8 @@ import json
 
 import pymel.core as pm
 
+from maya_core.pipeline.project import maya_project
+
 
 def create_menus(d, parent=None):
     if "submenus" in d.keys():
@@ -21,7 +23,7 @@ def create_studio_menu():
     menu_json_path = r"F:\share\tools\tools_core\python\maya_core\maya_menu\menus.json"
 
     json_file = open(menu_json_path, "r")
-    menu_json_data = json.load(json_file)
+    menu_data = json.load(json_file)
     json_file.close()
 
     menu_name, menu_label = 'StudioMenu', 'Studio'
@@ -31,7 +33,16 @@ def create_studio_menu():
 
     studio_menu = pm.menu(menu_name, label=menu_label, parent=MAYA_MAIN_WINDOW, tearOff=1)
 
-    menu_data = menu_json_data
+    for project in maya_project.get_all_projects():
+        lbl = project.project_name
+        cmd = "print('set project to {}')".format(lbl)
+
+        project_menu_data = {
+            "lbl": lbl,
+            "cmd": cmd
+        }
+
+        menu_data['submenus'][0]["submenus"].append(project_menu_data)
 
     create_menus(menu_data, parent=studio_menu)
 

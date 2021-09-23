@@ -14,14 +14,6 @@
         },
         {
           "divider": true
-        },
-        {
-          "lbl": "default",
-          "cmd": "print('set project to default')"
-        },
-        {
-          "lbl": "in_the_morning",
-          "cmd": "print('set proj ect to in the morning')"
         }
       ]
     },
@@ -74,7 +66,12 @@
       ]
     },
     {
-      "lbl": "Look Dev",
+      "lbl": "Rigging",
+      "submenus": [
+      ]
+    },
+    {
+      "lbl": "LookDev",
       "submenus": [
         {
           "lbl": "Material Builder",
@@ -134,6 +131,19 @@
         {
           "lbl": "Pose Library",
           "cmd": "print('pose library')"
+        },
+        {
+          "lbl": "Cache Shot",
+          "cmd": "print('cache shot')"
+        },
+        {
+          "lbl": "Utilities",
+          "submenus": [
+            {
+              "lbl": "Visibility Keyframes",
+              "cmd": "print('keyframe vis')"
+            }
+          ]
         }
       ]
     },
@@ -143,6 +153,36 @@
         {
           "lbl": "Light Console",
           "cmd": "from maya_core.lighting.lighting_console import lighting_console_ui\nlighting_console_ui.main()"
+        },
+        {
+          "lbl": "Lights",
+          "submenus": [
+            {
+              "lbl": "Distant Halo Light",
+              "cmd": "print('create halo distant light')"
+            },
+            {
+              "lbl": "Rect Halo Light",
+              "cmd": "print('create halo rect light')"
+            },
+            {
+              "lbl": "Softbox Studio Light",
+              "cmd": "print('create softbox studio light')"
+            }
+          ]
+        },
+        {
+          "lbl": "Create Holdout",
+          "submenus": [
+            {
+              "lbl": "Default",
+              "cmd": "print('create default holdout')"
+            },
+            {
+              "lbl": "Matte",
+              "cmd": "print('create matte holdout')"
+            }
+          ]
         }
       ]
     },

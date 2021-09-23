@@ -204,3 +204,14 @@ def set_maya_project(project_name):
 
 def get_current_project():
     return Project(cmds.workspace(sn=1).split("/")[-1])
+
+
+def get_all_projects():
+    projects = []
+    for project in os.listdir(projects_root):
+        if project == 'archive' or not os.path.isdir(os.path.join(projects_root, project)):
+            continue
+        else:
+            projects.append(Project(project))
+
+    return projects

@@ -257,6 +257,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         cmds.file(f, r=True, ignoreVersion=True, force=True, namespace=asset_name)
 
     def browse_asset_callback(self):
+        print(self.maya_project.get_assets()[0])
         self.valid_asset = False
 
         for asset_type, assets in self.maya_project.get_assets()[0].items():
