@@ -9,8 +9,7 @@ import pymel.core as pm
 import maya_core
 
 from maya_core.pipeline.project import maya_project
-
-version = "1.1"
+from maya_core.maya_menu import maya_menu
 
 
 def set_default_workspace():
@@ -39,11 +38,10 @@ def set_render_settings():
 
 
 def startup_maya():
-    # log.result("startup version-" + version)
-    # log.result("loaded tools_core-" + maya_core.version)
     mel.eval("loadPlugin vrayformaya")
     set_render_settings()
     set_default_workspace()
+    maya_menu.create_studio_menu()
 
 
 def main():
@@ -59,6 +57,9 @@ def copy_user_setup():
         os.remove(dst_file)
 
     copyfile(src_file, dst_file)
+
+    if os.path.isfile(dst_file):
+        print("Copied userSetup.py")
 
 
 if __name__ == "__main__":

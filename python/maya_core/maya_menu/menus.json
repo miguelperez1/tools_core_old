@@ -1,0 +1,173 @@
+{
+  "lbl": "top_level",
+  "submenus": [
+    {
+      "lbl": "Project",
+      "submenus": [
+        {
+          "lbl": "Project Tools Dock",
+          "cmd": "print('create project')"
+        },
+        {
+          "lbl": "Create Project",
+          "cmd": "print('create project')"
+        },
+        {
+          "divider": true
+        },
+        {
+          "lbl": "default",
+          "cmd": "print('set project to default')"
+        },
+        {
+          "lbl": "in_the_morning",
+          "cmd": "print('set proj ect to in the morning')"
+        }
+      ]
+    },
+    {
+      "divider": true
+    },
+    {
+      "divider": true
+    },
+    {
+      "lbl": "Pipeline",
+      "submenus": [
+        {
+          "lbl": "Publish file",
+          "cmd": "print('publish file')"
+        },
+        {
+          "lbl": "Create Asset",
+          "cmd": "print('create asset')"
+        }
+      ]
+    },
+    {
+      "lbl": "Modeling",
+      "submenus": [
+        {
+          "lbl": "Transform",
+          "submenus": [
+            {
+              "lbl": "Normalize scale",
+              "cmd": "from maya_core.common_tools.normalize_scale import normalize_scale_ui\nnormalize_scale_ui.main()"
+            },
+            {
+              "lbl": "Move pivot to bottom",
+              "cmd": "print('move pivot to bottom')"
+            },
+            {
+              "lbl": "Move in front of camera",
+              "cmd": "print('move in front of camera')"
+            }
+          ]
+        },
+        {
+          "divider": true
+        },
+        {
+          "lbl": "Mash Builder",
+          "cmd": "from maya_core.modeling.mash_builder import mash_builder_ui\nmash_builder_ui.main()"
+        }
+      ]
+    },
+    {
+      "lbl": "Look Dev",
+      "submenus": [
+        {
+          "lbl": "Material Builder",
+          "cmd": "print('material builder')"
+        },
+        {
+          "lbl": "Reference LookDev Rig",
+          "cmd": "print('reference look dev rig')"
+        },
+        {
+          "lbl": "CC Node Finder",
+          "cmd": "print('cc node finder')"
+        },
+        {
+          "lbl": "Create",
+          "submenus": [
+            {
+              "lbl": "Texture",
+              "cmd": "print('create texture')"
+            },
+            {
+              "lbl": "VRay Ptex",
+              "cmd": "print('create vray ptex')"
+            },
+            {
+              "lbl": "Color Correct",
+              "cmd": "print('create color correct')"
+            },
+            {
+              "lbl": "3D Projection",
+              "cmd": "print('create 3d projection')"
+            },
+            {
+              "lbl": "VRay Displacement",
+              "cmd": "print('create vray displacement')"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "lbl": "Layout",
+      "submenus": [
+        {
+          "lbl": "Reference Shot Camera",
+          "cmd": "print('reference shotCam')"
+        },
+        {
+          "lbl": "Sequence Breakout Tool",
+          "cmd": "print('sequence breakout')"
+        }
+      ]
+    },
+    {
+      "lbl": "Animation",
+      "submenus": [
+        {
+          "lbl": "Pose Library",
+          "cmd": "print('pose library')"
+        }
+      ]
+    },
+    {
+      "lbl": "Lighting",
+      "submenus": [
+        {
+          "lbl": "Light Console",
+          "cmd": "from maya_core.lighting.lighting_console import lighting_console_ui\nlighting_console_ui.main()"
+        }
+      ]
+    },
+    {
+      "divider": true
+    },
+    {
+      "divider": true
+    },
+    {
+      "lbl": "General Utilities",
+      "submenus": [
+        {
+          "lbl": "Rename selected",
+          "cmd": "print('rename selected')"
+        },
+        {
+          "lbl": "Remove pasted from names",
+          "cmd": "print('remove pasted from names')"
+        },
+        {
+          "lbl": "Select by name",
+          "cmd": "print('select by name')"
+        }
+      ]
+    }
+  ]
+}

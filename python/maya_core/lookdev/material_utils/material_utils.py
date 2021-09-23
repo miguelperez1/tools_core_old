@@ -58,8 +58,8 @@ class MaterialBuilder(object):
         return build_method()
 
     def build_VRayMtl(self):
-        shader = pm.PyNode(cmds.shadingNode('VRayMtl', name=self.name + "_mat", asShader=True))
-        shading_group = pm.PyNode(cmds.sets(name=str(shader).replace("_mat", "") + "_sg", empty=True, renderable=True,
+        shader = pm.PyNode(cmds.shadingNode('VRayMtl', name=self.name + "_mtl", asShader=True))
+        shading_group = pm.PyNode(cmds.sets(name=str(shader).replace("_mtl", "") + "_sg", empty=True, renderable=True,
                                             noSurfaceShader=True))
 
         pm.connectAttr(shader.outColor, shading_group.surfaceShader)

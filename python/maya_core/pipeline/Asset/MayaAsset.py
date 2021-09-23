@@ -48,6 +48,9 @@ class MayaAsset(object):
         cmds.addAttr(str(self.world_node), ln="build", dt="string")
 
         self.world_node.mayaAsset.set(1)
+        self.world_node.mayaAsset.lock()
         self.world_node.assetType.set(self.asset_data['asset_type'])
+        self.world_node.assetType.lock()
         self.world_node.assetName.set(self.asset_data['asset_name'])
+        self.world_node.assetName.lock()
         self.world_node.build.set('v001')
