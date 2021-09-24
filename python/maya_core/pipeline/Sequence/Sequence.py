@@ -11,7 +11,11 @@ SEQ_FOLDER_STRUCTURE = {
         'layout': ['wip', 'publish'],
         'fx': []
     },
-    'shots': {}
+    'shots': {},
+    'footage': {
+        'final': [],
+        'wip': []
+    }
 }
 
 

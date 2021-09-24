@@ -7,7 +7,8 @@ SHOT_FOLDER_STRUCTURE = {
     },
     'cache': {
         'geo': [],
-        'hair': []
+        'hair': [],
+        'camera': []
     },
     'layout': {
         'wip': [],
@@ -19,7 +20,11 @@ SHOT_FOLDER_STRUCTURE = {
         'publish': ['exr'],
         'src_renders': ['old', 'standby', 'current']
     },
-    'fx': {}
+    'fx': {},
+    'footage': {
+        'final': [],
+        'wip': []
+    }
 }
 
 

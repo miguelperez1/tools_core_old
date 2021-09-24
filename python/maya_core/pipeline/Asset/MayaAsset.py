@@ -54,3 +54,12 @@ class MayaAsset(object):
         self.world_node.assetName.set(self.asset_data['asset_name'])
         self.world_node.assetName.lock()
         self.world_node.build.set('v001')
+
+    def apply_hair_cache(self, cache_path):
+        pass
+
+    def cache_hair(self, cache_path, frame_range):
+        pass
+
+    def cache_geo(self):
+        pass

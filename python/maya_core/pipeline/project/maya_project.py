@@ -25,6 +25,9 @@ PROJECT_FOLDER_STRUCTURE = {
         'set': [],
         'set_dress': [],
         'transit': [],
+        'lighting': [],
+        'cameras': [],
+        'rig': []
     },
     'data': {
         'logs': []
@@ -172,6 +175,11 @@ class Project(object):
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
 
+        if os.path.isfile(asset_root_path, "{}.ma".format(asset_name)):
+            logger.info("Built %s successfully", asset_name)
+        else:
+            logger.error("Asset not built")
+
     def create_sequence(self, seq_data):
         for seq, shots in seq_data.items():
             new_seq = Sequence.Sequence(self, seq, shots)
@@ -215,3 +223,9 @@ def get_all_projects():
             projects.append(Project(project))
 
     return projects
+
+
+def get_project(project_name):
+    for p in get_all_projects():
+        if p.project_name == project_name:
+            return p
