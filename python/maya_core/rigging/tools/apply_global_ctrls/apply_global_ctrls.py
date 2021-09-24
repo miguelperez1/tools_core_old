@@ -15,7 +15,14 @@ logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
 
-def apply_global_ctrls(node):
+def apply_global_ctrls(node=None):
+    if node is None:
+        node = pm.ls(sl=1)[0]
+
+    if node is None:
+        logger.error("No node selected")
+        return
+
     if not hasattr(node, "assetName"):
         logger.error("%s is not an asset world node", str(node))
         return

@@ -69,8 +69,8 @@
       "lbl": "Rigging",
       "submenus": [
         {
-          "lbl": "Create COG Controls",
-          "cmd": "from maya_core.rigging.tools.apply_global_ctrls import apply_global_ctrls)\napply_global_ctrls.apply_global_ctrls(pm.ls(sl=1)[0])"
+          "lbl": "Create Global Controls",
+          "cmd": "from maya_core.rigging.tools.apply_global_ctrls import apply_global_ctrls)\napply_global_ctrls.apply_global_ctrls()"
         }
       ]
     },
