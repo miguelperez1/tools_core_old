@@ -28,7 +28,7 @@
       "submenus": [
         {
           "lbl": "Publish file",
-          "cmd": "print('publish file')"
+          "cmd": "from maya_core.pipeline.Asset.publish import publish_stage_ui\npublish_stage_ui.main()"
         },
         {
           "lbl": "Create Asset",
@@ -70,7 +70,7 @@
       "submenus": [
         {
           "lbl": "Create Global Controls",
-          "cmd": "from maya_core.rigging.tools.apply_global_ctrls import apply_global_ctrls)\napply_global_ctrls.apply_global_ctrls()"
+          "cmd": "from maya_core.rigging.tools.apply_global_ctrls import apply_global_ctrls\napply_global_ctrls.apply_global_ctrls()"
         }
       ]
     },

@@ -17,20 +17,23 @@ logger.setLevel(10)
 
 def apply_global_ctrls(node=None):
     if node is None:
-        node = pm.ls(sl=1)[0]
+        selected_nodes = pm.ls(sl=1)
 
-    if node is None:
-        logger.error("No node selected")
-        return
+        if not selected_nodes:
+            logger.error("No node selected")
+            return
+        else:
+            node = selected_nodes[0]
 
     if not hasattr(node, "assetName"):
         logger.error("%s is not an asset world node", str(node))
         return
-
     elif pm.objExists("GlobalCtrls"):
         if len(pm.listRelatives("GlobalCtrls", ap=1)) == 0:
             logger.error("GlobalCtrls is already top level in scene")
             return
+
+    logger.info("Applying global controls to %s", str(node))
 
     asset_name = node.assetName.get()
 

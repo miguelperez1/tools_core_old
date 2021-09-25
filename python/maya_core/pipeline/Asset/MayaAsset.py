@@ -3,7 +3,7 @@ import maya.cmds as cmds
 
 MAYA_ASSET_NODE_STRUCTURE = {
     'Geometry': {
-        'Constrain': ['Parts']
+        'Constrain': ['HiRes', 'Proxy']
     },
     'Cache': {
         'Geo': [],

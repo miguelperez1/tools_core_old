@@ -63,7 +63,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.create_asset_type_cmbx = QtWidgets.QComboBox()
         self.create_valid_asset = False
 
-        self.create_asset_type_cmbx.addItems(['Character', 'Prop', 'Set', 'SetDress', 'Transit'])
+        self.create_asset_type_cmbx.addItems(['Character', 'Prop', 'Set', 'Transit'])
         self.create_asset_btn = QtWidgets.QPushButton("Create")
 
         self.asset_browse_lble = MWidgets.LabeledLineEdit("Asset: ")

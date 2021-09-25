@@ -15,6 +15,7 @@ import maya.mel as mel
 from maya_core.pipeline.Asset import MayaAsset
 from maya_core.pipeline.project import maya_project
 from maya_core.pipeline.Asset import asset_utils
+from maya_core.pipeline.Asset.publish import publish_stage
 
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
@@ -29,7 +30,7 @@ def create_world_node_file(asset_data):
     asset_type = asset_data['asset_type']
 
     asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
-    asset_maya_path = os.path.join(asset_root_path, 'build', 'world_node', '{}.ma'.format(asset_name))
+    asset_maya_path = os.path.join(asset_root_path, '01_build', 'world_node', '{}.ma'.format(asset_name))
 
     cmds.file(rename=os.path.join(asset_maya_path))
 
@@ -51,28 +52,24 @@ def create_build(asset_data):
     asset_type = asset_data['asset_type']
 
     asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
-    asset_maya_path = os.path.join(asset_root_path, 'build', 'wip', '{}_v001.ma'.format(asset_name))
+    asset_maya_path = os.path.join(asset_root_path, '01_build', 'wip', '{}_v001.ma'.format(asset_name))
 
     cmds.file(rename=os.path.join(asset_maya_path))
 
     # Reference world node
-    world_node_file_path = os.path.join(asset_root_path, 'build', 'world_node', '{}.ma'.format(asset_name))
+    world_node_file_path = os.path.join(asset_root_path, '01_build', 'world_node', '{}.ma'.format(asset_name))
 
-    cmds.file(world_node_file_path, r=True, ignoreVersion=True, force=True, namespace=asset_name)
+    cmds.file(world_node_file_path, i=True, ignoreVersion=True, force=True, namespace=asset_name)
 
     cmds.file(save=True, type="mayaAscii")
 
-    asset_utils.publish_asset_stage(asset_data, 'build', 'v001')
+    world_node = pm.PyNode("{0}:{0}".format(asset_name))
 
-    src = asset_maya_path
-    dst = os.path.join(asset_root_path, 'build', "publish", "{}.ma".format(asset_name))
+    if world_node is None or (world_node is not None and not hasattr(world_node, "mayaAsset")):
+        logger.error("%s world node not found", asset_name)
+        return
 
-    copyfile(src, dst)
-
-    # TODO Publish Class for Master
-    master_path = os.path.join(asset_root_path, "{}.ma".format(asset_name))
-
-    copyfile(dst, master_path)
+    publish_stage.publish_stage(world_node, 'build', 'v001')
 
 
 def create_asset_json(asset_data):
@@ -83,7 +80,7 @@ def create_asset_json(asset_data):
 
     asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
 
-    asset_json_path = os.path.join(asset_root_path, "data", "data.json")
+    asset_json_path = os.path.join(asset_root_path, "00_data", "data.json")
 
     publish_assset_data = {
         'asset_name': asset_name,

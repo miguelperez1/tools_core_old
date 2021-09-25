@@ -23,7 +23,6 @@ PROJECT_FOLDER_STRUCTURE = {
         'character': [],
         'prop': [],
         'set': [],
-        'set_dress': [],
         'transit': [],
         'lighting': [],
         'cameras': [],
@@ -37,37 +36,42 @@ PROJECT_FOLDER_STRUCTURE = {
 }
 
 ASSET_FOLDER_STRUCTURE = {
-    'model': {
+    '00_data': {
+        'logs': []
+    },
+    '01_build': {
+        'publish': [],
+        'world_node': [],
+        'wip': []
+    },
+    '02_model': {
         'wip': [],
         'publish': []
     },
-    'lookdev': {
+    '03_lookdev': {
         'wip': [],
         'publish': []
     },
-    'lighting': {
-        'wip': [],
-        'publish': []
-    },
-    'hair': {
+    '04_hair': {
         'xgen': [],
         'cahe': [],
         'wip': [],
         'publish': []
     },
-    'cache': {},
-    'data': {
-        'logs': []
-    },
-    'build': {
-        'publish': [],
-        'world_node': [],
-        'wip': []
-    },
-    'rig': {
+    '05_rig': {
         'publish': [],
         'wip': []
-    }
+    },
+    '06_dress': {
+        'wip': [],
+        'publish': []
+    },
+    '07_lighting': {
+        'wip': [],
+        'publish': []
+    },
+    '99_cache': {}
+
 }
 
 
@@ -170,12 +174,12 @@ class Project(object):
 
         arg = '{0} {1} {2}'.format(self.project_name, asset_name, asset_type)
 
-        log_path = os.path.join(asset_root_path, 'data', 'logs', "build_log.txt")
+        log_path = os.path.join(asset_root_path, '00_data', 'logs', "build_log.txt")
         f = open(log_path, "w")
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
 
-        if os.path.isfile(asset_root_path, "{}.ma".format(asset_name)):
+        if os.path.isfile(os.path.join(asset_root_path, "{}.ma".format(asset_name))):
             logger.info("Built %s successfully", asset_name)
         else:
             logger.error("Asset not built")
