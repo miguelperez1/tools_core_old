@@ -47,14 +47,18 @@ class PublishStageUI(QtWidgets.QMainWindow):
         pass
 
     def create_widgets(self):
-        self.stage_lbl = QtWidgets.QLabel("Stage: ")
-
-        self.stages_cmbx = QtWidgets.QComboBox()
-        self.stages_cmbx.addItems([s.lower() for s in STAGES])
+        self.stage_lble = MWidgets.LabeledLineEdit("Stage: ")
+        self.stage_lble.le_widget.setReadOnly(True)
 
         self.version_lble = MWidgets.LabeledLineEdit("Version: ")
 
-        file_name = cmds.file(q=True, sn=True).replace("\\", "/").split("/")[-1]
+        file_path = cmds.file(q=True, sn=True).replace("\\", "/")
+        file_name = file_path.split("/")[-1]
+
+        stage = file_path.split("/")[9].split("_")[-1]
+
+        self.stage_lble.setText(stage)
+
         version_matches = list(set(re.findall("v\d{3}.ma$", file_name)))
 
         if version_matches:
@@ -77,8 +81,7 @@ class PublishStageUI(QtWidgets.QMainWindow):
         main_layout = QtWidgets.QVBoxLayout(central_widget)
 
         stage_layout = QtWidgets.QHBoxLayout()
-        stage_layout.addWidget(self.stage_lbl)
-        stage_layout.addWidget(self.stages_cmbx)
+        stage_layout.addWidget(self.stage_lble)
         stage_layout.addWidget(self.version_lble)
 
         main_layout.addLayout(stage_layout)
@@ -114,7 +117,7 @@ class PublishStageUI(QtWidgets.QMainWindow):
 
             asset_data = asset_utils.get_asset_data(asset_data_tmp)
 
-            stage = self.stages_cmbx.currentText()
+            stage = self.stage_lble.text()
 
             if stage not in asset_data['stages'].keys() and self.valid_version:
                 self.valid_version = True
@@ -180,7 +183,7 @@ class PublishStageUI(QtWidgets.QMainWindow):
         else:
             return
 
-        publish_stage.publish_stage(self.asset_node, self.stages_cmbx.currentText())
+        publish_stage.publish_stage(self.asset_node, self.stage_lble.text())
 
         asset_data_tmp = {
             'asset_name': self.asset_node.assetName.get(),
@@ -189,8 +192,9 @@ class PublishStageUI(QtWidgets.QMainWindow):
 
         asset_data = asset_utils.get_asset_data(asset_data_tmp)
 
-        if asset_data['stages'][self.stages_cmbx.currentText()] == self.version_lble.text():
-            logger.info("Stage: %s, version: %s for %s published successfully", self.stages_cmbx.currentText(), self.version_lble.text(), asset_data['asset_name'])
+        if asset_data['stages'][self.stage_lble.text()] == self.version_lble.text():
+            logger.info("Stage: %s, version: %s for %s published successfully", self.stage_lble.text(),
+                        self.version_lble.text(), asset_data['asset_name'])
 
         self.close()
 
@@ -200,6 +204,14 @@ def main():
         cmds.deleteUI("PublishStageUI")
     except Exception:
         pass
+
+    file_path = cmds.file(q=True, sn=True).replace("\\", "/")
+
+    search_pattern = "({})".format("|".join(["0{0}_{1}".format(i + 1, s) for i, s in enumerate(STAGES)]))
+
+    if not re.search(search_pattern, file_path):
+        logger.error("Cannot launch from a non stage file")
+        return
 
     dialog = PublishStageUI()
     dialog.show()

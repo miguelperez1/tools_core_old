@@ -213,6 +213,8 @@ def set_maya_project(project_name):
     if get_current_project().project_name == project_root.split("/")[-1]:
         logger.info("Project set to %s", project_root.split("/")[-1])
 
+        return get_current_project()
+
 
 def get_current_project():
     return Project(cmds.workspace(sn=1).split("/")[-1])

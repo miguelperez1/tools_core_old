@@ -33,6 +33,10 @@
         {
           "lbl": "Create Asset",
           "cmd": "print('create asset')"
+        },
+        {
+          "lbl": "Assemble Build File",
+          "cmd": "print('assemble build file')"
         }
       ]
     },

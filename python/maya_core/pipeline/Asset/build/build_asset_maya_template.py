@@ -4,6 +4,7 @@ import json
 import logging
 from shutil import copyfile
 
+
 import maya.standalone as standalone
 
 standalone.initialize(name='python')
@@ -52,7 +53,7 @@ def create_build(asset_data):
     asset_type = asset_data['asset_type']
 
     asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
-    asset_maya_path = os.path.join(asset_root_path, '01_build', 'wip', '{}_v001.ma'.format(asset_name))
+    asset_maya_path = os.path.join(asset_root_path, '01_build', 'wip', '{}_build_v001.ma'.format(asset_name))
 
     cmds.file(rename=os.path.join(asset_maya_path))
 
@@ -109,3 +110,5 @@ if __name__ == '__main__':
 
     create_world_node_file(asset_data)
     create_build(asset_data)
+
+    sys.exit()

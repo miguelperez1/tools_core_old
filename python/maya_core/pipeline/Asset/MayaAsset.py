@@ -45,7 +45,6 @@ class MayaAsset(object):
         cmds.addAttr(str(self.world_node), ln="mayaAsset", at="long")
         cmds.addAttr(str(self.world_node), ln="assetType", dt="string")
         cmds.addAttr(str(self.world_node), ln="assetName", dt="string")
-        cmds.addAttr(str(self.world_node), ln="build", dt="string")
 
         self.world_node.mayaAsset.set(1)
         self.world_node.mayaAsset.lock()
@@ -53,7 +52,6 @@ class MayaAsset(object):
         self.world_node.assetType.lock()
         self.world_node.assetName.set(self.asset_data['asset_name'])
         self.world_node.assetName.lock()
-        self.world_node.build.set('v001')
 
     def apply_hair_cache(self, cache_path):
         pass
