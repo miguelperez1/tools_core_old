@@ -349,7 +349,9 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             self.maya_project.create_asset(self.create_asset_lble.text(),
                                            self.create_asset_type_cmbx.currentText().lower())
 
+            self.asset_browse_lble.setText(self.create_asset_lble.text())
             self.create_asset_le_callback()
+
 
 
 def main():

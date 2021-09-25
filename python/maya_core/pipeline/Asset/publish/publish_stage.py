@@ -50,7 +50,7 @@ def publish_build_to_master(asset_data):
 
     asset_root_path = os.path.join(proj.assets_path, asset_type, asset_name[0].lower(), asset_name)
 
-    build_publish_file = os.path.join(asset_root_path, "01_build", "publish", "{}.ma".format(asset_name))
+    build_publish_file = os.path.join(asset_root_path, "01_build", "publish", "{}_build.ma".format(asset_name))
 
     if not os.path.isfile(build_publish_file):
         logger.error("Could not find published build file")
@@ -99,7 +99,7 @@ def publish_stage(world_node, stage, version=None):
     publish_file_path = os.path.join(asset_root_path,
                                      "0{}_{}".format(str(STAGES.index(stage.lower()) + 1), stage.lower()),
                                      "publish",
-                                     "{}.ma".format(asset_name))
+                                     "{}_{}.ma".format(asset_name, stage.lower()))
 
     cmds.file(save=True, type="mayaAscii")
 

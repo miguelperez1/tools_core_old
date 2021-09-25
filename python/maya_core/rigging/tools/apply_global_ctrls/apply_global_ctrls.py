@@ -41,11 +41,32 @@ def apply_global_ctrls(node=None):
     cmds.file(GLOBAL_CTRLS_PATH, i=True, ignoreVersion=True, force=True)
 
     # parent under ctrls group
-    pm.parent("GlobalCtrls", "{}|Controls".format(asset_name))
+    controls_node = None
+    for c in (node.listRelatives(c=1)):
+        if "Rig" in str(c):
+            for gc in c.listRelatives(c=1):
+                if "Controls" in str(gc):
+                    controls_node = gc
+
+    if controls_node is None:
+        logger.error("Could not find controls group")
+        return
+
+    pm.parent("GlobalCtrls", controls_node)
 
     # constrain to geo constrain group
-    constrain_ctrl = pm.PyNode("global_03_ctrl")
-    constrain_grp = pm.PyNode("{}|Geometry|Constrain".format(asset_name))
+    constrain_node = None
+    for c in (node.listRelatives(c=1)):
+        if "Geometry" in str(c):
+            for gc in c.listRelatives(c=1):
+                if "Constrain" in str(gc):
+                    constrain_node = gc
 
-    pm.parentConstraint(constrain_ctrl, constrain_grp, mo=1)
-    pm.scaleConstraint(constrain_ctrl, constrain_grp, mo=1)
+    if constrain_node is None:
+        logger.error("Could not find geometry constrain group")
+        return
+
+    constrain_ctrl = pm.PyNode("global_03_ctrl")
+
+    pm.parentConstraint(constrain_ctrl, constrain_node, mo=1)
+    pm.scaleConstraint(constrain_ctrl, constrain_node, mo=1)

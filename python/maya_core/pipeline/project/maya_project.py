@@ -174,7 +174,7 @@ class Project(object):
 
         arg = '{0} {1} {2}'.format(self.project_name, asset_name, asset_type)
 
-        log_path = os.path.join(asset_root_path, '00_data', 'logs', "build_log.txt")
+        log_path = os.path.join(asset_root_path, '00_data', 'logs', "initial_build_log.txt")
         f = open(log_path, "w")
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)

@@ -10,12 +10,14 @@ MAYA_ASSET_NODE_STRUCTURE = {
         'Hair': []
     },
     'Hair': {},
-    'Rig': {},
+    'Rig': {
+        'Controls': [],
+        'Skeleton': []
+    },
     'Lighting': {
         'lgt_rig': []
     },
     'FX': {},
-    'Controls': {},
     'Misc': {}
 }
 
