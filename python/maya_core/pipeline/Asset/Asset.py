@@ -42,6 +42,7 @@ class Asset(object):
         # create asset root path
         os.mkdir(self.asset_root_path)
 
+        # Create asset directories
         asset_structure_json_path = r"F:\share\tools\tools_core\python\maya_core\pipeline\Asset\asset_directory_structure.json"
 
         json_file = open(asset_structure_json_path, "r")
@@ -49,6 +50,12 @@ class Asset(object):
         json_file.close()
 
         create_dirs_from_dict(asset_structure_data, self.asset_root_path)
+
+        # Create asset sourceimages folder
+        if not os.path.isdir(letter_path.replace("scenes", "sourceimages")):
+            os.mkdir(letter_path.replace("scenes", "sourceimages"))
+
+        os.mkdir(os.path.join(letter_path.replace("scenes", "sourceimages"), self.asset_name))
 
         function = r'F:\share\tools\tools_core\python\maya_core\pipeline\Asset\build\build_asset_maya_template.py'
 
