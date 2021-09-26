@@ -34,6 +34,7 @@ def set_render_settings():
 
     if cmds.objExists("persp"):
         camera = pm.PyNode("persp")
+        camera.nearClipPlane.set(.1)
         camera.farClipPlane.set(100000)
 
 

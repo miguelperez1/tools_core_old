@@ -1,0 +1,60 @@
+{
+  "node_name": "top_level",
+  "children": [
+    {
+      "node_name": "Geometry",
+      "children": [
+        {
+          "node_name": "HiRes",
+          "children": [
+            {
+              "node_name": "Constrain"
+            }
+          ]
+        },
+        {
+          "node_name": "Proxy"
+        }
+      ]
+    },
+    {
+      "node_name": "Cache",
+      "children": [
+        {
+          "node_name": "Geo"
+        },
+        {
+          "node_name": "Hair"
+        }
+      ]
+    },
+    {
+      "node_name": "Hair"
+    },
+    {
+      "node_name": "Rig",
+      "children": [
+        {
+          "node_name": "Controls"
+        },
+        {
+          "node_name": "Skeleton"
+        }
+      ]
+    },
+    {
+      "node_name": "Lighting",
+      "children": [
+        {
+          "node_name": "lgt_rig"
+        }
+      ]
+    },
+    {
+      "node_name": "FX"
+    },
+    {
+      "node_name": "Misc"
+    }
+  ]
+}

@@ -66,7 +66,7 @@ class MaterialBuilder(object):
 
         print(self.material_data)
 
-        if 'textures' not in self.material_data.keys():
+        if 'textures' not in self.material_data.keys() or not self.material_data['textures'].keys():
             return shader, shading_group
 
         uv_node = pm.shadingNode("place2dTexture", asUtility=True)

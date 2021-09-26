@@ -1,0 +1,102 @@
+{
+  "folder_name": "top_level",
+  "subfolders": [
+    {
+      "folder_name": "00_data",
+      "subfolders": [
+        {
+          "folder_name": "logs"
+        }
+      ]
+    },
+    {
+      "folder_name": "01_build",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        },
+        {
+          "folder_name": "world_node"
+        }
+      ]
+    },
+    {
+      "folder_name": "02_model",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
+      "folder_name": "03_lookdev",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
+      "folder_name": "04_hair",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        },
+        {
+          "folder_name": "xgen"
+        },
+        {
+          "folder_name": "cache"
+        }
+      ]
+    },
+    {
+      "folder_name": "05_rig",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
+      "folder_name": "06_dress",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
+      "folder_name": "07_lighting",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
+      "folder_name": "99_cache"
+    }
+  ]
+}

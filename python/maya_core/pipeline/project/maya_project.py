@@ -35,45 +35,6 @@ PROJECT_FOLDER_STRUCTURE = {
     'testing': {}
 }
 
-ASSET_FOLDER_STRUCTURE = {
-    '00_data': {
-        'logs': []
-    },
-    '01_build': {
-        'publish': [],
-        'world_node': [],
-        'wip': []
-    },
-    '02_model': {
-        'wip': [],
-        'publish': []
-    },
-    '03_lookdev': {
-        'wip': [],
-        'publish': []
-    },
-    '04_hair': {
-        'xgen': [],
-        'cahe': [],
-        'wip': [],
-        'publish': []
-    },
-    '05_rig': {
-        'publish': [],
-        'wip': []
-    },
-    '06_dress': {
-        'wip': [],
-        'publish': []
-    },
-    '07_lighting': {
-        'wip': [],
-        'publish': []
-    },
-    '99_cache': {}
-
-}
-
 
 class Project(object):
     def __init__(self, project_name):
@@ -144,45 +105,6 @@ class Project(object):
 
     def get_timeline(self):
         pass
-
-    def create_asset(self, asset_name, asset_type):
-        if asset_name in self.get_assets()[-1]:
-            return
-
-        asset_name = asset_name.replace(" ", "_")
-
-        asset_letter_path = os.path.join(self.assets_path, asset_type, asset_name[0].lower())
-
-        if not os.path.isdir(asset_letter_path):
-            os.mkdir(asset_letter_path)
-
-        asset_root_path = os.path.join(asset_letter_path, asset_name)
-
-        if not os.path.isdir(asset_root_path):
-            os.mkdir(asset_root_path)
-
-            for folder, subfolders_data in ASSET_FOLDER_STRUCTURE.items():
-                os.mkdir(os.path.join(asset_root_path, folder))
-
-                for sf, sfsf in subfolders_data.items():
-                    os.mkdir(os.path.join(asset_root_path, folder, sf))
-
-                    for f in sfsf:
-                        os.mkdir(os.path.join(asset_root_path, folder, sf, f))
-
-        function = r'F:\share\tools\tools_core\python\maya_core\pipeline\Asset\build\build_asset_maya_template.py'
-
-        arg = '{0} {1} {2}'.format(self.project_name, asset_name, asset_type)
-
-        log_path = os.path.join(asset_root_path, '00_data', 'logs', "initial_build_log.txt")
-        f = open(log_path, "w")
-
-        subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
-
-        if os.path.isfile(os.path.join(asset_root_path, "{}.ma".format(asset_name))):
-            logger.info("Built %s successfully", asset_name)
-        else:
-            logger.error("Asset not built")
 
     def create_sequence(self, seq_data):
         for seq, shots in seq_data.items():

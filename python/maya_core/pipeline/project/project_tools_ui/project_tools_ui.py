@@ -263,7 +263,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             for asset in assets:
                 if self.asset_browse_lble.text() == asset:
                     self.valid_asset = True
-                    logger.debug("found %s", asset)
+                    logger.debug("found asset: %s, asset_type: %s", asset, asset_type)
                     break
 
         if self.valid_asset:

@@ -1,25 +1,20 @@
+import json
+
 import pymel.core as pm
 import maya.cmds as cmds
 
-MAYA_ASSET_NODE_STRUCTURE = {
-    'Geometry': {
-        'Constrain': ['HiRes', 'Proxy']
-    },
-    'Cache': {
-        'Geo': [],
-        'Hair': []
-    },
-    'Hair': {},
-    'Rig': {
-        'Controls': [],
-        'Skeleton': []
-    },
-    'Lighting': {
-        'lgt_rig': []
-    },
-    'FX': {},
-    'Misc': {}
-}
+def create_node_struct(d, parent=None):
+    print (d['node_name'], parent)
+    if "children" in d.keys():
+        if d['node_name'] == "top_level":
+            _ = [create_node_struct(a, parent) for a in d['children']]
+        else:
+            p = pm.createNode("transform", n=d['node_name'], p=parent)
+            print("created {}".format(str(p)))
+            _ = [create_node_struct(a, p) for a in d['children']]
+    else:
+        p = pm.createNode("transform", n=d['node_name'], p=parent)
+        print("created {}".format(str(p)))
 
 
 class MayaAsset(object):
@@ -34,14 +29,13 @@ class MayaAsset(object):
         # Create Nodes
         self.world_node = pm.createNode("transform", n=self.asset_data['asset_name'])
 
-        for i, j in MAYA_ASSET_NODE_STRUCTURE.items():
-            i_node = pm.createNode("transform", n=i, p=self.world_node)
+        asset_structure_json_path = r"F:\share\tools\tools_core\python\maya_core\pipeline\Asset\MayaAsset_node_structure.json"
 
-            for k, l in j.items():
-                k_node = pm.createNode("transform", n=k, p=i_node)
+        json_file = open(asset_structure_json_path, "r")
+        asset_structure_data = json.load(json_file)
+        json_file.close()
 
-                for m in l:
-                    pm.createNode("transform", n=m, p=k_node)
+        create_node_struct(asset_structure_data, parent=self.world_node)
 
         # Create Attrs
         cmds.addAttr(str(self.world_node), ln="mayaAsset", at="long")
