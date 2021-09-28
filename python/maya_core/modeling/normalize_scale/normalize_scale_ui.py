@@ -1,11 +1,10 @@
 from PySide2 import QtCore
 from PySide2 import QtWidgets
-from PySide2 import QtGui
 
 import maya.cmds as cmds
 
 from pyqt_commons import MWidgets
-from maya_core.common_tools.normalize_scale import normalize_scale
+from maya_core.modeling.normalize_scale import normalize_scale
 
 class NormalizeScaleUI(QtWidgets.QMainWindow):
     def __init__(self, parent=MWidgets.maya_main_window()):

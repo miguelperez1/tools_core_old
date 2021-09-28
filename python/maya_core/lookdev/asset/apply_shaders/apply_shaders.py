@@ -8,11 +8,6 @@ import maya.cmds as cmds
 from maya_core.pipeline.project import maya_project
 from maya_core.lookdev.material_utils import material_utils as mu
 
-# Create a json file where
-#   Key (Mesh node) : Value (Material)
-#   Export a .ma file with all materials
-
-
 # Rigging / Lighting will then run the apply
 logger = logging.getLogger(__name__)
 logger.setLevel(10)

@@ -6,13 +6,12 @@ import maya.standalone as standalone
 
 standalone.initialize(name='python')
 
-import pymel.core as pm
 import maya.cmds as cmds
 import maya.mel as mel
 
 from maya_core.asset_manager.library_utils import constants
 from maya_core.lookdev.material_utils import material_utils
-from maya_core.common_tools.normalize_scale import normalize_scale
+from maya_core.modeling.normalize_scale import normalize_scale
 
 libraries = constants.libraries
 

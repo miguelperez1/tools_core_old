@@ -96,6 +96,17 @@
       ]
     },
     {
+      "folder_name": "08_fx",
+      "subfolders": [
+        {
+          "folder_name": "wip"
+        },
+        {
+          "folder_name": "publish"
+        }
+      ]
+    },
+    {
       "folder_name": "99_cache"
     }
   ]

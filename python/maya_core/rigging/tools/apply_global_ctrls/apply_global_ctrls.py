@@ -5,8 +5,7 @@ import pymel.core as pm
 import maya.cmds as cmds
 
 from maya_core.pipeline.project import maya_project
-
-reload(maya_project)
+from maya_core.modeling.normalize_scale import normalize_scale
 
 GLOBAL_CTRLS_PATH = os.path.join(maya_project.get_project("studio").assets_path, "rig", "g", "GlobalCtrls",
                                  "GlobalCtrls.ma")
@@ -54,7 +53,9 @@ def apply_global_ctrls(node=None):
 
     pm.parent("GlobalCtrls", controls_node)
 
-    # constrain to geo constrain group
+    # Scale GlobalCtrls to the larger bbox
+
+    # find geo constrain group
     constrain_node = None
     for c in (node.listRelatives(c=1)):
         if "Geometry" in str(c):
@@ -68,6 +69,12 @@ def apply_global_ctrls(node=None):
         logger.error("Could not find geometry constrain group")
         return
 
+    # scale controls to constrain bbox
+    longest_axis = normalize_scale.get_longest_axis(constrain_node, skip_axis='y')
+
+    normalize_scale.normalize_scale(longest_axis[0], pm.PyNode("GlobalCtrls"), axis=longest_axis[1])
+
+    # constrain controls
     constrain_ctrl = pm.PyNode("global_03_ctrl")
 
     pm.parentConstraint(constrain_ctrl, constrain_node, mo=1)
