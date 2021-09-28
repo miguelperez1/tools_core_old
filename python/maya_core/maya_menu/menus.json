@@ -88,6 +88,9 @@
         {
           "lbl": "Reference LookDev Rig",
           "cmd": "cmds.file(r'F:\\share\\projects\\studio\\scenes\\assets\\lighting\\l\\lookdev_rig\\lookdev_rig.ma', r=1)"
+        },        {
+          "lbl": "Reference LookDev Stage",
+          "cmd": "cmds.file(r'F:\\share\\projects\\studio\\scenes\\assets\\set\\l\\LookDevStage\\LookDevStage.ma', r=1)"
         },
         {
           "lbl": "CC Node Finder",

@@ -65,3 +65,6 @@ class Asset(object):
         f = open(log_path, "w")
 
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
+
+        if os.path.isfile(os.path.join(self.asset_root_path, "{}.ma".format(self.asset_name))):
+            print("{} created successfully".format(self.asset_name))

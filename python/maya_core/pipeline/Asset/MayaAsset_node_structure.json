@@ -8,7 +8,12 @@
           "node_name": "HiRes",
           "children": [
             {
-              "node_name": "Constrain"
+              "node_name": "Constrain",
+              "children": [
+                {
+                  "node_name": "GEO"
+                }
+              ]
             }
           ]
         },

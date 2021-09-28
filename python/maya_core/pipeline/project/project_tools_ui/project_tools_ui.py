@@ -12,6 +12,7 @@ import pymel.core as pm
 from pyqt_commons import MWidgets
 from pyqt_commons import DockableWidget
 from maya_core.pipeline.project import maya_project
+from maya_core.pipeline.Asset import Asset
 
 projects_root = r"F:\share\projects"
 
@@ -254,7 +255,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             logger.error("Only asset files can be referenced")
             return
 
-        cmds.file(f, r=True, ignoreVersion=True, force=True, namespace=asset_name)
+        cmds.file(f, r=True, ignoreVersion=True, force=True)
 
     def browse_asset_callback(self):
         self.valid_asset = False
@@ -346,12 +347,13 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
 
     def create_asset_btn_callback(self):
         if self.create_valid_asset:
-            self.maya_project.create_asset(self.create_asset_lble.text(),
-                                           self.create_asset_type_cmbx.currentText().lower())
+            proj = maya_project.get_current_project()
+            asset = Asset.Asset(self.create_asset_lble.text(), self.create_asset_type_cmbx.currentText(), proj)
+
+            asset.create_asset()
 
             self.asset_browse_lble.setText(self.create_asset_lble.text())
             self.create_asset_le_callback()
-
 
 
 def main():

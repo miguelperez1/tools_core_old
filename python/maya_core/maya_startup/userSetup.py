@@ -23,8 +23,8 @@ def set_render_settings():
 
     cmds.setAttr("vraySettings.aspectLock", 0)
     cmds.setAttr("vraySettings.width", 1920)
-    cmds.setAttr("vraySettings.height", 804)
-    cmds.setAttr("vraySettings.aspectRatio", 1920 / 804)
+    cmds.setAttr("vraySettings.height", 960)
+    cmds.setAttr("vraySettings.aspectRatio", 1920 / 960)
     cmds.setAttr("vraySettings.pixelAspect", 1)
     cmds.setAttr("vraySettings.rgbColorSpace", 2)
     cmds.setAttr("vraySettings.imageFormatStr", "exr (multichannel)", type="string")

@@ -59,8 +59,10 @@ def apply_global_ctrls(node=None):
     for c in (node.listRelatives(c=1)):
         if "Geometry" in str(c):
             for gc in c.listRelatives(c=1):
-                if "Constrain" in str(gc):
-                    constrain_node = gc
+                if "HiRes" in str(gc):
+                    for ggc in gc.listRelatives(c=1):
+                        if "Constrain" in str(ggc):
+                            constrain_node = ggc
 
     if constrain_node is None:
         logger.error("Could not find geometry constrain group")

@@ -251,3 +251,51 @@ def create_projection(name='', path='', comp=True):
         pm.rename(proj, "{}_projection".format(name))
         if comp:
             pm.rename(composite, "{}_colorComposite".format(name))
+
+
+def get_materials_from_selection():
+    materials = []
+
+    for obj in cmds.ls(sl=1, dag=1, s=1):
+        sgs = pm.listConnections(obj, type="shadingEngine")
+        for sg in sgs:
+            mats = pm.listConnections(sg.surfaceShader)
+            if pm.sets(sg, q=1):
+                if mats:
+                    materials.extend(mats)
+
+    return materials
+
+
+def get_materials_from_node(nodes=None):
+    materials = []
+
+    for obj in nodes:
+        sgs = pm.listConnections(obj, type="shadingEngine")
+        for sg in sgs:
+            mats = pm.listConnections(sg.surfaceShader)
+            if pm.sets(sg, q=1):
+                if mats:
+                    materials.extend(mats)
+
+    return materials
+
+
+def get_materials(node):
+    materials = {}
+
+    sgs = pm.listConnections(node, type="shadingEngine")
+
+    shading_group = None
+    if sgs:
+        shading_group = sgs[0]
+    else:
+        return
+
+    mats = pm.listConnections(shading_group.surfaceShader)
+
+    if pm.sets(shading_group, q=1):
+        if mats:
+            materials[shading_group] = mats
+
+    return materials

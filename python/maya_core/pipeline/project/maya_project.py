@@ -89,8 +89,10 @@ class Project(object):
                 for f in sfsf:
                     os.mkdir(os.path.join(self.scenes_path, folder, sf, f))
 
+        os.mkdir(os.path.join(self.project_path, "sourceimages", "assets"))
+
         for asset_type in PROJECT_FOLDER_STRUCTURE['assets'].keys():
-            source_image_path = os.path.join(self.project_path, "sourceimages", asset_type)
+            source_image_path = os.path.join(self.project_path, "sourceimages", "assets", asset_type)
             os.mkdir(source_image_path)
 
     def get_assets(self):

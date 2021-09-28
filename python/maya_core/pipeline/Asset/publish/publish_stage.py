@@ -12,6 +12,8 @@ import pymel.core as pm
 from maya_core.pipeline.project import maya_project
 from maya_core.pipeline.Asset import asset_utils
 
+from maya_core.lookdev.asset.export_shaders import export_shaders
+
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
@@ -122,8 +124,13 @@ def publish_stage(world_node, stage, version=None):
 
     publish_asset_stage_json(asset_data, stage.lower(), version)
 
+    # Stage specific publishes
     if stage.lower() == "build":
         publish_build_to_master(asset_data)
+    elif stage.lower() == "lookdev":
+        pm.select(cl=1)
+        pm.select(world_node)
+        export_shaders.export_shaders()
 
     function = r"F:\share\tools\tools_core\python\maya_core\pipeline\Asset\publish\update_world_node.py"
 
