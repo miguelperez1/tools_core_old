@@ -1,6 +1,7 @@
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 
+import pymel.core as pm
 import maya.cmds as cmds
 
 from pyqt_commons import MWidgets
@@ -30,6 +31,11 @@ class NormalizeScaleUI(QtWidgets.QMainWindow):
         self.scale_lbl = QtWidgets.QLabel("Scale: ")
         self.scale_le = QtWidgets.QLineEdit()
 
+        self.axis_lbl = QtWidgets.QLabel("Axis: ")
+        self.axis_cmbx = QtWidgets.QComboBox()
+        self.axis_cmbx.addItems(['x', 'y', 'z'])
+        self.axis_cmbx.setCurrentIndex(1)
+
         self.ok_btn = QtWidgets.QPushButton("Scale")
 
     def create_layout(self):
@@ -41,6 +47,8 @@ class NormalizeScaleUI(QtWidgets.QMainWindow):
         scale_layout = QtWidgets.QHBoxLayout()
         scale_layout.addWidget(self.scale_lbl)
         scale_layout.addWidget(self.scale_le)
+        scale_layout.addWidget(self.axis_lbl)
+        scale_layout.addWidget(self.axis_cmbx)
 
         btn_layout = QtWidgets.QHBoxLayout()
         btn_layout.addStretch()
@@ -53,10 +61,10 @@ class NormalizeScaleUI(QtWidgets.QMainWindow):
         self.ok_btn.clicked.connect(self.normalize_scale)
 
     def normalize_scale(self):
-        selection = cmds.selectedNodes()
+        selection = pm.ls(sl=1)
 
         for obj in selection:
-            normalize_scale.normalize_scale(float(self.scale_le.text()), obj)
+            normalize_scale.normalize_scale(float(self.scale_le.text()), obj, axis=self.axis_cmbx.currentText())
 
         self.close()
 

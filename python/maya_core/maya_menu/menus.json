@@ -86,6 +86,10 @@
           "cmd": "print('material builder')"
         },
         {
+          "lbl": "Apply Asset Shaders",
+          "cmd": "from maya_core.lookdev.asset.apply_shaders import apply_shaders\napply_shaders.apply_shaders()"
+        },
+        {
           "lbl": "Reference LookDev Rig",
           "cmd": "cmds.file(r'F:\\share\\projects\\studio\\scenes\\assets\\lighting\\l\\lookdev_rig\\lookdev_rig.ma', r=1)"
         },        {
@@ -105,6 +109,7 @@
             },
             {
               "lbl": "VRay Ptex",
+
               "cmd": "print('create vray ptex')"
             },
             {

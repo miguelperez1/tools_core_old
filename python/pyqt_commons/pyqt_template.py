@@ -1,3 +1,5 @@
+import logging
+
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtGui
@@ -6,6 +8,9 @@ import maya.cmds as cmds
 import pymel.core as pm
 
 from pyqt_commons import MWidgets
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 class ExampleDialog(QtWidgets.QMainWindow):
