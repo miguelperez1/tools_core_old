@@ -128,15 +128,14 @@ def publish_stage(world_node, stage, version=None):
     if stage.lower() == "build":
         publish_build_to_master(asset_data)
     elif stage.lower() == "lookdev":
-        pm.select(cl=1)
-        pm.select(world_node)
-        export_shaders.export_shaders()
+        export_shaders.export_shaders(world_node)
 
     function = r"F:\share\tools\tools_core\python\maya_core\pipeline\Asset\publish\update_world_node.py"
 
     arg = '{0} {1} {2} {3} {4}'.format(asset_name, asset_type, stage, version, proj.project_name)
 
-    log_path = os.path.join(asset_root_path, '00_data', 'logs', "update_world_node_log.{}.txt".format(time.time()))
+    log_path = os.path.join(asset_root_path, '00_data', 'logs',
+                            "update_world_node_log.{0}_{1}.{2}.txt".format(stage, version, time.time()))
     f = open(log_path, "w")
 
     subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)

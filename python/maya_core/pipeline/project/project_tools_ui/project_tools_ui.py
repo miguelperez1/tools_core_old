@@ -176,7 +176,7 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
             self.create_asset_lble.le_widget.setStyleSheet("")
 
     def open_project_root(self):
-        os.startfile(self.maya_project.project_path)
+        os.startfile(self.maya_project.maya_path)
 
     def open_asset_dir_btn_callback(self):
         if not self.valid_asset:

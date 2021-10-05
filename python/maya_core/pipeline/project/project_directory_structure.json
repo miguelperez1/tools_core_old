@@ -1,0 +1,19 @@
+{
+  "folder_name": "top_level",
+  "subfolders": [
+    {
+      "folder_name": "maya"
+    },
+    {
+      "folder_name": "pre_production",
+      "subfolders": [
+        {
+          "folder_name": "art"
+        },
+        {
+          "folder_name": "story"
+        }
+      ]
+    }
+  ]
+}

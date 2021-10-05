@@ -3,6 +3,7 @@ import json
 import pymel.core as pm
 import maya.cmds as cmds
 
+
 def create_node_struct(d, parent=None):
     print (d['node_name'], parent)
     if "children" in d.keys():

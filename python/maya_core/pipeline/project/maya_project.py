@@ -17,7 +17,7 @@ default_project_root = os.path.join(projects_root, "default")
 logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
-PROJECT_FOLDER_STRUCTURE = {
+SCENES_FOLDER_STRUCTURE = {
     'seq': {},
     'assets': {
         'character': [],
@@ -36,51 +36,82 @@ PROJECT_FOLDER_STRUCTURE = {
 }
 
 
+def create_dirs_from_dict(d, root, parent=None):
+    if "subfolders" in d.keys():
+        if d['folder_name'] == "top_level":
+            _ = [create_dirs_from_dict(a, root, parent=root) for a in d['subfolders']]
+        else:
+            path = os.path.join(parent, d['folder_name'])
+
+            if not os.path.isdir(path):
+                os.mkdir(path)
+
+            _ = [create_dirs_from_dict(a, root, parent=path) for a in d['subfolders']]
+    else:
+        path = os.path.join(parent, d['folder_name'])
+
+        if not os.path.isdir(path):
+            os.mkdir(path)
+
+
 class Project(object):
     def __init__(self, project_name):
         super(Project, self).__init__()
         self.project_name = project_name
         self.project_path = os.path.join(projects_root, self.project_name).replace("\\", "/")
-        self.scenes_path = os.path.join(self.project_path, 'scenes')
+        self.maya_path = os.path.join(self.project_path, "maya").replace("\\", "/")
+        self.scenes_path = os.path.join(self.maya_path, 'scenes')
         self.seq_path = os.path.join(self.scenes_path, "seq")
         self.assets_path = os.path.join(self.scenes_path, "assets")
 
     def project_exists(self):
-        return os.path.isfile(os.path.join(self.project_path, "workspace.mel"))
+        return os.path.isfile(os.path.join(self.maya_path, "workspace.mel"))
 
     def create_maya_project(self):
         if self.project_exists():
             return
 
-        cmds.workspace(self.project_path, n=1)
+        os.mkdir(os.path.join(projects_root, self.project_name))
+
+        cmds.workspace(self.maya_path, n=1)
 
         for file_rule in cmds.workspace(query=True, fileRuleList=True):
             file_rule_dir = cmds.workspace(fileRuleEntry=file_rule)
-            maya_file_rule_dir = os.path.join(self.project_path, file_rule_dir)
+            maya_file_rule_dir = os.path.join(self.maya_path, file_rule_dir)
 
             if os.path.exists(maya_file_rule_dir):
                 continue
 
             os.makedirs(maya_file_rule_dir)
 
-            set_maya_project(self.project_path)
+            set_maya_project(self.maya_path)
 
         self.create_directories()
         self.create_sequence({'000': ['000']})
 
-        set_maya_project(self.project_path)
+        set_maya_project(self.maya_path)
         cmds.workspace(s=1)
 
-        if os.path.exists(os.path.join(self.project_path, "workspace.mel")):
+        if os.path.exists(os.path.join(self.maya_path, "workspace.mel")):
             logger.info("Created project %s workspace", self.project_name)
         else:
             logger.error("Failed to create project %s workspace", self.project_name)
 
     def create_directories(self):
+        # Project directories
+        project_structure_json_path = r"F:\share\tools\tools_core\python\maya_core\pipeline\project\project_directory_structure.json"
+
+        json_file = open(project_structure_json_path, "r")
+        project_structure_data = json.load(json_file)
+        json_file.close()
+
+        create_dirs_from_dict(project_structure_data, self.project_path)
+
+        # Maya directories
         if os.path.isdir(os.path.join(self.scenes_path, "edits")):
             os.rmdir(os.path.join(self.scenes_path, "edits"))
 
-        for folder, subfolders_data in PROJECT_FOLDER_STRUCTURE.items():
+        for folder, subfolders_data in SCENES_FOLDER_STRUCTURE.items():
             os.mkdir(os.path.join(self.scenes_path, folder))
 
             for sf, sfsf in subfolders_data.items():
@@ -89,10 +120,10 @@ class Project(object):
                 for f in sfsf:
                     os.mkdir(os.path.join(self.scenes_path, folder, sf, f))
 
-        os.mkdir(os.path.join(self.project_path, "sourceimages", "assets"))
+        os.mkdir(os.path.join(self.maya_path, "sourceimages", "assets"))
 
-        for asset_type in PROJECT_FOLDER_STRUCTURE['assets'].keys():
-            source_image_path = os.path.join(self.project_path, "sourceimages", "assets", asset_type)
+        for asset_type in SCENES_FOLDER_STRUCTURE['assets'].keys():
+            source_image_path = os.path.join(self.maya_path, "sourceimages", "assets", asset_type)
             os.mkdir(source_image_path)
 
     def get_assets(self):
@@ -125,7 +156,7 @@ class Project(object):
 
 
 def set_maya_project(project_name):
-    project_root = os.path.join(projects_root, project_name)
+    project_root = os.path.join(projects_root, project_name, "maya")
 
     if not os.path.isdir(project_root):
         return
@@ -138,14 +169,14 @@ def set_maya_project(project_name):
 
     cmds.autoSave(en=1, dst=0, int=1800)
 
-    if get_current_project().project_name == project_root.split("/")[-1]:
-        logger.info("Project set to %s", project_root.split("/")[-1])
+    if get_current_project().project_name == project_root.split("/")[-2]:
+        logger.info("Project set to %s", project_root.split("/")[-2])
 
         return get_current_project()
 
 
 def get_current_project():
-    return Project(cmds.workspace(sn=1).split("/")[-1])
+    return Project(cmds.workspace(sn=1).split("/")[-2])
 
 
 def get_all_projects():

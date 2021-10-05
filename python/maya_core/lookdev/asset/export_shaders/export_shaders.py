@@ -19,21 +19,16 @@ logger = logging.getLogger(__name__)
 logger.setLevel(10)
 
 
-def export_shaders():
-    n = None
-    ns = pm.ls(sl=1)
-
-    if ns:
-        n = ns[0]
-
-    if not hasattr(n, "mayaAsset"):
+def export_shaders(asset_node):
+    if not hasattr(asset_node, "mayaAsset"):
+        logger.error("Node is not an asset node.")
         return
 
-    geo_group = pm.PyNode(("{}|Geometry|HiRes|Constrain|GEO".format(str(n))))
+    geo_group = pm.PyNode(("{}|Geometry|HiRes|Constrain|GEO".format(str(asset_node))))
 
-    asset_name = n.assetName.get()
-    asset_type = n.assetType.get()
-    lookdev_version = n.buildLookdev.get()
+    asset_name = asset_node.assetName.get()
+    asset_type = asset_node.assetType.get()
+    lookdev_version = asset_node.buildLookdev.get()
 
     asset_root_path = os.path.join(maya_project.get_current_project().assets_path, asset_type, asset_name[0].lower(),
                                    asset_name)
