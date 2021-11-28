@@ -61,6 +61,7 @@ class CCEditorUI(QtWidgets.QMainWindow):
         self.search_lble.le_widget.textChanged.connect(self.refresh_mats)
         self.mat_tw.itemSelectionChanged.connect(self.mat_tw_selection_callback)
 
+
     def refresh_mats(self):
         self.mat_tw.blockSignals(True)
         self.mat_tw.clear()

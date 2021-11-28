@@ -2,6 +2,9 @@ import pymel.core as pm
 
 
 def normalize_scale(scale, node, axis=None, skip_axis=None):
+    if isinstance(node, str):
+        node = pm.PyNode(node)
+
     object_bbox = pm.exactWorldBoundingBox(node)
 
     axes = ['x', 'y', 'z']

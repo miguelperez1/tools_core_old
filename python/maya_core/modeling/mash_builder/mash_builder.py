@@ -1,8 +1,12 @@
 import random
+import logging
 
 import maya.cmds as cmds
 import pymel.core as pm
 import mash_repro_utils as repro
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 def create_mash_network(mash_data):
@@ -23,7 +27,7 @@ def create_mash_network(mash_data):
             m = pm.PyNode(mesh)
             pm.connectAttr(m.worldMesh, mash_distribute.inputMesh)
         except Exception:
-            print("Could not connect mesh: {} to distribute".format(mesh))
+            logger.error("Could not connect mesh: %s to distribute", str(mesh))
 
     if create_random:
         mash_random = pm.createNode("MASH_Random", n="{}_Random".format(network_name))
@@ -45,7 +49,7 @@ def create_mash_network(mash_data):
                 cmds.connectAttr("{}.matrix".format(str(obj)), "{0}.inputHierarchy[{1}]".format(str(mash_instancer), i))
                 obj.visibility.set(0)
             except Exception:
-                print("Could not add {} to mash instancer".format(str(obj)))
+                logger.error("Could not add %s to mash instancer", str(obj))
 
     elif geo_type == "Mesh":
         mesh = pm.createNode("mesh", n="{}_ReproMesh".format(network_name))
@@ -72,7 +76,8 @@ def create_mash_network(mash_data):
                 repro.connect_mesh_group(str(mash_repro), str(obj))
                 obj.visibility.set(0)
             except Exception:
-                print("Could not add {} to mash instancer".format(str(obj)))
+                logger.warning("Could not add %s to mash instancer", str(obj))
+                continue
 
     # Connect everything else
 

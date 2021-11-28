@@ -6,7 +6,6 @@ import maya.cmds as cmds
 
 from pyqt_commons import DockableWidget
 
-reload(DockableWidget)
 
 
 class ProjectToolsUI(DockableWidget.DockableWidget):

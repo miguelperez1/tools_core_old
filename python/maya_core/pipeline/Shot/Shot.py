@@ -1,4 +1,5 @@
 import os
+import logging
 
 SHOT_FOLDER_STRUCTURE = {
     'animation': {
@@ -27,6 +28,9 @@ SHOT_FOLDER_STRUCTURE = {
     }
 }
 
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
+
 
 class Shot(object):
     def __init__(self, project, seq_num, shot_num):
@@ -42,7 +46,7 @@ class Shot(object):
                                       "{0}_{1}".format(self.seq_num, self.shot_num))
 
         if os.path.isdir(self.shot_path):
-            print("shot exists, skipping")
+            logger.warning("shot exists, skipping")
             return
 
         os.mkdir(self.shot_path)

@@ -9,13 +9,10 @@ import re
 
 from pyqt_commons import MWidgets
 
-reload(MWidgets)
 
 from maya_core.lighting.lighting_console.constants import *
 from maya_core.lighting.lighting_console import re_constants
 
-reload(MWidgets)
-reload(re_constants)
 
 
 INDENT = 40

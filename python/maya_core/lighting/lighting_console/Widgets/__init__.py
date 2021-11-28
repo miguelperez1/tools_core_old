@@ -9,13 +9,3 @@ from maya_core.lighting.lighting_console.Widgets import SetsWidget
 from maya_core.lighting.lighting_console.Widgets import ToolButtonsWidget
 from maya_core.lighting.lighting_console.Widgets import ViewportPanelWidget
 
-reload(AOVsWidget)
-reload(ConsoleWidget)
-reload(LogWidget)
-reload(ModifiersWidget)
-reload(PropertiesWidget)
-reload(RenderLayersWidget)
-reload(RenderSettingsWidget)
-reload(SetsWidget)
-reload(ToolButtonsWidget)
-reload(ViewportPanelWidget)

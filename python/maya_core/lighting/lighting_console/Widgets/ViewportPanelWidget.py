@@ -11,8 +11,6 @@ import shiboken2
 
 from pyqt_commons import MWidgets
 
-reload(MWidgets)
-
 from maya_core.lighting.lighting_console.constants import *
 
 
@@ -35,9 +33,9 @@ def set_display_flags(model, display_flags):
         mel_command = "modelEditor -e -{0} {1} {2}".format(flag, value, model)
         try:
             mel.eval(mel_command)
-            print mel_command
+            print(mel_command)
         except Exception as e:
-            print e
+            print(e)
 
 
 class ViewportPanelWidget(QtWidgets.QWidget):

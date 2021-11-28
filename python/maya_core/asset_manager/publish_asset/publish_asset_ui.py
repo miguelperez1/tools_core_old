@@ -12,8 +12,6 @@ from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_manager.asset_builder import asset_builder
 from maya_core.common_tools.maya_utilities import maya_utilities
 
-reload(asset_builder)
-reload(maya_utilities)
 
 library_data = {}
 
@@ -47,7 +45,7 @@ class FilePublisherUI(QtWidgets.QMainWindow):
         self.asset_name_lble = MWidgets.LabeledLineEdit("Asset Name:")
 
         self.asset_type_cmbx = QtWidgets.QComboBox()
-        libraries = constants.libraries.keys()
+        libraries = list(constants.libraries.keys())
         libraries.remove("root")
         self.asset_type_cmbx.addItems([library.title() for library in libraries])
 

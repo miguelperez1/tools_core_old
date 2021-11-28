@@ -90,8 +90,8 @@ class WorkspaceControl(object):
             self.widget = widget
             self.widget.setAttribute(QtCore.Qt.WA_DontCreateNativeAncestors)
 
-            workspace_control_ptr = long(omui.MQtUtil.findControl(self.name))
-            widget_ptr = long(getCppPointer(self.widget)[0])
+            workspace_control_ptr = int(omui.MQtUtil.findControl(self.name))
+            widget_ptr = int(getCppPointer(self.widget)[0])
 
             omui.MQtUtil.addWidgetToMayaLayout(widget_ptr, workspace_control_ptr)
 

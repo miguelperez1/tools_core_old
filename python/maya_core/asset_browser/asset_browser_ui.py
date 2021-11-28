@@ -1,3 +1,5 @@
+import logging
+
 from PySide2 import QtCore
 from PySide2 import QtWidgets
 from PySide2 import QtGui
@@ -11,8 +13,9 @@ from maya_core.asset_manager.library_utils import constants
 from maya_core.asset_browser import AssetBrowserWidget
 
 LIBRARIES = constants.libraries
-reload(AssetBrowserWidget)
 
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 class AssetBrowser(DockableWidget.DockableWidget):
     WINDOW_TITLE = "Asset Browser"
@@ -53,6 +56,7 @@ def main():
 
     AssetBrowser.module_name_override = "asset_browser_ui"
     ui = AssetBrowser()
+
 
 if __name__ == "__main__":
     main()

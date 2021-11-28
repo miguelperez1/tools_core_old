@@ -1,4 +1,5 @@
 import os
+import logging
 
 import pymel.core as pm
 import maya.cmds as cmds
@@ -33,7 +34,6 @@ DEFAULT_CONNECTIONS = {
     }
 }
 
-
 # Example material_data
 # material_data = {
 #     'name': name,
@@ -44,6 +44,9 @@ DEFAULT_CONNECTIONS = {
 #             ptex: 0
 #         }
 #     }
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 class MaterialBuilder(object):
@@ -58,13 +61,12 @@ class MaterialBuilder(object):
         return build_method()
 
     def build_VRayMtl(self):
+        logger.debug("Creating VRayMtl, %s", self.name)
         shader = pm.PyNode(cmds.shadingNode('VRayMtl', name=self.name + "_mtl", asShader=True))
         shading_group = pm.PyNode(cmds.sets(name=str(shader).replace("_mtl", "") + "_sg", empty=True, renderable=True,
                                             noSurfaceShader=True))
 
         pm.connectAttr(shader.outColor, shading_group.surfaceShader)
-
-        print(self.material_data)
 
         if 'textures' not in self.material_data.keys() or not self.material_data['textures'].keys():
             return shader, shading_group
@@ -119,7 +121,7 @@ class MaterialBuilder(object):
         return shader, shading_group, vray_mtl
 
     def build_VRayBlendMtl(self):
-        print "build_VRayBlendMtl"
+        print("build_VRayBlendMtl")
         return None
 
 
@@ -161,6 +163,8 @@ def create_texture(name=None, path=None, cc=True, uv=True, ptex=False):
         if cc:
             cc_node.rename(name + "_CC")
 
+    logger.info("Created %s", str(texture_node))
+
     return nodes
 
 
@@ -193,6 +197,8 @@ def create_cc_node(source_node=None):
 
         pm.rename(cc_node, str(source_node) + "_CC")
 
+        logger.info("Created %s", str(cc_node))
+
     return cc_node
 
 
@@ -220,6 +226,8 @@ def create_displacement_node(name=None, disp_source=None, obj=None):
 
 def build_material(material_data):
     mb = MaterialBuilder(material_data)
+
+    logger.info("Created %s", mb.name)
 
     return mb.build_material()
 

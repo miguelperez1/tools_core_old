@@ -4,6 +4,9 @@ import logging
 import string
 import subprocess
 
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
+
 
 def create_dirs_from_dict(d, asset_root, parent=None):
     if "subfolders" in d.keys():
@@ -67,4 +70,4 @@ class Asset(object):
         subprocess.call(['mayapy', function, arg], stdout=f, stderr=subprocess.STDOUT)
 
         if os.path.isfile(os.path.join(self.asset_root_path, "{}.ma".format(self.asset_name))):
-            print("{} created successfully".format(self.asset_name))
+            logger.info("%s created successfully", self.asset_name)

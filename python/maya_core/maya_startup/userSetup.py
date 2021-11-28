@@ -46,7 +46,6 @@ def startup_maya():
 
 
 def main():
-    sys.path.append(r"C:\Python27\Lib\site-packages")
     cmds.evalDeferred(startup_maya, lp=1)
 
 

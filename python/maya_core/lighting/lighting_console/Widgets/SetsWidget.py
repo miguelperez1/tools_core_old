@@ -8,7 +8,6 @@ import vray
 
 from pyqt_commons import MWidgets
 
-reload(MWidgets)
 
 from maya_core.lighting.lighting_console.constants import *
 

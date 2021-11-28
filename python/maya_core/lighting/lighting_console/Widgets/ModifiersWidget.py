@@ -8,14 +8,11 @@ import vray
 
 from pyqt_commons import MWidgets
 
-reload(MWidgets)
 
 from maya_core.lighting.lighting_console import constants
 from maya_core.lighting.lighting_console import modifiers_constants
 from maya_core.lighting.lighting_console.Widgets import PropertiesWidget
 
-reload(constants)
-reload(modifiers_constants)
 
 
 class ModifiersWidgetProperties(QtWidgets.QWidget):
@@ -60,7 +57,7 @@ class ModifiersWidgetProperties(QtWidgets.QWidget):
                         widget_class = getattr(PropertiesWidget, attr_widget_class)
                         attr_widget = widget_class(self.pm_node, attr_data)
                     except Exception as e:
-                        print "error: " + str(e)
+                        print("error: " + str(e))
 
                 if attr_widget:
                     self.widgets.append(attr_widget)

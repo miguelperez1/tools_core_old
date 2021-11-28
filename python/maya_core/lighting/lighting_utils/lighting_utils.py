@@ -1,3 +1,5 @@
+import logging
+
 import pymel.core as pm
 import maya.cmds as cmds
 import maya.mel as mel
@@ -5,9 +7,29 @@ import imagesize
 
 from maya_core.lookdev.material_utils import material_utils
 from maya_core.modeling.normalize_scale import normalize_scale
+from maya_core.lighting.light_select import LightSelect
+
+LIGHT_TYPES = [
+    'VRayLightIESShape',
+    'VRayLightSphereShape',
+    'VRayLightRectShape',
+    'VRayLightDomeShape',
+    'volumeLight',
+    'areaLight',
+    'spotLight',
+    'pointLight',
+    'directionalLight',
+    'ambientLight'
+]
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 def create_vray_light(light_type, name=None, texture=None):
+    if light_type not in LIGHT_TYPES:
+        logger.error("%s is not a valid light type", light_type)
+        return
     trans = cmds.createNode('transform')
     trans_node = pm.PyNode(trans)
 
@@ -54,12 +76,16 @@ def create_vray_light(light_type, name=None, texture=None):
 
         light_node.multiplyByTheLightColor.set(1)
 
+        logger.info("Created %s", str(light_node))
+
     return light_node
 
 
 def create_gobo(name, texture, directional=.975):
     gobo_light = create_vray_light("VRayLightRectShape", name, texture)
     gobo_light.directional.set(directional)
+
+    logger.info("Created %s", str(gobo_light))
 
 
 def create_card(name, path, material_type='VRayMtl2Sided', scale=4):
@@ -68,7 +94,7 @@ def create_card(name, path, material_type='VRayMtl2Sided', scale=4):
 
     card_geo = pm.polyPlane(n=name + "_card", w=image_size[0], h=image_size[1], sx=1, sy=1, axis=[0, 0, 1])[0]
 
-    normalize_scale.normalize_scale(scale, str(card_geo))
+    normalize_scale.normalize_scale(scale, pm.PyNode(card_geo), axis='y')
 
     # Create material
     texture_nodes = material_utils.create_texture(name=name, path=path)
@@ -93,3 +119,16 @@ def create_card(name, path, material_type='VRayMtl2Sided', scale=4):
     # Assign material to card geo
 
     pm.sets(material[1], edit=True, forceElement=card_geo)
+
+    logger.info("Created %s", str(card_geo))
+
+
+def create_all_light_selects():
+    light_selects = []
+
+    for light in pm.ls(type=LIGHT_TYPES):
+        ls = LightSelect.LightSelect(name=str(light), lights=light)
+        light_selects.append(ls)
+        logger.info("Created %s", str(ls))
+
+    return light_selects

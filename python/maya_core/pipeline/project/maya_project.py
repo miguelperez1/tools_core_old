@@ -8,7 +8,6 @@ import maya.cmds as cmds
 import maya.mel as mel
 import pymel.core as pm
 
-from maya_core.common_tools.get_input import get_input
 from maya_core.pipeline.Sequence import Sequence
 
 projects_root = r"F:\share\projects"
@@ -156,12 +155,13 @@ class Project(object):
 
 
 def set_maya_project(project_name):
-    project_root = os.path.join(projects_root, project_name, "maya")
+    proj = Project(project_name)
 
-    if not os.path.isdir(project_root):
+    if not proj.project_exists():
         return
 
-    project_root = project_root.replace("\\", "/")
+    project_root = proj.maya_path
+
     cmds.workspace(project_root, o=1)
     cmds.workspace(dir=project_root)
 

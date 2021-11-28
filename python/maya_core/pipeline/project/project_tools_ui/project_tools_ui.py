@@ -68,6 +68,9 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         self.create_asset_btn = QtWidgets.QPushButton("Create")
 
         self.asset_browse_lble = MWidgets.LabeledLineEdit("Asset: ")
+        assets = maya_project.get_current_project().get_assets()[1]
+        self.asset_completer = QtWidgets.QCompleter(assets)
+        self.asset_browse_lble.le_widget.setCompleter(self.asset_completer)
         self.valid_asset = False
 
         self.open_asset_dir_btn = QtWidgets.QPushButton()
@@ -298,6 +301,8 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
         maya_project.set_maya_project(self.projects_cmbx.currentText())
         self.maya_project = maya_project.get_current_project()
 
+        self.asset_completer.setModel(QtCore.QStringListModel(self.maya_project.get_assets()[1], self.asset_completer))
+
         self.refresh_seq()
 
     def refresh_projects(self):
@@ -354,6 +359,9 @@ class ProjectToolsUI(DockableWidget.DockableWidget):
 
             self.asset_browse_lble.setText(self.create_asset_lble.text())
             self.create_asset_le_callback()
+
+            self.asset_completer.setModel(
+                QtCore.QStringListModel(self.maya_project.get_assets()[1], self.asset_completer))
 
 
 def main():

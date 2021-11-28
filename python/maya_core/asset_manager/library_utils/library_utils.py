@@ -3,15 +3,13 @@ import json
 from collections import OrderedDict
 import shutil
 import re
-# import logging
-#
-# logger = logging.getLogger("__name__")
-# logger.setLevel(10)
+import logging
+
+logger = logging.getLogger("__name__")
+logger.setLevel(10)
 
 from maya_core.asset_manager.asset_builder import asset_builder
 from maya_core.asset_manager.library_utils import constants
-
-reload(asset_builder)
 
 libraries = constants.libraries
 
@@ -28,7 +26,7 @@ def rename_root_folders():
             os.rename(old_path, new_path)
 
             if os.path.isdir(new_path):
-                print new_path
+                print(new_path)
 
 
 def build_library_jsons(build_library=None):
@@ -251,7 +249,7 @@ def build_megascan_models(new=1):
             if subdir.endswith(".json"):
                 assets_to_build += 1
 
-    print "Assets to build: {}".format(assets_to_build)
+    print("Assets to build: {}".format(assets_to_build))
 
     for dir in os.listdir(megascans_library):
         asset_data = {
@@ -411,7 +409,7 @@ def delete_existing_megascans():
                 json_file.close()
 
                 if "megascans" in asset_data["tags"]:
-                    print "Deleting {}".format(os.path.join(m_path, dir))
+                    print("Deleting {}".format(os.path.join(m_path, dir)))
                     shutil.rmtree(os.path.join(m_path, dir))
 
 
@@ -523,6 +521,47 @@ def fix_self_name():
                 print("found self.name in " + json_file)
             else:
                 print("no self.name found")
+
+
+import os
+import pymel.core as pm
+from maya_core.asset_manager.asset_builder import asset_builder
+from maya_core.common_tools.maya_utilities import maya_utilities
+
+
+def publish_selection():
+    selected = pm.ls(sl=1)
+    pm.select(cl=1)
+    for i, node in enumerate(selected):
+        pm.select(cl=1)
+
+        asset_data = {
+            'name': str(node),
+            'asset_type': "model",
+            'asset_preview': os.path.join(
+                r"F:\share\projects\default\maya\images\outpost.masterLayer.{}.png".format(str(i + 1).zfill(4))),
+            'tags': "kitbash,outpost",
+            'mesh': None,
+            'material_data': None,
+            'scale': None,
+            'has_proxy': False
+        }
+
+        builder = asset_builder.AssetBuilder(asset_data)
+
+        builder.create_asset(save_type="selection")
+
+        texture_data = {}
+
+        pm.select(node)
+
+        materials = maya_utilities.get_materials_from_selection()
+        for material in materials:
+            texs_tmp = maya_utilities.filter_connected_nodes(material, "file")
+            if texs_tmp:
+                texture_data[material] = texs_tmp
+
+            builder.publish_textures(texture_data)
 
 
 if __name__ == '__main__':

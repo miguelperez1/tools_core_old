@@ -166,7 +166,7 @@ class AssetBuilder(object):
                 try:
                     copyfile(src_tex, dst_tex)
                 except Exception as e:
-                    print(e)
+                    pass
 
                 # TODO fix this ptex check
                 textures[tex_type] = {

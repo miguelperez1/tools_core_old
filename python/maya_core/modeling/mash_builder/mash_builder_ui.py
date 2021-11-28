@@ -8,9 +8,6 @@ import pymel.core as pm
 from pyqt_commons import MWidgets
 from maya_core.modeling.mash_builder import mash_builder
 
-reload(MWidgets)
-reload(mash_builder)
-
 
 class MASHBuilderUI(QtWidgets.QMainWindow):
     def __init__(self, parent=MWidgets.maya_main_window()):

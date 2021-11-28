@@ -8,7 +8,6 @@ import vray
 
 from pyqt_commons import MWidgets
 
-reload(MWidgets)
 
 from maya_core.lighting.lighting_console.constants import *
 
@@ -175,7 +174,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
             try:
                 cmds.editRenderLayerMembers(self.current_rl, obj)
             except Exception as e:
-                print e
+                print(e)
                 continue
 
     def remove_from_layer(self):
@@ -185,7 +184,7 @@ class RenderLayersWidget(QtWidgets.QWidget):
             try:
                 cmds.editRenderLayerMembers(self.current_rl, obj, remove=True)
             except Exception as e:
-                print e
+                print(e)
                 continue
 
     def refresh_layers(self):

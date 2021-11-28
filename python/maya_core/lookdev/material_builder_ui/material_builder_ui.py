@@ -9,7 +9,6 @@ from pyqt_commons import MWidgets
 from maya_core.lookdev.material_builder_ui import MaterialBuilderWidget
 from maya_core.lookdev.material_utils import material_utils
 
-reload(MaterialBuilderWidget)
 
 
 class MaterialBuilderUI(QtWidgets.QMainWindow):
@@ -62,8 +61,6 @@ class MaterialBuilderUI(QtWidgets.QMainWindow):
 
     def build_material(self):
         material_data = self.material_builder_widget.get_material_data()
-
-        print(material_data)
 
         if material_data['name']:
             selection = pm.ls(sl=1)

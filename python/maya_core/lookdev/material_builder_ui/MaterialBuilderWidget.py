@@ -7,8 +7,6 @@ import maya.cmds as cmds
 from pyqt_commons import MWidgets
 from maya_core.lookdev.material_utils import material_utils
 
-reload(MWidgets)
-reload(material_utils)
 
 tex_types = material_utils.TEX_TYPES
 
@@ -125,6 +123,9 @@ class MaterialBuilderWidget(QtWidgets.QWidget):
                 }
 
         return material_data
+
+    def populate_from_asset(self):
+        pass
 
 
 def main():

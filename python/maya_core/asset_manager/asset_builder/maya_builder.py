@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import logging
 
 import maya.standalone as standalone
 
@@ -14,6 +15,9 @@ from maya_core.lookdev.material_utils import material_utils
 from maya_core.modeling.normalize_scale import normalize_scale
 
 libraries = constants.libraries
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 
 def build_maya(asset_data):
@@ -31,8 +35,7 @@ def build_maya(asset_data):
     if asset_type == 'model':
         if asset_data['mesh']:
             # import mesh
-            print("importing mesh: " + asset_data['mesh'])
-            print(os.path.isfile(asset_data['mesh']))
+            logger.debug("Importing mesh %s", asset_data['mesh'])
 
             cmds.file(asset_data['mesh'], i=True, typ="OBJ")
 
@@ -50,8 +53,6 @@ def build_maya(asset_data):
 
     # Create material
     if asset_data['material_data']:
-        print(asset_data['material_data'])
-
         material = material_utils.build_material(asset_data['material_data'])
 
         # Assign material
@@ -99,7 +100,6 @@ def build_maya(asset_data):
             pm.connectAttr(displacement_tex_node.outColor, vraymeshmtlsg.displacementShader)
 
             vrmesh_vrdisp = material_utils.create_displacement_node(vrmesh, displacement_tex_node, pm.PyNode(vrmesh))
-            print vrmesh_vrdisp
 
         # select vray_proxy
         cmds.select(clear=True)
@@ -131,7 +131,7 @@ def main():
     build_maya(asset_data)
 
     if os.path.isfile(asset_data['import_file']):
-        print "Built {} successfully".format(asset_data['asset_name'])
+        logger.info("Built %s successfully", asset_data['asset_name'])
 
 
 if __name__ == '__main__':

@@ -10,7 +10,6 @@ from maya_core.lookdev.material_builder_ui import material_builder_ui
 from maya_core.lookdev.material_utils import material_utils
 from maya_core.lookdev.cc_node_editor import cc_node_editor_ui
 
-reload(material_utils)
 
 
 class LookdevToolkitUI(QtWidgets.QMainWindow):

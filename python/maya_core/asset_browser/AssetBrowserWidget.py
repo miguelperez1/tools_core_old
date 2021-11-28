@@ -375,7 +375,23 @@ class AssetBrowserWidget(QtWidgets.QWidget):
                 logger.info("Importing vrayproxy for %s", asset)
                 logger.debug("Import file %s", asset_data['import_file'])
 
-                cmds.file(proxy_path, i=True)
+                if cmds.about(version=1) == "2020":
+                    cmds.file(proxy_path, i=True)
+                else:
+                    proxy_path = os.path.join(libraries[self.current_library], asset, "vrayproxy",
+                                              "{}.vrmesh".format(asset))
+
+                    if os.path.isfile(proxy_path):
+                        logger.info("Importing vrayproxy for %s", asset)
+
+                        proxy = pm.createNode("VRayProxy")
+                        trans = proxy.getTransform()
+
+                        proxy.fileName.set(proxy_path)
+
+                        pm.rename(proxy, "{}_vrayproxyShape".format(asset))
+                        pm.rename(trans, "{}_vrayproxy".format(asset))
+
             else:
                 logger.info("{} does not have a vrayproxy, skipping.".format(asset))
 

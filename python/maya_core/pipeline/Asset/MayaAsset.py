@@ -1,21 +1,24 @@
 import json
+import logging
 
 import pymel.core as pm
 import maya.cmds as cmds
 
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
 
 def create_node_struct(d, parent=None):
-    print (d['node_name'], parent)
+    logger.debug("%s, %s", d['node_name'], parent)
     if "children" in d.keys():
         if d['node_name'] == "top_level":
             _ = [create_node_struct(a, parent) for a in d['children']]
         else:
             p = pm.createNode("transform", n=d['node_name'], p=parent)
-            print("created {}".format(str(p)))
+            logger.info("Created %s", str(p))
             _ = [create_node_struct(a, p) for a in d['children']]
     else:
         p = pm.createNode("transform", n=d['node_name'], p=parent)
-        print("created {}".format(str(p)))
+        logger.info("Created %s", str(p))
 
 
 class MayaAsset(object):
