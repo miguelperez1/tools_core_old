@@ -33,3 +33,5 @@ def create_shot_cam():
     pm.camera(camera, e=1, filmFit="fill")
 
     add_camera_shake(camera)
+
+    return pm.PyNode(camera)

@@ -1,0 +1,41 @@
+library_json = library_data.json
+asset_json = asset_data.json
+
+
+LIBRARY data structure
+library_data = {
+    "assets":
+        "asset_name": {
+            "asset_data"
+        }
+    "tags": [
+        "tag"
+    ]
+}
+
+
+STD_LIBRARY Asset data structure
+asset_data = {
+    "asset_name": "asset_name",
+    "asset_preview": "asset_preview.(png, jpg, jpeg)",
+    "vrmesh": "vrmesh.vrmesh",
+    "vrproxy_maya": "vrproxy_maya.ma",
+    "vrscene": "vrscene.vrscene",
+    "vrscene_maya": "vrscene_maya.ma",
+    "maya_file": "maya_file.ma",
+    "mesh": "mesh.(fbx, obj)",
+    "scale": 1.0,
+    "material_data": {
+        "material_type": "VRayMtl",
+        "material_name": "material_name",
+        "textures": {
+            "texture_type": "texture_path"
+        }
+    }
+    "megascan_id": "",
+    "tags": [
+        "tag",
+    ]
+}
+
+NON STD_LIBRARY Asset data structure
